@@ -1,7 +1,7 @@
 {
-  "name": "climpire",
-  "version": "2.0.4",
-  "description": "Claw-Empire - AI Agent Company Simulation. Command your CLI agent empire from the CEO desk.",
+  "name": "next-ai-crew",
+  "version": "0.1.0",
+  "description": "Next AI Crew - AI Agent Orchestration Platform",
   "type": "module",
   "scripts": {
     "migrate:v1.0.5": "node scripts/auto-apply-v1.0.5.mjs",

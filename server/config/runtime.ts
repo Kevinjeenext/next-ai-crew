@@ -47,7 +47,7 @@ export const PKG_VERSION: string = (() => {
 export const PORT = Number(process.env.PORT ?? 8790);
 export const HOST = process.env.HOST ?? "127.0.0.1";
 export const OAUTH_BASE_HOST = HOST === "0.0.0.0" || HOST === "::" ? "127.0.0.1" : HOST;
-export const SESSION_COOKIE_NAME = "claw_session";
+export const SESSION_COOKIE_NAME = "nac_session";
 
 export function normalizeSecret(raw: string | undefined): string {
   const trimmed = (raw ?? "").trim().replace(/^['"]|['"]$/g, "");
@@ -100,6 +100,6 @@ function resolveDefaultDataRoot(): string {
 }
 
 export const DEFAULT_DATA_ROOT = resolveDefaultDataRoot();
-export const DEFAULT_DB_PATH = path.join(DEFAULT_DATA_ROOT, "claw-empire.sqlite");
+export const DEFAULT_DB_PATH = path.join(DEFAULT_DATA_ROOT, "next-ai-crew.sqlite");
 export const DEFAULT_LOGS_DIR = path.join(DEFAULT_DATA_ROOT, "logs");
-export const LEGACY_DB_PATH = path.join(process.cwd(), "climpire.sqlite");
+export const LEGACY_DB_PATH = path.join(process.cwd(), "claw-empire.sqlite");
