@@ -25,7 +25,7 @@ import {
   isIncomingMessageOriginTrusted,
 } from "./security/auth.ts";
 import { supabaseAdmin } from "./lib/supabase.ts";
-import { initializeSupabaseRuntime, getOrgId, MVP_DEFAULT_ORG_ID } from "./db/supabase-db-shim.ts";
+import { initializeSupabaseRuntime, getOrgIdFromRequest } from "./db/supabase-db-shim.ts";
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 
@@ -58,10 +58,24 @@ app.get("/api/health", (_req, res) => {
 // Core API routes (Supabase-backed)
 // ---------------------------------------------------------------------------
 
+// --- Auth middleware helper ---
+async function requireOrg(req: any, res: any): Promise<string | null> {
+  try {
+    return await getOrgIdFromRequest(req);
+  } catch (err: any) {
+    // MVP fallback: if no auth token, use DEFAULT_ORG_ID for development
+    const fallbackOrgId = process.env.DEFAULT_ORG_ID;
+    if (fallbackOrgId) return fallbackOrgId;
+    res.status(401).json({ error: "Authentication required", detail: err.message });
+    return null;
+  }
+}
+
 // --- Agents CRUD ---
 app.get("/api/agents", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const agents = await pgAdapter.queryAll("agents", orgId, undefined, {
       orderBy: "created_at",
       ascending: true,
@@ -75,7 +89,8 @@ app.get("/api/agents", async (req, res) => {
 
 app.get("/api/agents/:id", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const agent = await pgAdapter.queryOne("agents", orgId, req.params.id);
     if (!agent) return res.status(404).json({ error: "Agent not found" });
     res.json(agent);
@@ -86,7 +101,8 @@ app.get("/api/agents/:id", async (req, res) => {
 
 app.post("/api/agents", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const { id, name, department_id, role, avatar_emoji, personality, ...rest } = req.body;
     const agent = await pgAdapter.insertRow("agents", {
       org_id: orgId,
@@ -107,7 +123,8 @@ app.post("/api/agents", express.json(), async (req, res) => {
 
 app.patch("/api/agents/:id", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const updated = await pgAdapter.updateRow("agents", orgId, req.params.id, req.body);
     if (!updated) return res.status(404).json({ error: "Agent not found" });
     broadcast("agent_update", updated);
@@ -119,7 +136,8 @@ app.patch("/api/agents/:id", express.json(), async (req, res) => {
 
 app.delete("/api/agents/:id", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const deleted = await pgAdapter.deleteRow("agents", orgId, req.params.id);
     if (!deleted) return res.status(404).json({ error: "Agent not found" });
     broadcast("agent_removed", { id: req.params.id });
@@ -132,7 +150,8 @@ app.delete("/api/agents/:id", async (req, res) => {
 // --- Departments CRUD ---
 app.get("/api/departments", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const departments = await pgAdapter.queryAll("departments", orgId, undefined, {
       orderBy: "sort_order",
       ascending: true,
@@ -145,7 +164,8 @@ app.get("/api/departments", async (req, res) => {
 
 app.post("/api/departments", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const dept = await pgAdapter.insertRow("departments", {
       org_id: orgId,
       ...req.body,
@@ -159,7 +179,8 @@ app.post("/api/departments", express.json(), async (req, res) => {
 
 app.patch("/api/departments/:id", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const updated = await pgAdapter.updateRow("departments", orgId, req.params.id, req.body);
     if (!updated) return res.status(404).json({ error: "Department not found" });
     broadcast("department_update", updated);
@@ -172,7 +193,8 @@ app.patch("/api/departments/:id", express.json(), async (req, res) => {
 // --- Tasks CRUD ---
 app.get("/api/tasks", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const filters: Record<string, unknown> = {};
     if (req.query.status) filters.status = req.query.status;
     if (req.query.assigned_agent_id) filters.assigned_agent_id = req.query.assigned_agent_id;
@@ -191,7 +213,8 @@ app.get("/api/tasks", async (req, res) => {
 
 app.get("/api/tasks/:id", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const task = await pgAdapter.queryOne("tasks", orgId, req.params.id);
     if (!task) return res.status(404).json({ error: "Task not found" });
     res.json(task);
@@ -202,7 +225,8 @@ app.get("/api/tasks/:id", async (req, res) => {
 
 app.post("/api/tasks", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const task = await pgAdapter.insertRow("tasks", {
       org_id: orgId,
       id: req.body.id ?? crypto.randomUUID(),
@@ -219,7 +243,8 @@ app.post("/api/tasks", express.json(), async (req, res) => {
 
 app.patch("/api/tasks/:id", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const updated = await pgAdapter.updateRow("tasks", orgId, req.params.id, req.body);
     if (!updated) return res.status(404).json({ error: "Task not found" });
     broadcast("task_update", updated);
@@ -231,7 +256,8 @@ app.patch("/api/tasks/:id", express.json(), async (req, res) => {
 
 app.delete("/api/tasks/:id", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const deleted = await pgAdapter.deleteRow("tasks", orgId, req.params.id);
     if (!deleted) return res.status(404).json({ error: "Task not found" });
     broadcast("task_removed", { id: req.params.id });
@@ -244,7 +270,8 @@ app.delete("/api/tasks/:id", async (req, res) => {
 // --- Messages ---
 app.get("/api/messages", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const filters: Record<string, unknown> = {};
     if (req.query.receiver_type) filters.receiver_type = req.query.receiver_type;
     if (req.query.receiver_id) filters.receiver_id = req.query.receiver_id;
@@ -262,7 +289,8 @@ app.get("/api/messages", async (req, res) => {
 
 app.post("/api/messages", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const msg = await pgAdapter.insertRow("messages", {
       org_id: orgId,
       id: req.body.id ?? crypto.randomUUID(),
@@ -284,7 +312,8 @@ app.post("/api/messages", express.json(), async (req, res) => {
 // --- Settings ---
 app.get("/api/settings/:key", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const value = await pgAdapter.readSetting(orgId, req.params.key);
     res.json({ key: req.params.key, value: value ?? null });
   } catch (err: any) {
@@ -294,7 +323,8 @@ app.get("/api/settings/:key", async (req, res) => {
 
 app.put("/api/settings/:key", express.json(), async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     await pgAdapter.writeSetting(orgId, req.params.key, req.body.value ?? "");
     res.json({ success: true });
   } catch (err: any) {
@@ -305,7 +335,8 @@ app.put("/api/settings/:key", express.json(), async (req, res) => {
 // --- Projects CRUD ---
 app.get("/api/projects", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const projects = await pgAdapter.queryAll("projects", orgId, undefined, {
       orderBy: "last_used_at",
       ascending: false,
@@ -319,7 +350,8 @@ app.get("/api/projects", async (req, res) => {
 // --- Subtasks ---
 app.get("/api/tasks/:taskId/subtasks", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const subtasks = await pgAdapter.queryAll("subtasks", orgId, { task_id: req.params.taskId }, {
       orderBy: "created_at",
       ascending: true,
@@ -333,7 +365,8 @@ app.get("/api/tasks/:taskId/subtasks", async (req, res) => {
 // --- Workflow Packs ---
 app.get("/api/workflow-packs", async (req, res) => {
   try {
-    const orgId = getOrgId(req);
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
     const packs = await pgAdapter.queryAll("workflow_packs", orgId);
     res.json(packs);
   } catch (err: any) {
