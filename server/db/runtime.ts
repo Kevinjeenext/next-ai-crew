@@ -2,10 +2,6 @@ import fs from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 
 import { DEFAULT_DB_PATH, DEFAULT_LOGS_DIR, LEGACY_DB_PATH } from "../config/runtime.ts";
-import { createPgDatabase, type PgDatabase } from "./pg-adapter.ts";
-
-/** Unified DB type: SQLite (sync) or PG (async adapter) */
-export type AppDatabase = DatabaseSync | PgDatabase;
 
 /** Whether the runtime is using PostgreSQL */
 export const USE_PG = !!process.env.DATABASE_URL;
@@ -61,36 +57,6 @@ export const SUBTASK_DELEGATION_SWEEP_MS = Math.max(
   readNonNegativeIntEnv("SUBTASK_DELEGATION_SWEEP_MS", 15_000),
 );
 export const CLI_OUTPUT_DEDUP_WINDOW_MS = Math.max(0, readNonNegativeIntEnv("CLI_OUTPUT_DEDUP_WINDOW_MS", 1500));
-
-export function initializePgRuntime(): {
-  dbPath: string;
-  db: PgDatabase;
-  logsDir: string;
-} {
-  const databaseUrl = process.env.DATABASE_URL!;
-  const db = createPgDatabase(databaseUrl);
-
-  console.log(`[Next AI Crew] PostgreSQL mode enabled (Supabase)`);
-  console.log(
-    `[Next AI Crew] Review guardrails: max_rounds=${REVIEW_MAX_ROUNDS}, ` +
-      `final_round=${REVIEW_FINAL_DECISION_ROUND}, ` +
-      `remediation_requests=${REVIEW_MAX_REMEDIATION_REQUESTS}/task`,
-  );
-  console.log(
-    `[Next AI Crew] In-progress watchdog: grace=${IN_PROGRESS_ORPHAN_GRACE_MS}ms, ` +
-      `sweep=${IN_PROGRESS_ORPHAN_SWEEP_MS}ms`,
-  );
-  console.log(`[Next AI Crew] Subtask delegation sweep: interval=${SUBTASK_DELEGATION_SWEEP_MS}ms`);
-
-  const logsDir = process.env.LOGS_DIR ?? DEFAULT_LOGS_DIR;
-  try {
-    fs.mkdirSync(logsDir, { recursive: true });
-  } catch {
-    // ignore
-  }
-
-  return { dbPath: databaseUrl, db, logsDir };
-}
 
 export function initializeDatabaseRuntime(): {
   dbPath: string;
