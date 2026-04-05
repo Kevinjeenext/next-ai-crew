@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./components/auth/AuthProvider";
 import { LoginPage } from "./pages/LoginPage";
 import { AuthCallback } from "./pages/AuthCallback";
 import { LandingPage } from "./pages/LandingPage";
+import PricingPage from "./pages/PricingPage";
 import "./index.css";
 
 /**
@@ -38,6 +39,7 @@ createRoot(document.getElementById("root")!).render(
         <AuthProvider>
           <Routes>
             <Route path="/landing" element={<LandingPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/*" element={<ProtectedApp />} />
