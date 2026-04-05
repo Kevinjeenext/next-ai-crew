@@ -1,0 +1,188 @@
+/* ══════════════════════════════════════════════════════
+   Next AI Crew — Tailwind 4 @theme Token Mapping
+   Replaces Claw-Empire theme in: src/styles/index.part01.css
+   ══════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+/* Note: Pretendard via CDN — add this to index.html <head>:
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.min.css" />
+   Press Start 2P (pixel accent):
+   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+*/
+
+@import "tailwindcss";
+
+@theme {
+  /* ─── Brand Colors ─── */
+  --color-crew-900: #0B1120;
+  --color-crew-800: #131B2E;
+  --color-crew-700: #1E293B;
+  --color-crew-600: #334155;
+  --color-crew-500: #475569;
+  --color-crew-400: #94A3B8;
+  --color-crew-300: #CBD5E1;
+  --color-crew-200: #E2E8F0;
+  --color-crew-100: #F1F5F9;
+  --color-crew-50: #F8FAFC;
+
+  /* ─── Semantic Colors ─── */
+  --color-crew-blue: #2563EB;
+  --color-crew-indigo: #6366F1;
+  --color-crew-cyan: #06B6D4;
+  --color-crew-emerald: #10B981;
+  --color-crew-rose: #F43F5E;
+  --color-crew-amber: #FBBF24;
+
+  /* ─── Soul Gradient stops (use in CSS gradients) ─── */
+  --color-soul-start: #2563EB;
+  --color-soul-mid: #06B6D4;
+  --color-soul-end: #6366F1;
+  --color-soul-warm: #FBBF24;
+}
+
+/* ─── Dark Theme: Deep Space Office ─── */
+:root,
+[data-theme="dark"] {
+  --th-font-display: "Space Grotesk", "Pretendard Variable", "Segoe UI", sans-serif;
+  --th-font-body: "Pretendard Variable", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  --th-font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --th-font-pixel: "Press Start 2P", monospace;
+
+  --th-bg-primary: #0B1120;
+  --th-bg-secondary: #0F1729;
+  --th-bg-surface: rgba(19, 27, 46, 0.75);
+  --th-bg-surface-hover: rgba(24, 34, 58, 0.88);
+  --th-bg-header: rgba(11, 17, 32, 0.92);
+  --th-bg-sidebar: rgba(13, 19, 36, 0.9);
+
+  --th-border: rgba(37, 99, 235, 0.12);
+  --th-border-strong: rgba(37, 99, 235, 0.25);
+
+  --th-text-primary: #E2E8F0;
+  --th-text-secondary: #94A3B8;
+  --th-text-muted: #64748B;
+  --th-text-heading: #F1F5F9;
+
+  --th-scrollbar-thumb: #1E3A5F;
+  --th-scrollbar-thumb-hover: #2563EB;
+
+  --th-card-bg: rgba(15, 23, 41, 0.65);
+  --th-card-border: rgba(37, 99, 235, 0.1);
+  --th-card-bg-hover: rgba(19, 27, 46, 0.78);
+
+  --th-panel-bg: rgba(15, 23, 41, 0.65);
+  --th-panel-border: rgba(37, 99, 235, 0.1);
+
+  --th-label-color: #6B8AB8;
+
+  --th-glass-bg: rgba(255, 255, 255, 0.025);
+  --th-glass-border: rgba(255, 255, 255, 0.05);
+  --th-glass-shadow: rgba(0, 0, 0, 0.5);
+  --th-glass-highlight: rgba(255, 255, 255, 0.035);
+
+  --th-modal-overlay: rgba(0, 0, 0, 0.65);
+
+  --th-input-bg: rgba(15, 23, 41, 0.85);
+  --th-input-border: rgba(37, 99, 235, 0.15);
+
+  --th-accent-glow: rgba(6, 182, 212, 0.06);
+  --th-soul-glow: rgba(251, 191, 36, 0.08);
+
+  --th-focus-ring: #06B6D4;
+  --th-focus-ring-shadow: rgba(6, 182, 212, 0.25);
+
+  --th-danger-bg: #9F1239;
+  --th-danger-border: #FB7185;
+  --th-danger-text: #FFFFFF;
+}
+
+/* ─── Light Theme: Bright Crew Office ─── */
+[data-theme="light"] {
+  --th-bg-primary: #F8FAFC;
+  --th-bg-secondary: #F1F5F9;
+  --th-bg-surface: rgba(255, 255, 255, 0.88);
+  --th-bg-surface-hover: rgba(255, 255, 255, 0.96);
+  --th-bg-header: rgba(248, 250, 252, 0.94);
+  --th-bg-sidebar: rgba(241, 245, 249, 0.92);
+
+  --th-border: rgba(37, 99, 235, 0.1);
+  --th-border-strong: rgba(37, 99, 235, 0.2);
+
+  --th-text-primary: #1E293B;
+  --th-text-secondary: #475569;
+  --th-text-muted: #94A3B8;
+  --th-text-heading: #0F172A;
+
+  --th-scrollbar-thumb: #CBD5E1;
+  --th-scrollbar-thumb-hover: #2563EB;
+
+  --th-card-bg: rgba(255, 255, 255, 0.82);
+  --th-card-border: rgba(37, 99, 235, 0.08);
+  --th-card-bg-hover: rgba(241, 245, 249, 0.95);
+
+  --th-panel-bg: rgba(255, 255, 255, 0.82);
+  --th-panel-border: rgba(37, 99, 235, 0.08);
+
+  --th-label-color: #6B7B95;
+
+  --th-glass-bg: rgba(0, 0, 0, 0.02);
+  --th-glass-border: rgba(0, 0, 0, 0.05);
+  --th-glass-shadow: rgba(0, 0, 0, 0.06);
+  --th-glass-highlight: rgba(255, 255, 255, 0.65);
+
+  --th-modal-overlay: rgba(15, 23, 42, 0.28);
+
+  --th-input-bg: rgba(255, 255, 255, 0.92);
+  --th-input-border: rgba(37, 99, 235, 0.12);
+
+  --th-accent-glow: rgba(6, 182, 212, 0.06);
+  --th-soul-glow: rgba(251, 191, 36, 0.06);
+
+  --th-focus-ring: #2563EB;
+  --th-focus-ring-shadow: rgba(37, 99, 235, 0.22);
+
+  --th-danger-bg: #BE123C;
+  --th-danger-border: #881337;
+  --th-danger-text: #FFFFFF;
+}
+
+/* ─── Soul Glow Utilities ─── */
+.soul-glow {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 40px rgba(37, 99, 235, 0.08);
+}
+
+.soul-gradient {
+  background: linear-gradient(135deg, var(--color-soul-start), var(--color-soul-mid), var(--color-soul-end));
+}
+
+.soul-text {
+  background: linear-gradient(135deg, var(--color-soul-start), var(--color-soul-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.soul-border {
+  border-image: linear-gradient(135deg, var(--color-soul-start), var(--color-soul-mid), var(--color-soul-end)) 1;
+}
+
+/* ─── Agent "breathing" pulse animation ─── */
+@keyframes soul-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.soul-pulse {
+  animation: soul-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Warm spark for active agents ─── */
+@keyframes soul-spark {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.soul-spark {
+  animation: soul-spark 2s ease-in-out infinite;
+  color: var(--color-soul-warm);
+}

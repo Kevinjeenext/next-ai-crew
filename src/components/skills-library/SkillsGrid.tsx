@@ -112,7 +112,7 @@ export default function SkillsGrid({
                 </span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-slate-400">
-                    <span className="text-empire-green font-medium">{skill.installsDisplay}</span>{" "}
+                    <span className="text-crew-green font-medium">{skill.installsDisplay}</span>{" "}
                     {t({ ko: "설치", en: "installs", ja: "インストール", zh: "安装" })}
                   </span>
                   <div className="flex flex-col gap-1">
@@ -198,7 +198,7 @@ export default function SkillsGrid({
                       <div className="flex flex-wrap gap-3 text-[11px]">
                         {detail.weeklyInstalls && (
                           <span className="text-slate-400">
-                            <span className="text-empire-green font-medium">{detail.weeklyInstalls}</span>{" "}
+                            <span className="text-crew-green font-medium">{detail.weeklyInstalls}</span>{" "}
                             {t({ ko: "주간 설치", en: "weekly", ja: "週間", zh: "周安装" })}
                           </span>
                         )}
@@ -226,7 +226,7 @@ export default function SkillsGrid({
                                 key={platform.name}
                                 className="text-[10px] px-2 py-0.5 bg-slate-800/80 border border-slate-700/50 rounded-md text-slate-400"
                               >
-                                {platform.name} <span className="text-empire-green">{platform.installs}</span>
+                                {platform.name} <span className="text-crew-green">{platform.installs}</span>
                               </span>
                             ))}
                           </div>

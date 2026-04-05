@@ -56,7 +56,7 @@ export default function SkillsHeader({
             {t({ ko: "커스텀 스킬 추가", en: "Add Custom Skill", ja: "カスタムスキル追加", zh: "添加自定义技能" })}
           </button>
           <div className="text-right">
-            <div className="text-2xl font-bold text-empire-gold">{skillsCount}</div>
+            <div className="text-2xl font-bold text-crew-gold">{skillsCount}</div>
             <div className="text-xs text-slate-500">
               {t({ ko: "등록된 스킬", en: "Registered skills", ja: "登録済みスキル", zh: "已收录技能" })}
             </div>
