@@ -1,7 +1,8 @@
 /**
  * Pricing Page — 5-Tier Plan Cards
- * Design: Ivy Day 3 (02-pricing-design.md)
- * Tiers: Starter (Free) → Pro → Team (recommended) → Business → Enterprise
+ * Design: Ivy Day 3 (02-pricing-design.md v2)
+ * Tiers: Free → Starter → Pro (recommended) → Max → Enterprise
+ * Currency: KRW (₩) — Kevin 의장 최종 확정 2026-04-05
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +12,7 @@ interface Plan {
   icon: string;
   agents: number | null;
   subtitle: string;
-  price: number | null;
+  priceKrw: number | null; // ₩/month (null = custom)
   color: string;
   colorRgb: string;
   recommended: boolean;
@@ -21,13 +22,18 @@ interface Plan {
   ctaStyle: "ghost" | "filled" | "gradient-ghost";
 }
 
+/** Format KRW with comma: 80000 → "80,000" */
+function fmtKrw(n: number): string {
+  return n.toLocaleString("ko-KR");
+}
+
 const PLANS: Plan[] = [
   {
-    name: "Starter",
+    name: "Free",
     icon: "🆓",
     agents: 1,
-    subtitle: "혼자서 시작하기",
-    price: 0,
+    subtitle: "AI 직원 1명과 시작하기",
+    priceKrw: 25000,
     color: "#94A3B8",
     colorRgb: "148,163,184",
     recommended: false,
@@ -35,46 +41,47 @@ const PLANS: Plan[] = [
     features: [
       "AI 에이전트 1명",
       "기본 오피스 (1룸)",
+      "7일 무료 체험",
       "일 50회 메시지",
       "커뮤니티 지원",
       "기본 캐릭터 스킨",
     ],
-    cta: "Start Free",
+    cta: "Start Free Trial",
     ctaStyle: "ghost",
   },
   {
-    name: "Pro",
+    name: "Starter",
     icon: "🚀",
-    agents: 5,
+    agents: 3,
     subtitle: "소규모 팀 빌딩",
-    price: 29,
+    priceKrw: 50000,
     color: "#2563EB",
     colorRgb: "37,99,235",
     recommended: false,
     features: [
-      "AI 에이전트 5명",
+      "AI 에이전트 3명",
       "확장 오피스 (3룸)",
-      "일 500회 메시지",
+      "일 300회 메시지",
       "이메일 지원",
       "커스텀 Soul 설정",
       "기본 워크플로우 자동화",
       "다크/라이트 테마",
     ],
-    cta: "Get Pro",
+    cta: "Get Starter",
     ctaStyle: "filled",
   },
   {
-    name: "Team",
+    name: "Pro",
     icon: "⭐",
-    agents: 15,
+    agents: 5,
     subtitle: "본격적인 AI 오피스",
-    price: 79,
+    priceKrw: 80000,
     color: "#06B6D4",
     colorRgb: "6,182,212",
     recommended: true,
     features: [
-      "AI 에이전트 15명",
-      "풀 오피스 (10룸 + 회의실)",
+      "AI 에이전트 5명",
+      "풀 오피스 (5룸 + 회의실)",
       "무제한 메시지",
       "우선 지원",
       "고급 Soul 커스터마이징",
@@ -83,20 +90,20 @@ const PLANS: Plan[] = [
       "API 액세스",
       "멀티 AI 프로바이더",
     ],
-    cta: "Start Team",
+    cta: "Start Pro",
     ctaStyle: "filled",
   },
   {
-    name: "Business",
-    icon: "💼",
-    agents: 50,
-    subtitle: "스케일업을 위한 파워",
-    price: 199,
+    name: "Max",
+    icon: "💎",
+    agents: 10,
+    subtitle: "풀 스케일 AI 조직",
+    priceKrw: 120000,
     color: "#6366F1",
     colorRgb: "99,102,241",
     recommended: false,
     features: [
-      "AI 에이전트 50명",
+      "AI 에이전트 10명",
       "멀티 오피스 (무제한 룸)",
       "무제한 메시지",
       "전담 지원",
@@ -107,15 +114,15 @@ const PLANS: Plan[] = [
       "프라이빗 모델 연결",
       "SLA 99.9%",
     ],
-    cta: "Get Business",
+    cta: "Get Max",
     ctaStyle: "filled",
   },
   {
     name: "Enterprise",
     icon: "🏢",
     agents: null,
-    subtitle: "맞춤형 AI 조직",
-    price: null,
+    subtitle: "무제한 AI 직원, 맞춤형 인프라",
+    priceKrw: null,
     color: "#6366F1",
     colorRgb: "99,102,241",
     recommended: false,
@@ -139,7 +146,7 @@ const FAQ = [
   { q: "플랜을 변경할 수 있나요?", a: "네, 언제든 업그레이드/다운그레이드 가능합니다. 차액은 일할 계산됩니다." },
   { q: "어떤 AI 모델을 지원하나요?", a: "Claude, GPT-5, Gemini, Codex, LLaMA 등 10+ 모델을 지원합니다. Pro 이상에서 모델 선택이 가능합니다." },
   { q: "데이터는 안전한가요?", a: "모든 데이터는 암호화 저장되며, SOC 2 Type II 인증을 준비 중입니다. Enterprise 플랜은 전용 인프라를 제공합니다." },
-  { q: "무료 체험은 어떻게 작동하나요?", a: "Starter 플랜으로 가입하면 7일간 모든 기본 기능을 무료로 사용할 수 있습니다. 카드 등록 없이 시작하세요." },
+  { q: "무료 체험은 어떻게 작동하나요?", a: "Free 플랜으로 가입하면 7일간 모든 기본 기능을 무료로 사용할 수 있습니다. 카드 등록 없이 시작하세요." },
 ];
 
 export default function PricingPage() {
@@ -202,8 +209,8 @@ export default function PricingPage() {
       <section className="mx-auto grid max-w-7xl gap-5 px-6 pb-20"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         {PLANS.map((plan) => {
-          const monthlyPrice = plan.price !== null
-            ? (annual ? Math.round(plan.price * 0.8) : plan.price)
+          const monthlyKrw = plan.priceKrw !== null
+            ? (annual ? Math.round(plan.priceKrw * 0.8) : plan.priceKrw)
             : null;
 
           return (
@@ -255,21 +262,35 @@ export default function PricingPage() {
 
               {/* Price */}
               <div className="mb-6">
-                {monthlyPrice !== null ? (
+                {monthlyKrw !== null ? (
                   <>
-                    <span className="text-[42px] font-bold"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                      ${monthlyPrice}
-                    </span>
-                    <span className="text-sm" style={{ color: "#64748B" }}>/mo</span>
                     {plan.trialDays && (
-                      <p className="mt-1 text-xs" style={{ color: "#06B6D4" }}>
-                        {plan.trialDays}일 무료 체험
+                      <div className="mb-2">
+                        <span className="inline-block rounded-full px-3 py-1 text-xs font-bold"
+                          style={{
+                            background: "rgba(16,185,129,0.15)",
+                            color: "#10B981",
+                            fontFamily: "'Press Start 2P', monospace",
+                            fontSize: 7,
+                            letterSpacing: 0.5,
+                          }}>
+                          7 DAYS FREE
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-[36px] font-bold"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      ₩{fmtKrw(monthlyKrw)}
+                    </span>
+                    <span className="text-sm" style={{ color: "#64748B" }}>/월</span>
+                    {plan.trialDays && (
+                      <p className="mt-1 text-xs" style={{ color: "#64748B" }}>
+                        7일 무료 체험 후
                       </p>
                     )}
                   </>
                 ) : (
-                  <span className="text-2xl font-bold">Custom</span>
+                  <span className="text-2xl font-bold">별도 문의</span>
                 )}
               </div>
 
@@ -285,7 +306,7 @@ export default function PricingPage() {
 
               {/* CTA */}
               <button
-                onClick={() => plan.price === null ? undefined : navigate("/login")}
+                onClick={() => plan.priceKrw === null ? undefined : navigate("/login")}
                 className="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
                   fontFamily: "'Space Grotesk', sans-serif",

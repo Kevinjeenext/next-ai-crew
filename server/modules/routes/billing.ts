@@ -25,10 +25,10 @@ router.get("/plans", async (_req, res) => {
   if (!SUPABASE_CONFIGURED) {
     return res.json({
       plans: [
-        { plan: "free", agent_limit: 1, display_name: "Free", price_monthly_cents: 0, trial_days: 7, sort_order: 0 },
-        { plan: "starter", agent_limit: 3, display_name: "Starter", price_monthly_cents: 2900, trial_days: 0, sort_order: 1 },
-        { plan: "pro", agent_limit: 5, display_name: "Pro", price_monthly_cents: 7900, trial_days: 0, sort_order: 2 },
-        { plan: "max", agent_limit: 10, display_name: "Max", price_monthly_cents: 19900, trial_days: 0, sort_order: 3 },
+        { plan: "free", agent_limit: 1, display_name: "Free", price_monthly_cents: 25000, trial_days: 7, sort_order: 0 },
+        { plan: "starter", agent_limit: 3, display_name: "Starter", price_monthly_cents: 50000, trial_days: 0, sort_order: 1 },
+        { plan: "pro", agent_limit: 5, display_name: "Pro", price_monthly_cents: 80000, trial_days: 0, sort_order: 2 },
+        { plan: "max", agent_limit: 10, display_name: "Max", price_monthly_cents: 120000, trial_days: 0, sort_order: 3 },
         { plan: "enterprise", agent_limit: -1, display_name: "Enterprise", price_monthly_cents: 0, trial_days: 0, sort_order: 4 },
       ],
     });

@@ -113,12 +113,13 @@ CREATE TABLE plan_limits (
 );
 
 -- Seed plan limits (KRW: cents = 원)
+-- Currency: KRW (cents = 원) — Kevin 의장 최종 확정 2026-04-05
 INSERT INTO plan_limits (plan, agent_limit, display_name, price_monthly_cents, trial_days, sort_order, features) VALUES
-  ('free',       1,  'Free',       2000,  7, 0, '{"workflows": "basic", "support": "community"}'),
-  ('starter',    3,  'Starter',    4000,  0, 1, '{"workflows": "basic", "support": "email", "social_login": true}'),
-  ('pro',        5,  'Pro',        6000,  0, 2, '{"workflows": "custom", "support": "priority", "api_access": true}'),
-  ('max',       10,  'Max',       10000,  0, 3, '{"workflows": "custom", "support": "priority", "api_access": true, "analytics": true}'),
-  ('enterprise',-1,  'Enterprise',    0,  0, 4, '{"workflows": "unlimited", "support": "dedicated", "sla": true, "custom_infra": true}');
+  ('free',       1,  'Free',       25000,  7, 0, '{"workflows": "basic", "support": "community", "messages_per_day": 50}'),
+  ('starter',    3,  'Starter',    50000,  0, 1, '{"workflows": "basic", "support": "email", "messages_per_day": 300, "custom_soul": true}'),
+  ('pro',        5,  'Pro',        80000,  0, 2, '{"workflows": "custom", "support": "priority", "api_access": true, "messages_per_day": -1, "multi_ai": true}'),
+  ('max',       10,  'Max',       120000,  0, 3, '{"workflows": "custom", "support": "dedicated", "api_access": true, "analytics": true, "sso": true, "private_model": true, "sla": "99.9%"}'),
+  ('enterprise',-1,  'Enterprise',    0,  0, 4, '{"workflows": "unlimited", "support": "dedicated", "sla": true, "custom_infra": true, "white_label": true}');
 
 -- ============================================================
 -- 6. AUTO-SET TRIAL ON ORG CREATION
