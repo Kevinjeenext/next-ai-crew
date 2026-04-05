@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <filter id="g">
+      <feGaussianBlur stdDeviation="1" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Pixel Character only (no text) — for app icon, small contexts -->
+  <!-- Head -->
+  <rect x="18" y="4" width="8" height="8" fill="#06B6D4"/>
+  <rect x="26" y="4" width="8" height="8" fill="#06B6D4"/>
+  <rect x="34" y="4" width="8" height="8" fill="#06B6D4"/>
+  <rect x="10" y="12" width="8" height="8" fill="#06B6D4"/>
+  <rect x="18" y="12" width="8" height="8" fill="#E0F2FE"/>
+  <rect x="26" y="12" width="8" height="8" fill="#2563EB"/>
+  <rect x="34" y="12" width="8" height="8" fill="#E0F2FE"/>
+  <rect x="42" y="12" width="8" height="8" fill="#06B6D4"/>
+  <rect x="10" y="20" width="8" height="8" fill="#06B6D4"/>
+  <rect x="18" y="20" width="8" height="8" fill="#06B6D4"/>
+  <rect x="26" y="20" width="8" height="8" fill="#06B6D4"/>
+  <rect x="34" y="20" width="8" height="8" fill="#06B6D4"/>
+  <rect x="42" y="20" width="8" height="8" fill="#06B6D4"/>
+  <!-- Body -->
+  <rect x="18" y="28" width="8" height="8" fill="#2563EB"/>
+  <rect x="26" y="28" width="8" height="8" fill="#2563EB"/>
+  <rect x="34" y="28" width="8" height="8" fill="#2563EB"/>
+  <rect x="2" y="36" width="8" height="8" fill="#6366F1"/>
+  <rect x="18" y="36" width="8" height="8" fill="#2563EB"/>
+  <rect x="26" y="36" width="8" height="8" fill="#2563EB"/>
+  <rect x="34" y="36" width="8" height="8" fill="#2563EB"/>
+  <rect x="50" y="36" width="8" height="8" fill="#6366F1"/>
+  <!-- Legs -->
+  <rect x="18" y="44" width="8" height="8" fill="#2563EB"/>
+  <rect x="34" y="44" width="8" height="8" fill="#2563EB"/>
+  <rect x="18" y="52" width="8" height="8" fill="#1E40AF"/>
+  <rect x="34" y="52" width="8" height="8" fill="#1E40AF"/>
+  <!-- Soul spark -->
+  <rect x="50" y="4" width="6" height="6" fill="#FBBF24" filter="url(#g)"/>
+  <rect x="56" y="10" width="4" height="4" fill="#FBBF24" opacity="0.5"/>
+</svg>

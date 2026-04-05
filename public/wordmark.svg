@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80" fill="none">
+  <defs>
+    <linearGradient id="soulGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Pixel Symbol: Soul spark / crew member silhouette -->
+  <g transform="translate(8, 8)">
+    <!-- Pixel character head (8x8 grid, 6px per pixel) -->
+    <rect x="12" y="0" width="6" height="6" fill="#06B6D4"/>
+    <rect x="18" y="0" width="6" height="6" fill="#06B6D4"/>
+    <rect x="24" y="0" width="6" height="6" fill="#06B6D4"/>
+    <rect x="6" y="6" width="6" height="6" fill="#06B6D4"/>
+    <rect x="12" y="6" width="6" height="6" fill="#E0F2FE"/>
+    <rect x="18" y="6" width="6" height="6" fill="#2563EB"/>
+    <rect x="24" y="6" width="6" height="6" fill="#E0F2FE"/>
+    <rect x="30" y="6" width="6" height="6" fill="#06B6D4"/>
+    <rect x="6" y="12" width="6" height="6" fill="#06B6D4"/>
+    <rect x="12" y="12" width="6" height="6" fill="#06B6D4"/>
+    <rect x="18" y="12" width="6" height="6" fill="#06B6D4"/>
+    <rect x="24" y="12" width="6" height="6" fill="#06B6D4"/>
+    <rect x="30" y="12" width="6" height="6" fill="#06B6D4"/>
+    <!-- Body -->
+    <rect x="12" y="18" width="6" height="6" fill="#2563EB"/>
+    <rect x="18" y="18" width="6" height="6" fill="#2563EB"/>
+    <rect x="24" y="18" width="6" height="6" fill="#2563EB"/>
+    <rect x="0" y="24" width="6" height="6" fill="#6366F1"/>
+    <rect x="12" y="24" width="6" height="6" fill="#2563EB"/>
+    <rect x="18" y="24" width="6" height="6" fill="#2563EB"/>
+    <rect x="24" y="24" width="6" height="6" fill="#2563EB"/>
+    <rect x="36" y="24" width="6" height="6" fill="#6366F1"/>
+    <!-- Soul glow spark -->
+    <rect x="36" y="0" width="4" height="4" fill="#FBBF24" opacity="0.9"/>
+    <rect x="40" y="4" width="3" height="3" fill="#FBBF24" opacity="0.5"/>
+    <!-- Legs -->
+    <rect x="12" y="30" width="6" height="6" fill="#2563EB"/>
+    <rect x="24" y="30" width="6" height="6" fill="#2563EB"/>
+  </g>
+
+  <!-- Wordmark: Next AI Crew -->
+  <text x="72" y="38" font-family="'Space Grotesk', 'Inter', system-ui, sans-serif" font-weight="700" font-size="28" fill="#F1F5F9" letter-spacing="-0.5">
+    Next AI Crew
+  </text>
+
+  <!-- Tagline -->
+  <text x="72" y="58" font-family="'Space Grotesk', 'Inter', system-ui, sans-serif" font-weight="400" font-size="11" fill="#94A3B8" letter-spacing="2">
+    YOUR AI CREW, WITH SOUL
+  </text>
+</svg>
