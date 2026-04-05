@@ -28,6 +28,7 @@ import { supabaseAdmin } from "./lib/supabase.ts";
 import { initializeSupabaseRuntime, getOrgIdFromRequest } from "./db/supabase-db-shim.ts";
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
+import authRoutes from "./modules/routes/auth/signup.ts";
 
 // ---------------------------------------------------------------------------
 // Initialize
@@ -57,6 +58,9 @@ app.get("/api/health", (_req, res) => {
 // ---------------------------------------------------------------------------
 // Core API routes (Supabase-backed)
 // ---------------------------------------------------------------------------
+
+// --- Auth routes ---
+app.use(authRoutes);
 
 // --- Auth middleware helper ---
 async function requireOrg(req: any, res: any): Promise<string | null> {
