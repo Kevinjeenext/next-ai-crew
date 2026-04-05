@@ -18,6 +18,30 @@ import { processWebhookEvent } from "../../payment/webhook-handler.ts";
 
 const router = Router();
 
+// ── Simple in-memory rate limiter for checkout (abuse prevention) ──
+const checkoutAttempts = new Map<string, { count: number; resetAt: number }>();
+const CHECKOUT_RATE_LIMIT = 10; // max attempts per window
+const CHECKOUT_RATE_WINDOW_MS = 60_000; // 1 minute
+
+function checkCheckoutRate(orgId: string): boolean {
+  const now = Date.now();
+  const entry = checkoutAttempts.get(orgId);
+  if (!entry || now > entry.resetAt) {
+    checkoutAttempts.set(orgId, { count: 1, resetAt: now + CHECKOUT_RATE_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= CHECKOUT_RATE_LIMIT;
+}
+
+// Cleanup stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of checkoutAttempts) {
+    if (now > val.resetAt) checkoutAttempts.delete(key);
+  }
+}, 300_000);
+
 /**
  * GET /api/billing/plans — Public plan list (from plan_limits table)
  */
@@ -95,6 +119,11 @@ router.get("/subscription", async (req: any, res) => {
 router.post("/checkout", express.json(), async (req: any, res) => {
   const orgId = req.orgId;
   if (!orgId) return res.status(401).json({ error: "unauthorized" });
+
+  // Rate limit check
+  if (!checkCheckoutRate(orgId)) {
+    return res.status(429).json({ error: "Too many checkout attempts. Please try again later." });
+  }
 
   const { plan } = req.body;
   if (!plan || !["starter", "pro", "team", "business", "enterprise"].includes(plan)) {
