@@ -29,6 +29,10 @@ RUN mkdir -p /app/data \
 ENV HOME=/home/app
 USER app
 
-EXPOSE 8790
+# Railway injects PORT dynamically; default 8790 for local dev
+EXPOSE ${PORT:-8790}
+
+# Railway needs HOST=0.0.0.0 to accept external traffic
+ENV HOST=0.0.0.0
 
 CMD ["pnpm", "start"]

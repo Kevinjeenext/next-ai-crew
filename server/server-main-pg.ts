@@ -46,6 +46,7 @@ const { wsClients, broadcast } = createWsHub(() => Date.now());
 // ---------------------------------------------------------------------------
 // Health check endpoint (for Railway)
 // ---------------------------------------------------------------------------
+// Health check (Railway checks /api/health per railway.toml)
 app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
@@ -53,6 +54,11 @@ app.get("/api/health", (_req, res) => {
     version: process.env.npm_package_version ?? "0.1.0",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Root health (fallback for Railway default / check)
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
 });
 
 // ---------------------------------------------------------------------------
@@ -394,7 +400,13 @@ if (isProduction) {
 // ---------------------------------------------------------------------------
 async function start() {
   // Initialize Supabase runtime (create default org, etc.)
-  await initializeSupabaseRuntime();
+  try {
+    await initializeSupabaseRuntime();
+    console.log("[Next AI Crew] Supabase connection verified.");
+  } catch (err: any) {
+    console.error("[Next AI Crew] Supabase init failed (non-fatal, server still starts):", err.message);
+    // Don't crash — server can still serve healthcheck and static files
+  }
 
   const server = app.listen(PORT, HOST, () => {
     console.log(`[Next AI Crew] Server running at http://${HOST}:${PORT} (PG/Supabase mode)`);
@@ -417,6 +429,6 @@ async function start() {
 }
 
 start().catch((err) => {
-  console.error("[Next AI Crew] Failed to start:", err);
+  console.error("[Next AI Crew] Fatal startup error:", err);
   process.exit(1);
 });
