@@ -337,8 +337,8 @@ export function LandingPage() {
                 className="p-6 rounded-xl transition hover:border-[rgba(6,182,212,0.3)]"
                 style={{ background: "rgba(15,23,41,0.3)", border: "1px solid rgba(37,99,235,0.1)" }}>
                 <img src={f.icon} alt="" className="w-10 h-10 mb-3" style={{ imageRendering: "pixelated" }} />
-                <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#94A3B8" }}>{f.description}</p>
+                <h3 className="text-lg font-bold mb-2" style={{ color: "#FFFFFF" }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#E2E8F0" }}>{f.description}</p>
               </div>
             ))}
           </div>
