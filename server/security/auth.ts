@@ -132,11 +132,15 @@ export function issueSessionCookie(req: Request, res: Response): void {
 export function isPublicApiPath(pathname: string): boolean {
   if (pathname === "/api/health") return true;
   if (pathname === "/api/auth/session") return true;
+  if (pathname === "/api/auth/setup") return true;       // Supabase signup/org-creation
+  if (pathname === "/api/auth/me") return true;          // Auth status check
+  if (pathname === "/api/billing/plans") return true;    // Public plan listing
   if (pathname === "/api/inbox") return true;
   if (pathname === "/api/openapi.json") return true;
   if (pathname === "/api/docs" || pathname.startsWith("/api/docs/")) return true;
   if (pathname === "/api/oauth/start") return true;
   if (pathname.startsWith("/api/oauth/callback/")) return true;
+  if (pathname.startsWith("/api/webhooks/")) return true; // Payment webhooks
   return false;
 }
 
