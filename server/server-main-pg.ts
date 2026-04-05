@@ -24,7 +24,7 @@ import {
   isIncomingMessageAuthenticated,
   isIncomingMessageOriginTrusted,
 } from "./security/auth.ts";
-import { supabaseAdmin } from "./lib/supabase.ts";
+import { supabaseAdmin, SUPABASE_CONFIGURED } from "./lib/supabase.ts";
 import { initializeSupabaseRuntime, getOrgIdFromRequest } from "./db/supabase-db-shim.ts";
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
@@ -399,17 +399,20 @@ if (isProduction) {
 // Start server
 // ---------------------------------------------------------------------------
 async function start() {
+  console.log(`[Next AI Crew] Starting... PORT=${PORT} HOST=${HOST} NODE_ENV=${process.env.NODE_ENV ?? 'unset'}`);
+  console.log(`[Next AI Crew] SUPABASE_URL=${SUPABASE_CONFIGURED ? 'SET' : 'MISSING'} DATABASE_URL=${process.env.DATABASE_URL ? 'SET' : 'MISSING'}`);
+
   // Initialize Supabase runtime (create default org, etc.)
   try {
     await initializeSupabaseRuntime();
     console.log("[Next AI Crew] Supabase connection verified.");
   } catch (err: any) {
     console.error("[Next AI Crew] Supabase init failed (non-fatal, server still starts):", err.message);
-    // Don't crash — server can still serve healthcheck and static files
   }
 
   const server = app.listen(PORT, HOST, () => {
-    console.log(`[Next AI Crew] Server running at http://${HOST}:${PORT} (PG/Supabase mode)`);
+    console.log(`[Next AI Crew] Server listening on http://${HOST}:${PORT} (PG/Supabase mode)`);
+    console.log(`[Next AI Crew] Healthcheck ready at /api/health`);
   });
 
   // WebSocket upgrade
