@@ -60,29 +60,29 @@ const AGENTS = [
 
 const VALUE_PROPS = [
   {
-    emoji: "🎯",
+    icon: "/icons/ui/antislop-command.svg",
     title: "지시만 하세요",
     desc: "자연어로 업무 지시, AI가 이해하고 실행합니다.",
   },
   {
-    emoji: "🤝",
+    icon: "/icons/ui/antislop-team.svg",
     title: "팀이 알아서",
     desc: "에이전트끼리 협업, 회의, 코드 리뷰를 자율적으로 진행합니다.",
   },
   {
-    emoji: "✅",
+    icon: "/icons/ui/antislop-result.svg",
     title: "결과만 확인",
     desc: "완료 보고, 코드 PR, 배포까지 자동으로 처리됩니다.",
   },
 ];
 
 const FEATURES = [
-  { icon: "🧠", title: "Souls, Not Bots", description: "Each AI agent has a unique personality, role, and expertise. They're not tools — they're team members." },
-  { icon: "🏢", title: "Your Virtual Office", description: "Organize departments, assign tasks, and watch your AI crew collaborate in real-time." },
-  { icon: "⚡", title: "Instant Scaling", description: "Spin up specialists in seconds. Engineering, design, marketing — build any team you need." },
-  { icon: "💬", title: "Natural Communication", description: "Give directives in plain language. Your AI team discusses, plans, and delivers results." },
-  { icon: "📊", title: "Full Visibility", description: "Track progress, review outputs, and see meeting minutes — like a real management dashboard." },
-  { icon: "🔒", title: "Enterprise Ready", description: "Multi-tenant architecture, role-based access, and audit trails from day one." },
+  { icon: "/icons/ui/feature-soul.svg", title: "Souls, Not Bots", description: "Each AI agent has a unique personality, role, and expertise. They're not tools — they're team members." },
+  { icon: "/icons/ui/feature-workflow.svg", title: "Your Virtual Office", description: "Organize departments, assign tasks, and watch your AI crew collaborate in real-time." },
+  { icon: "/icons/ui/feature-multimodel.svg", title: "Instant Scaling", description: "Spin up specialists in seconds. Engineering, design, marketing — build any team you need." },
+  { icon: "/icons/ui/feature-collaboration.svg", title: "Natural Communication", description: "Give directives in plain language. Your AI team discusses, plans, and delivers results." },
+  { icon: "/icons/ui/feature-dashboard.svg", title: "Full Visibility", description: "Track progress, review outputs, and see meeting minutes — like a real management dashboard." },
+  { icon: "/icons/ui/feature-security.svg", title: "Enterprise Ready", description: "Multi-tenant architecture, role-based access, and audit trails from day one." },
 ];
 
 const STATUS_STYLES: Record<string, React.CSSProperties> = {
@@ -272,7 +272,7 @@ export function LandingPage() {
             {VALUE_PROPS.map((v) => (
               <div key={v.title} className="p-6 rounded-2xl transition hover:translate-y-[-2px]"
                 style={{ background: "rgba(15,23,41,0.5)", border: "1px solid rgba(37,99,235,0.1)" }}>
-                <div className="text-3xl mb-3">{v.emoji}</div>
+                <img src={v.icon} alt="" className="w-12 h-12 mb-3" style={{ imageRendering: "pixelated" }} />
                 <h3 className="text-lg font-semibold text-white mb-2">{v.title}</h3>
                 <p className="text-sm" style={{ color: "#94A3B8" }}>{v.desc}</p>
               </div>
@@ -336,7 +336,7 @@ export function LandingPage() {
               <div key={f.title}
                 className="p-6 rounded-xl transition hover:border-[rgba(6,182,212,0.3)]"
                 style={{ background: "rgba(15,23,41,0.3)", border: "1px solid rgba(37,99,235,0.1)" }}>
-                <div className="text-2xl mb-3">{f.icon}</div>
+                <img src={f.icon} alt="" className="w-10 h-10 mb-3" style={{ imageRendering: "pixelated" }} />
                 <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: "#94A3B8" }}>{f.description}</p>
               </div>

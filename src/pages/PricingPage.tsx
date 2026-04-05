@@ -30,7 +30,7 @@ function fmtKrw(n: number): string {
 const PLANS: Plan[] = [
   {
     name: "Free",
-    icon: "🆓",
+    icon: "/icons/ui/plan-free.svg",
     agents: 1,
     subtitle: "AI 직원 1명과 시작하기",
     priceKrw: 25000,
@@ -51,7 +51,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Starter",
-    icon: "🚀",
+    icon: "/icons/ui/plan-starter.svg",
     agents: 3,
     subtitle: "소규모 팀 빌딩",
     priceKrw: 50000,
@@ -72,7 +72,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Pro",
-    icon: "⭐",
+    icon: "/icons/ui/plan-pro.svg",
     agents: 5,
     subtitle: "본격적인 AI 오피스",
     priceKrw: 80000,
@@ -95,7 +95,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Max",
-    icon: "💎",
+    icon: "/icons/ui/plan-max.svg",
     agents: 10,
     subtitle: "풀 스케일 AI 조직",
     priceKrw: 120000,
@@ -119,7 +119,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Enterprise",
-    icon: "🏢",
+    icon: "/icons/ui/plan-enterprise.svg",
     agents: null,
     subtitle: "무제한 AI 직원, 맞춤형 인프라",
     priceKrw: null,
@@ -251,7 +251,7 @@ export default function PricingPage() {
               )}
 
               {/* Icon + Name */}
-              <div className="text-2xl mb-2">{plan.icon}</div>
+              <img src={plan.icon} alt="" className="w-10 h-10 mb-2" style={{ imageRendering: "pixelated" }} />
               <h3 className="text-lg font-bold mb-1"
                 style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F1F5F9" }}>
                 {plan.name}
@@ -298,7 +298,7 @@ export default function PricingPage() {
               <ul className="mb-6 flex-1 space-y-2">
                 {plan.features.map((feat) => (
                   <li key={feat} className="flex items-start gap-2 text-sm" style={{ color: "#CBD5E1" }}>
-                    <span className="font-bold text-xs mt-0.5" style={{ color: "#10B981" }}>✓</span>
+                    <img src="/icons/ui/icon-check.svg" alt="" className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ imageRendering: "pixelated" }} />
                     {feat}
                   </li>
                 ))}
