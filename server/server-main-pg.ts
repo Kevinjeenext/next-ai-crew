@@ -390,7 +390,7 @@ app.get("/api/workflow-packs", async (req, res) => {
 if (isProduction) {
   const path = await import("node:path");
   app.use(express.static(distDir));
-  app.get("*", (_req, res) => {
+  app.get("{*path}", (_req, res) => {
     res.sendFile(path.default.join(distDir, "index.html"));
   });
 }
