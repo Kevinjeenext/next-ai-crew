@@ -306,23 +306,25 @@ export default function PricingPage() {
                         </span>
                       </div>
                     )}
-                    {showUsd ? (
-                      <>
-                        <span className="text-[36px] font-bold"
-                          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
-                          ${usd}
-                        </span>
-                        <span className="text-sm" style={{ color: "#94A3B8" }}>/mo</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[36px] font-bold"
-                          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
-                          ₩{fmtKrw(krw)}
-                        </span>
-                        <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
-                      </>
-                    )}
+                    <div className="whitespace-nowrap" style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)" }}>
+                      {showUsd ? (
+                        <>
+                          <span className="font-bold"
+                            style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
+                            ${usd}
+                          </span>
+                          <span className="text-sm" style={{ color: "#94A3B8" }}>/mo</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-bold"
+                            style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
+                            ₩{fmtKrw(krw)}
+                          </span>
+                          <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
+                        </>
+                      )}
+                    </div>
                     {plan.trialDays && (
                       <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>
                         7일 무료 체험 후
