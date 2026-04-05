@@ -161,15 +161,15 @@ export default function PricingPage() {
         style={{ background: "rgba(11,17,32,0.9)", borderBottom: "1px solid rgba(37,99,235,0.1)" }}>
         <a href="/landing" className="flex items-center gap-2 no-underline">
           <img src="/logo.svg" alt="" className="h-8 w-8" />
-          <span className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <span className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#FFFFFF" }}>
             Next AI Crew
           </span>
         </a>
         <div className="flex items-center gap-4">
           <a href="/landing" className="text-sm no-underline" style={{ color: "#94A3B8" }}>Home</a>
           <a href="/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-white no-underline"
-            style={{ background: "#2563EB" }}>
+            className="rounded-lg px-4 py-2 text-sm font-medium no-underline"
+            style={{ background: "#2563EB", color: "#FFFFFF" }}>
             Get Started
           </a>
         </div>
@@ -178,7 +178,7 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="px-8 pt-16 pb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold md:text-5xl"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
           Build Your{" "}
           <span className="bg-clip-text text-transparent"
             style={{ backgroundImage: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
@@ -253,7 +253,7 @@ export default function PricingPage() {
               {/* Icon + Name */}
               <div className="text-2xl mb-2">{plan.icon}</div>
               <h3 className="text-lg font-bold mb-1"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F1F5F9" }}>
                 {plan.name}
               </h3>
               <p className="text-sm mb-4" style={{ color: "#94A3B8" }}>
@@ -279,7 +279,7 @@ export default function PricingPage() {
                       </div>
                     )}
                     <span className="text-[36px] font-bold"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
                       ₩{fmtKrw(monthlyKrw)}
                     </span>
                     <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
@@ -290,7 +290,7 @@ export default function PricingPage() {
                     )}
                   </>
                 ) : (
-                  <span className="text-2xl font-bold">별도 문의</span>
+                  <span className="text-2xl font-bold" style={{ color: "#F8FAFC" }}>별도 문의</span>
                 )}
               </div>
 
@@ -347,8 +347,8 @@ export default function PricingPage() {
 
       {/* ─── FAQ ─── */}
       <section className="max-w-3xl mx-auto px-8 pb-20">
-        <h2 className="text-2xl font-bold text-center mb-8 text-white"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <h2 className="text-2xl font-bold text-center mb-8"
+          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
           자주 묻는 질문
         </h2>
         <div className="space-y-3">
@@ -357,7 +357,8 @@ export default function PricingPage() {
               style={{ background: "rgba(15,23,41,0.5)", border: "1px solid rgba(37,99,235,0.1)" }}>
               <button
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium text-white"
+                className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium"
+                style={{ color: "#F1F5F9" }}
               >
                 {item.q}
                 <span className="ml-4 text-lg" style={{ color: "#94A3B8" }}>
