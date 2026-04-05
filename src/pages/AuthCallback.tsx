@@ -92,7 +92,7 @@ export function AuthCallback() {
         if (!session) {
           log("No session from polling, trying onAuthStateChange...");
           // Last resort: listen for auth state change
-          const waitForAuth = new Promise<typeof session>((resolve) => {
+          const waitForAuth = new Promise<import("@supabase/supabase-js").Session | null>((resolve) => {
             const timeout = setTimeout(() => {
               log("onAuthStateChange timeout (5s)");
               resolve(null);
