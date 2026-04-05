@@ -6,11 +6,12 @@
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO organizations (name, slug, owner_id)
+  INSERT INTO organizations (name, slug, owner_id, plan)
   VALUES (
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)) || '''s Team',
     'org-' || substr(NEW.id::text, 1, 8),
-    NEW.id
+    NEW.id,
+    'starter'
   );
   INSERT INTO org_members (org_id, user_id, role)
   VALUES (
