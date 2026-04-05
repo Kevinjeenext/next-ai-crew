@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useCallback } from "react";
 import type { DecisionInboxItem } from "./components/chat/decision-inbox";
 import { useWebSocket } from "./hooks/useWebSocket";
+import { WelcomeOnboarding } from "./components/onboarding/WelcomeOnboarding";
 import type {
   Department,
   Agent,
@@ -386,6 +387,23 @@ export default function App() {
   if (loading) {
     return (
       <AppLoadingScreen language={labels.uiLanguage} title={labels.loadingTitle} subtitle={labels.loadingSubtitle} />
+    );
+  }
+
+  // Show onboarding when user has no agents yet
+  if (agents.length === 0) {
+    return (
+      <WelcomeOnboarding
+        departments={departments}
+        language={labels.uiLanguage}
+        onComplete={(newAgent) => {
+          // Refresh full agent list from server
+          void api.getAgents().then((all) => setAgents(all)).catch(() => {
+            // Fallback: just add the single agent
+            setAgents((prev) => [...prev, newAgent]);
+          });
+        }}
+      />
     );
   }
 
