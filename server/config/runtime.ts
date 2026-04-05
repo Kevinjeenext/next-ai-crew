@@ -71,7 +71,7 @@ export const OPENCLAW_CONFIG_PATH = normalizePathEnv(process.env.OPENCLAW_CONFIG
 export const API_AUTH_TOKEN = normalizeSecret(process.env.API_AUTH_TOKEN);
 export const INBOX_WEBHOOK_SECRET = normalizeSecret(process.env.INBOX_WEBHOOK_SECRET);
 export const SESSION_AUTH_TOKEN = API_AUTH_TOKEN || randomBytes(32).toString("hex");
-export const ALLOWED_ORIGIN_SUFFIXES = (process.env.ALLOWED_ORIGIN_SUFFIXES ?? ".ts.net")
+export const ALLOWED_ORIGIN_SUFFIXES = (process.env.ALLOWED_ORIGIN_SUFFIXES ?? ".ts.net,nextaicrew.com")
   .split(",")
   .map((v) => v.trim())
   .filter(Boolean);
@@ -79,6 +79,10 @@ export const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((v) => v.trim())
   .filter(Boolean);
+
+// MVP: open CORS when no explicit origins configured (CORS_MODE=open or empty ALLOWED_ORIGINS)
+export const CORS_OPEN = process.env.CORS_MODE === "open"
+  || (ALLOWED_ORIGINS.length === 0 && !process.env.ALLOWED_ORIGINS);
 
 // ---------------------------------------------------------------------------
 // Production static file serving

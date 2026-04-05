@@ -6,6 +6,7 @@ import type { IncomingMessage } from "node:http";
 import {
   ALLOWED_ORIGINS,
   ALLOWED_ORIGIN_SUFFIXES,
+  CORS_OPEN,
   SESSION_AUTH_TOKEN,
   SESSION_COOKIE_NAME,
 } from "../config/runtime.ts";
@@ -28,6 +29,8 @@ export function isLoopbackRequest(req: { socket?: { remoteAddress?: string } }):
 }
 
 export function isTrustedOrigin(origin: string): boolean {
+  // MVP open CORS mode — allow all origins
+  if (CORS_OPEN) return true;
   try {
     const u = new URL(origin);
     if (u.protocol !== "http:" && u.protocol !== "https:") return false;
