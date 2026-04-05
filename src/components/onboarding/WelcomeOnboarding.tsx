@@ -99,6 +99,8 @@ const KEYFRAMES = `
   25% { transform: translateY(-4px); }
   75% { transform: translateY(2px); }
 }
+.pixel-icon { image-rendering: pixelated; image-rendering: crisp-edges; }
+.fadeUp { will-change: transform, opacity; }
 `;
 
 export function WelcomeOnboarding({ departments, onComplete, language }: Props) {
@@ -176,6 +178,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
     padding: "2.5rem",
     color: "#E2E8F0",
     animation: "fadeUp 0.4s ease-out",
+    willChange: "transform, opacity" as const,
   };
 
   const ctaStyle: React.CSSProperties = {
@@ -215,11 +218,12 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
         {step === "welcome" && (
           <div style={{ textAlign: "center" }}>
             <img
+              className="pixel-icon"
               src="/icons/departments/icon-ceo.svg"
               alt=""
               width={80}
               height={80}
-              style={{ imageRendering: "pixelated", margin: "0 auto 1.5rem", display: "block" }}
+              style={{ margin: "0 auto 1.5rem", display: "block" }}
             />
             <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#FFFFFF", marginBottom: "0.75rem" }}>
               {ko ? "Your AI Crew starts here" : "Your AI Crew starts here"}
@@ -272,7 +276,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
               ref={inputRef}
               type="text"
               value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
+              onChange={(e) => setTeamName(e.target.value.replace(/[<>]/g, ""))}
               placeholder={ko ? "My AI Crew" : "My AI Crew"}
               maxLength={30}
               style={{
@@ -352,6 +356,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
                       transition: "all 0.2s",
                       color: "#E2E8F0",
                       position: "relative",
+                      minHeight: "44px",
                       ...(isSelected ? { animation: "soulGlow 2s ease-in-out infinite" } : {}),
                     }}
                   >
@@ -378,14 +383,16 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
 
                     {/* Pixel avatar */}
                     <img
+                      className="pixel-icon"
                       src={agent.avatar}
                       alt={agent.name}
                       width={56}
                       height={56}
                       style={{
-                        imageRendering: "pixelated",
                         margin: "0 auto 0.625rem",
                         display: "block",
+                        minWidth: "56px",
+                        minHeight: "56px",
                         ...(isSelected ? { animation: "pixelWalk 0.6s ease-in-out infinite" } : {}),
                       }}
                     />
@@ -442,6 +449,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
             <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
               {selected.map((idx, i) => (
                 <img
+                  className="pixel-icon"
                   key={PRESET_AGENTS[idx].name}
                   src={PRESET_AGENTS[idx].avatar}
                   alt=""
@@ -499,6 +507,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
               <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", position: "relative" }}>
                 {selected.map((idx) => (
                   <img
+                    className="pixel-icon"
                     key={PRESET_AGENTS[idx].name}
                     src={PRESET_AGENTS[idx].avatar}
                     alt=""
