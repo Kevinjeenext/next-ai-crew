@@ -2,6 +2,8 @@ import type { Agent, Department } from "../../types";
 import { localeName } from "../../i18n";
 import AgentCard from "./AgentCard";
 import { StackedSpriteIcon } from "./EmojiPicker";
+import TrialBanner from "../billing/TrialBanner";
+import AgentLimitBar from "../billing/AgentLimitBar";
 import type { Translator } from "./types";
 
 interface AgentsTabProps {
@@ -25,6 +27,14 @@ interface AgentsTabProps {
   randomIconSprites: {
     total: [number, number];
   };
+  billing?: {
+    isTrial: boolean;
+    trialEndsAt: string | null;
+    plan: string;
+    agentLimit: number;
+    agentCurrent: number;
+    onUpgrade: () => void;
+  };
 }
 
 export default function AgentsTab({
@@ -46,6 +56,7 @@ export default function AgentsTab({
   onDeleteAgent,
   saving,
   randomIconSprites,
+  billing,
 }: AgentsTabProps) {
   const workingCount = agents.filter((agent) => agent.status === "working").length;
   const deptCounts = new Map<string, { total: number; working: number }>();
@@ -59,6 +70,26 @@ export default function AgentsTab({
 
   return (
     <>
+      {/* Trial banner */}
+      {billing && (
+        <TrialBanner
+          isTrial={billing.isTrial}
+          trialEndsAt={billing.trialEndsAt}
+          plan={billing.plan}
+          onUpgrade={billing.onUpgrade}
+        />
+      )}
+
+      {/* Agent limit bar */}
+      {billing && (
+        <AgentLimitBar
+          current={billing.agentCurrent}
+          limit={billing.agentLimit}
+          plan={billing.plan}
+          onUpgrade={billing.onUpgrade}
+        />
+      )}
+
       <div className="grid grid-cols-3 gap-3">
         {[
           {
