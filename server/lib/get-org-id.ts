@@ -47,7 +47,7 @@ export async function createOrgForUser(
       name: orgName,
       slug,
       owner_id: userId,
-      plan: "free",
+      plan: "starter",
     })
     .select("id")
     .single();

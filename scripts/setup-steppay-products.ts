@@ -6,11 +6,13 @@
  * Usage: npx tsx scripts/setup-steppay-products.ts
  *
  * Creates 5 products with monthly subscription price plans:
- *   1. Free    - 1 agent  - ₩25,000/월 (7일 무료체험)
- *   2. Starter - 3 agents - ₩50,000/월
- *   3. Pro     - 5 agents - ₩80,000/월
- *   4. Max     - 10 agents - ₩120,000/월
+ *   1. Starter    - 1 agent   - ₩25,000/월 ($17) — 7일 무료체험
+ *   2. Pro        - 5 agents  - ₩39,000/월 ($29)
+ *   3. Team ⭐    - 15 agents - ₩99,000/월 ($79)
+ *   4. Business   - 50 agents - ₩249,000/월 ($199)
  *   5. Enterprise - unlimited - 별도 문의 (₩0, contact sales)
+ *
+ * Kevin 의장 최종 확정 2026-04-05
  */
 
 const STEPPAY_API = "https://api.steppay.kr/api/v1";
@@ -44,6 +46,7 @@ async function steppayFetch(path: string, options: RequestInit = {}): Promise<an
 }
 
 interface PlanConfig {
+  slug: string;
   name: string;
   description: string;
   priceKrw: number;
@@ -53,34 +56,39 @@ interface PlanConfig {
 
 const PLANS: PlanConfig[] = [
   {
-    name: "Next AI Crew - Free",
-    description: "AI 에이전트 1명, 기본 오피스, 7일 무료 체험",
+    slug: "starter",
+    name: "Next AI Crew - Starter",
+    description: "AI 에이전트 1명, 기본 오피스 (1룸), 7일 무료 체험, 일 50회 메시지",
     priceKrw: 25000,
     trialDays: 7,
     agentLimit: 1,
   },
   {
-    name: "Next AI Crew - Starter",
-    description: "AI 에이전트 3명, 확장 오피스, 이메일 지원",
-    priceKrw: 50000,
-    trialDays: 0,
-    agentLimit: 3,
-  },
-  {
+    slug: "pro",
     name: "Next AI Crew - Pro",
-    description: "AI 에이전트 5명, 풀 오피스, 우선 지원, API 액세스",
-    priceKrw: 80000,
+    description: "AI 에이전트 5명, 확장 오피스 (5룸), 이메일 지원, API 액세스",
+    priceKrw: 39000,
     trialDays: 0,
     agentLimit: 5,
   },
   {
-    name: "Next AI Crew - Max",
-    description: "AI 에이전트 10명, 무제한 룸, 전담 지원, SSO, SLA 99.9%",
-    priceKrw: 120000,
+    slug: "team",
+    name: "Next AI Crew - Team",
+    description: "AI 에이전트 15명, 풀 오피스 (15룸+회의실), 무제한 메시지, 우선 지원, 멀티 AI",
+    priceKrw: 99000,
     trialDays: 0,
-    agentLimit: 10,
+    agentLimit: 15,
   },
   {
+    slug: "business",
+    name: "Next AI Crew - Business",
+    description: "AI 에이전트 50명, 무제한 룸, 전담 지원, SSO, SLA 99.9%, 프라이빗 모델",
+    priceKrw: 249000,
+    trialDays: 0,
+    agentLimit: 50,
+  },
+  {
+    slug: "enterprise",
     name: "Next AI Crew - Enterprise",
     description: "무제한 에이전트, 전용 인프라, 화이트 라벨링, 24/7 프리미엄 지원",
     priceKrw: 0,  // Contact sales
@@ -125,15 +133,13 @@ async function createPricePlan(productId: number, plan: PlanConfig): Promise<any
         name: `${plan.name} - Monthly`,
         description: plan.description,
       },
-      type: "FLAT",  // Subscription (구독 요금제)
+      type: "FLAT",
       price: plan.priceKrw,
       unit: "month",
       recurring: {
         interval: 1,
         intervalUnit: "MONTH",
       },
-      // Annual plan (20% discount)
-      // Will be created separately if needed
     }),
   });
 
@@ -170,10 +176,12 @@ async function createAnnualPricePlan(productId: number, plan: PlanConfig): Promi
 
 async function main() {
   console.log("🚀 Next AI Crew — StepPay Product Setup");
-  console.log("========================================\n");
+  console.log("========================================");
+  console.log("Kevin 의장 최종 확정 요금제 (2026-04-05)\n");
 
   const results: Array<{
     plan: string;
+    slug: string;
     productId: number;
     productCode: string;
     monthlyPriceId?: number;
@@ -194,6 +202,7 @@ async function main() {
 
       results.push({
         plan: plan.name,
+        slug: plan.slug,
         productId,
         productCode: product.code,
         monthlyPriceId: monthlyPlan?.id,
@@ -216,11 +225,11 @@ async function main() {
   // Output env vars for Railway
   console.log("\n\n📋 Add these environment variables to Railway:\n");
   for (const r of results) {
-    const envName = r.plan.split(" - ")[1]?.toUpperCase() || "UNKNOWN";
-    if (r.monthlyPriceCode) {
+    const envName = r.slug.toUpperCase();
+    if (r.monthlyPriceId) {
       console.log(`STEPPAY_PRICE_${envName}=${r.monthlyPriceId}`);
     }
-    if (r.annualPriceCode) {
+    if (r.annualPriceId) {
       console.log(`STEPPAY_PRICE_${envName}_ANNUAL=${r.annualPriceId}`);
     }
   }

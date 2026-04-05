@@ -159,7 +159,7 @@ export default function PricingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen" style={{ background: "#0B1120", color: "#E2E8F0" }}>
+    <div className="min-h-screen" data-theme="dark" style={{ background: "#0B1120", color: "#E2E8F0" }}>
       {/* Nav */}
       <nav className="flex items-center justify-between px-8 py-5"
         style={{ background: "rgba(11,17,32,0.9)", borderBottom: "1px solid rgba(37,99,235,0.1)" }}>

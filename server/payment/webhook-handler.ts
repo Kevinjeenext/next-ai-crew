@@ -25,7 +25,7 @@ function resolvePlan(data: Record<string, any>): string {
   if (productCode && PLAN_MAP[productCode]) return PLAN_MAP[productCode];
 
   // Fallback: check price/plan name in data
-  return data.plan || data.planName || "free";
+  return data.plan || data.planName || "starter";
 }
 
 export async function processWebhookEvent(event: WebhookEvent): Promise<void> {
@@ -148,7 +148,7 @@ async function handleSubscriptionUpdated(data: Record<string, any>) {
   if (status === "canceled") {
     await supabaseAdmin
       .from("organizations")
-      .update({ plan: "free" })
+      .update({ plan: "starter" })
       .eq("id", sub.org_id);
 
     // TODO: Set excess agents to offline

@@ -108,7 +108,7 @@ export function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen" style={{ background: "#0B1120", color: "#E2E8F0" }}>
+    <div className="min-h-screen" data-theme="dark" style={{ background: "#0B1120", color: "#E2E8F0" }}>
       {/* Global animations */}
       <style>{`
         @keyframes soul-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }

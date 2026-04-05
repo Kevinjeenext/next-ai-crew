@@ -25,10 +25,10 @@ router.get("/plans", async (_req, res) => {
   if (!SUPABASE_CONFIGURED) {
     return res.json({
       plans: [
-        { plan: "free", agent_limit: 1, display_name: "Free", price_monthly_cents: 25000, trial_days: 7, sort_order: 0 },
-        { plan: "starter", agent_limit: 3, display_name: "Starter", price_monthly_cents: 50000, trial_days: 0, sort_order: 1 },
-        { plan: "pro", agent_limit: 5, display_name: "Pro", price_monthly_cents: 80000, trial_days: 0, sort_order: 2 },
-        { plan: "max", agent_limit: 10, display_name: "Max", price_monthly_cents: 120000, trial_days: 0, sort_order: 3 },
+        { plan: "starter", agent_limit: 1, display_name: "Starter", price_monthly_cents: 25000, trial_days: 7, sort_order: 0 },
+        { plan: "pro", agent_limit: 5, display_name: "Pro", price_monthly_cents: 39000, trial_days: 0, sort_order: 1 },
+        { plan: "team", agent_limit: 15, display_name: "Team", price_monthly_cents: 99000, trial_days: 0, sort_order: 2 },
+        { plan: "business", agent_limit: 50, display_name: "Business", price_monthly_cents: 249000, trial_days: 0, sort_order: 3 },
         { plan: "enterprise", agent_limit: -1, display_name: "Enterprise", price_monthly_cents: 0, trial_days: 0, sort_order: 4 },
       ],
     });
@@ -56,7 +56,7 @@ router.get("/subscription", async (req: any, res) => {
 
   if (!SUPABASE_CONFIGURED) {
     return res.json({
-      plan: "free",
+      plan: "starter",
       is_trial: true,
       trial_ends_at: new Date(Date.now() + 7 * 86400000).toISOString(),
       agent_limit: 1,
@@ -75,7 +75,7 @@ router.get("/subscription", async (req: any, res) => {
     const agentInfo = await checkAgentLimit(orgId);
 
     res.json({
-      plan: org?.plan ?? "free",
+      plan: org?.plan ?? "starter",
       is_trial: org?.is_trial ?? true,
       trial_ends_at: org?.trial_ends_at,
       agent_limit: org?.agent_limit ?? 1,
@@ -90,14 +90,14 @@ router.get("/subscription", async (req: any, res) => {
 
 /**
  * POST /api/billing/checkout — Create payment checkout session
- * Body: { plan: "pro" | "max" | ... }
+ * Body: { plan: "starter" | "pro" | "team" | "business" | "enterprise" }
  */
 router.post("/checkout", express.json(), async (req: any, res) => {
   const orgId = req.orgId;
   if (!orgId) return res.status(401).json({ error: "unauthorized" });
 
   const { plan } = req.body;
-  if (!plan || !["starter", "pro", "max", "enterprise"].includes(plan)) {
+  if (!plan || !["starter", "pro", "team", "business", "enterprise"].includes(plan)) {
     return res.status(400).json({ error: "Invalid plan" });
   }
 
