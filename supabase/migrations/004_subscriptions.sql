@@ -13,7 +13,7 @@ ALTER TABLE organizations
 
 ALTER TABLE organizations
   ADD CONSTRAINT organizations_plan_check
-  CHECK (plan IN ('free','starter','pro','max','enterprise'));
+  CHECK (plan IN ('starter','pro','team','business','enterprise'));
 
 -- Add trial + payment fields to organizations (provider-neutral)
 ALTER TABLE organizations
@@ -36,7 +36,7 @@ CREATE TABLE subscriptions (
   org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   payment_subscription_id TEXT UNIQUE NOT NULL,
   payment_price_code TEXT NOT NULL,
-  plan TEXT NOT NULL CHECK (plan IN ('free','starter','pro','max','enterprise')),
+  plan TEXT NOT NULL CHECK (plan IN ('starter','pro','team','business','enterprise')),
   status TEXT NOT NULL DEFAULT 'active'
     CHECK (status IN ('trialing','active','past_due','canceled','unpaid','incomplete','incomplete_expired','paused')),
   current_period_start TIMESTAMPTZ NOT NULL,
@@ -102,7 +102,7 @@ CREATE INDEX idx_invoices_org ON invoices(org_id, created_at DESC);
 -- ============================================================
 
 CREATE TABLE plan_limits (
-  plan TEXT PRIMARY KEY CHECK (plan IN ('free','starter','pro','max','enterprise')),
+  plan TEXT PRIMARY KEY CHECK (plan IN ('starter','pro','team','business','enterprise')),
   agent_limit INTEGER NOT NULL,
   display_name TEXT NOT NULL,
   price_monthly_cents INTEGER NOT NULL,
@@ -112,14 +112,14 @@ CREATE TABLE plan_limits (
   sort_order INTEGER NOT NULL DEFAULT 0
 );
 
--- Seed plan limits (KRW: cents = 원)
--- Currency: KRW (cents = 원) — Kevin 의장 최종 확정 2026-04-05
+-- Seed plan limits (KRW: 원) — Kevin 의장 최종 확정 2026-04-05
+-- Tiers: Starter(₩25,000/$17) → Pro(₩39,000/$29) → Team(₩99,000/$79) → Business(₩249,000/$199) → Enterprise(별도문의)
 INSERT INTO plan_limits (plan, agent_limit, display_name, price_monthly_cents, trial_days, sort_order, features) VALUES
-  ('free',       1,  'Free',       25000,  7, 0, '{"workflows": "basic", "support": "community", "messages_per_day": 50}'),
-  ('starter',    3,  'Starter',    50000,  0, 1, '{"workflows": "basic", "support": "email", "messages_per_day": 300, "custom_soul": true}'),
-  ('pro',        5,  'Pro',        80000,  0, 2, '{"workflows": "custom", "support": "priority", "api_access": true, "messages_per_day": -1, "multi_ai": true}'),
-  ('max',       10,  'Max',       120000,  0, 3, '{"workflows": "custom", "support": "dedicated", "api_access": true, "analytics": true, "sso": true, "private_model": true, "sla": "99.9%"}'),
-  ('enterprise',-1,  'Enterprise',    0,  0, 4, '{"workflows": "unlimited", "support": "dedicated", "sla": true, "custom_infra": true, "white_label": true}');
+  ('starter',    1,  'Starter',     25000,  7, 0, '{"rooms": 1, "messages_per_day": 50, "workflows": "basic", "support": "community", "price_usd": 17}'),
+  ('pro',        5,  'Pro',         39000,  0, 1, '{"rooms": 5, "messages_per_day": 500, "workflows": "basic", "support": "email", "custom_soul": true, "api_access": true, "price_usd": 29}'),
+  ('team',      15,  'Team',        99000,  0, 2, '{"rooms": 15, "messages_per_day": -1, "workflows": "custom", "support": "priority", "custom_soul": true, "api_access": true, "multi_ai": true, "dashboard": true, "price_usd": 79}'),
+  ('business',  50,  'Business',   249000,  0, 3, '{"rooms": -1, "messages_per_day": -1, "workflows": "custom", "support": "dedicated", "api_access": true, "analytics": true, "sso": true, "private_model": true, "sla": "99.9%", "price_usd": 199}'),
+  ('enterprise',-1,  'Enterprise',      0,  0, 4, '{"rooms": -1, "messages_per_day": -1, "workflows": "unlimited", "support": "dedicated", "sla": true, "custom_infra": true, "white_label": true}');
 
 -- ============================================================
 -- 6. AUTO-SET TRIAL ON ORG CREATION
@@ -131,7 +131,7 @@ BEGIN
   NEW.is_trial := true;
   NEW.trial_ends_at := now() + INTERVAL '7 days';
   NEW.agent_limit := 1;
-  NEW.plan := 'free';
+  NEW.plan := 'starter';
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

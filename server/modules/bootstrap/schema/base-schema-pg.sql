@@ -13,7 +13,7 @@ CREATE TABLE organizations (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   owner_id UUID NOT NULL REFERENCES auth.users(id),
-  plan TEXT NOT NULL DEFAULT 'free' CHECK(plan IN ('free','pro','team','enterprise')),
+  plan TEXT NOT NULL DEFAULT 'starter' CHECK(plan IN ('starter','pro','team','business','enterprise')),
   settings_json JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

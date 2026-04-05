@@ -1,8 +1,8 @@
 /**
  * Pricing Page — 5-Tier Plan Cards
- * Design: Ivy Day 3 (02-pricing-design.md v2)
- * Tiers: Free → Starter → Pro (recommended) → Max → Enterprise
- * Currency: KRW (₩) — Kevin 의장 최종 확정 2026-04-05
+ * Kevin 의장 최종 확정 2026-04-05 (Hanbin PM 전달)
+ * Tiers: Starter → Pro → Team (⭐추천) → Business → Enterprise
+ * Currency: KRW (₩) + USD ($)
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,8 @@ interface Plan {
   icon: string;
   agents: number | null;
   subtitle: string;
-  priceKrw: number | null; // ₩/month (null = custom)
+  priceKrw: number | null;
+  priceUsd: number | null;
   color: string;
   colorRgb: string;
   recommended: boolean;
@@ -22,18 +23,18 @@ interface Plan {
   ctaStyle: "ghost" | "filled" | "gradient-ghost";
 }
 
-/** Format KRW with comma: 80000 → "80,000" */
 function fmtKrw(n: number): string {
   return n.toLocaleString("ko-KR");
 }
 
 const PLANS: Plan[] = [
   {
-    name: "Free",
-    icon: "/icons/ui/plan-free.svg",
+    name: "Starter",
+    icon: "/icons/ui/plan-starter.svg",
     agents: 1,
-    subtitle: "AI 직원 1명과 시작하기",
+    subtitle: "AI 직원 1명으로 시작",
     priceKrw: 25000,
+    priceUsd: 17,
     color: "#94A3B8",
     colorRgb: "148,163,184",
     recommended: false,
@@ -50,71 +51,72 @@ const PLANS: Plan[] = [
     ctaStyle: "ghost",
   },
   {
-    name: "Starter",
-    icon: "/icons/ui/plan-starter.svg",
-    agents: 3,
-    subtitle: "소규모 팀 빌딩",
-    priceKrw: 50000,
+    name: "Pro",
+    icon: "/icons/ui/plan-pro.svg",
+    agents: 5,
+    subtitle: "본격적인 AI 팀 빌딩",
+    priceKrw: 39000,
+    priceUsd: 29,
     color: "#2563EB",
     colorRgb: "37,99,235",
     recommended: false,
     features: [
-      "AI 에이전트 3명",
-      "확장 오피스 (3룸)",
-      "일 300회 메시지",
+      "AI 에이전트 5명",
+      "확장 오피스 (5룸)",
+      "일 500회 메시지",
       "이메일 지원",
       "커스텀 Soul 설정",
       "기본 워크플로우 자동화",
-      "다크/라이트 테마",
+      "API 액세스",
     ],
-    cta: "Get Starter",
+    cta: "Get Pro",
     ctaStyle: "filled",
   },
   {
-    name: "Pro",
-    icon: "/icons/ui/plan-pro.svg",
-    agents: 5,
-    subtitle: "본격적인 AI 오피스",
-    priceKrw: 80000,
+    name: "Team",
+    icon: "/icons/ui/plan-team.svg",
+    agents: 15,
+    subtitle: "풀스케일 AI 오피스",
+    priceKrw: 99000,
+    priceUsd: 79,
     color: "#06B6D4",
     colorRgb: "6,182,212",
     recommended: true,
     features: [
-      "AI 에이전트 5명",
-      "풀 오피스 (5룸 + 회의실)",
+      "AI 에이전트 15명",
+      "풀 오피스 (15룸 + 회의실)",
       "무제한 메시지",
       "우선 지원",
       "고급 Soul 커스터마이징",
       "팀 협업 대시보드",
       "워크플로우 빌더",
-      "API 액세스",
       "멀티 AI 프로바이더",
     ],
-    cta: "Start Pro",
+    cta: "Start Team",
     ctaStyle: "filled",
   },
   {
-    name: "Max",
-    icon: "/icons/ui/plan-max.svg",
-    agents: 10,
-    subtitle: "풀 스케일 AI 조직",
-    priceKrw: 120000,
+    name: "Business",
+    icon: "/icons/ui/plan-business.svg",
+    agents: 50,
+    subtitle: "대규모 AI 조직 운영",
+    priceKrw: 249000,
+    priceUsd: 199,
     color: "#6366F1",
     colorRgb: "99,102,241",
     recommended: false,
     features: [
-      "AI 에이전트 10명",
+      "AI 에이전트 50명",
       "멀티 오피스 (무제한 룸)",
       "무제한 메시지",
       "전담 지원",
       "어드민 콘솔",
       "SSO / 팀 관리",
       "고급 분석 대시보드",
-      "커스텀 워크플로우",
       "프라이빗 모델 연결",
       "SLA 99.9%",
     ],
-    cta: "Get Max",
+    cta: "Get Business",
     ctaStyle: "filled",
   },
   {
@@ -123,6 +125,7 @@ const PLANS: Plan[] = [
     agents: null,
     subtitle: "무제한 AI 직원, 맞춤형 인프라",
     priceKrw: null,
+    priceUsd: null,
     color: "#6366F1",
     colorRgb: "99,102,241",
     recommended: false,
@@ -146,11 +149,12 @@ const FAQ = [
   { q: "플랜을 변경할 수 있나요?", a: "네, 언제든 업그레이드/다운그레이드 가능합니다. 차액은 일할 계산됩니다." },
   { q: "어떤 AI 모델을 지원하나요?", a: "Claude, GPT-5, Gemini, Codex, LLaMA 등 10+ 모델을 지원합니다. Pro 이상에서 모델 선택이 가능합니다." },
   { q: "데이터는 안전한가요?", a: "모든 데이터는 암호화 저장되며, SOC 2 Type II 인증을 준비 중입니다. Enterprise 플랜은 전용 인프라를 제공합니다." },
-  { q: "무료 체험은 어떻게 작동하나요?", a: "Free 플랜으로 가입하면 7일간 모든 기본 기능을 무료로 사용할 수 있습니다. 카드 등록 없이 시작하세요." },
+  { q: "무료 체험은 어떻게 작동하나요?", a: "Starter 플랜 가입 시 7일간 무료로 사용할 수 있습니다. 카드 등록 없이 시작하세요." },
 ];
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
+  const [showUsd, setShowUsd] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
 
@@ -189,19 +193,34 @@ export default function PricingPage() {
           AI 직원 수에 맞는 플랜을 선택하세요. 모든 플랜에 Soul 커스터마이징이 포함됩니다.
         </p>
 
-        {/* Monthly/Annual toggle */}
-        <div className="mb-12 flex items-center justify-center gap-3">
-          <span className="text-sm" style={{ color: annual ? "#94A3B8" : "#E2E8F0" }}>Monthly</span>
-          <button onClick={() => setAnnual(!annual)}
-            className="relative h-7 w-12 rounded-full transition-colors"
-            style={{ background: annual ? "#2563EB" : "#334155" }}>
-            <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-200"
-              style={{ left: annual ? "calc(100% - 1.625rem)" : "0.125rem" }} />
-          </button>
-          <span className="text-sm" style={{ color: annual ? "#E2E8F0" : "#94A3B8" }}>
-            Annual{" "}
-            <span className="font-medium" style={{ color: "#10B981" }}>Save 20%</span>
-          </span>
+        {/* Toggles row */}
+        <div className="mb-12 flex items-center justify-center gap-8 flex-wrap">
+          {/* Monthly/Annual */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm" style={{ color: annual ? "#94A3B8" : "#E2E8F0" }}>Monthly</span>
+            <button onClick={() => setAnnual(!annual)}
+              className="relative h-7 w-12 rounded-full transition-colors"
+              style={{ background: annual ? "#2563EB" : "#334155" }}>
+              <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-200"
+                style={{ left: annual ? "calc(100% - 1.625rem)" : "0.125rem" }} />
+            </button>
+            <span className="text-sm" style={{ color: annual ? "#E2E8F0" : "#94A3B8" }}>
+              Annual{" "}
+              <span className="font-medium" style={{ color: "#10B981" }}>Save 20%</span>
+            </span>
+          </div>
+
+          {/* KRW/USD */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm" style={{ color: showUsd ? "#94A3B8" : "#E2E8F0" }}>₩ KRW</span>
+            <button onClick={() => setShowUsd(!showUsd)}
+              className="relative h-7 w-12 rounded-full transition-colors"
+              style={{ background: showUsd ? "#2563EB" : "#334155" }}>
+              <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-200"
+                style={{ left: showUsd ? "calc(100% - 1.625rem)" : "0.125rem" }} />
+            </button>
+            <span className="text-sm" style={{ color: showUsd ? "#E2E8F0" : "#94A3B8" }}>$ USD</span>
+          </div>
         </div>
       </section>
 
@@ -209,9 +228,10 @@ export default function PricingPage() {
       <section className="mx-auto grid max-w-7xl gap-5 px-6 pb-20"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         {PLANS.map((plan) => {
-          const monthlyKrw = plan.priceKrw !== null
-            ? (annual ? Math.round(plan.priceKrw * 0.8) : plan.priceKrw)
-            : null;
+          const krw = plan.priceKrw !== null
+            ? (annual ? Math.round(plan.priceKrw * 0.8) : plan.priceKrw) : null;
+          const usd = plan.priceUsd !== null
+            ? (annual ? Math.round(plan.priceUsd * 0.8) : plan.priceUsd) : null;
 
           return (
             <div key={plan.name}
@@ -256,13 +276,21 @@ export default function PricingPage() {
                 style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F1F5F9" }}>
                 {plan.name}
               </h3>
-              <p className="text-sm mb-4" style={{ color: "#94A3B8" }}>
+              <p className="text-sm mb-1" style={{ color: "#94A3B8" }}>
                 {plan.subtitle}
               </p>
+              {plan.agents !== null && (
+                <p className="text-xs mb-4" style={{ color: plan.color }}>
+                  AI 직원 {plan.agents}명
+                </p>
+              )}
+              {plan.agents === null && (
+                <p className="text-xs mb-4" style={{ color: plan.color }}>무제한</p>
+              )}
 
               {/* Price */}
               <div className="mb-6">
-                {monthlyKrw !== null ? (
+                {krw !== null && usd !== null ? (
                   <>
                     {plan.trialDays && (
                       <div className="mb-2">
@@ -278,11 +306,23 @@ export default function PricingPage() {
                         </span>
                       </div>
                     )}
-                    <span className="text-[36px] font-bold"
-                      style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
-                      ₩{fmtKrw(monthlyKrw)}
-                    </span>
-                    <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
+                    {showUsd ? (
+                      <>
+                        <span className="text-[36px] font-bold"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
+                          ${usd}
+                        </span>
+                        <span className="text-sm" style={{ color: "#94A3B8" }}>/mo</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[36px] font-bold"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#F8FAFC" }}>
+                          ₩{fmtKrw(krw)}
+                        </span>
+                        <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
+                      </>
+                    )}
                     {plan.trialDays && (
                       <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>
                         7일 무료 체험 후

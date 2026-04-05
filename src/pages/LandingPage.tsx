@@ -272,9 +272,9 @@ export function LandingPage() {
             {VALUE_PROPS.map((v) => (
               <div key={v.title} className="p-6 rounded-2xl transition hover:translate-y-[-2px]"
                 style={{ background: "rgba(15,23,41,0.5)", border: "1px solid rgba(37,99,235,0.1)" }}>
-                <img src={v.icon} alt="" className="w-12 h-12 mb-3" style={{ imageRendering: "pixelated" }} />
-                <h3 className="text-lg font-semibold text-white mb-2">{v.title}</h3>
-                <p className="text-sm" style={{ color: "#94A3B8" }}>{v.desc}</p>
+                <img src={v.icon} alt="" className="w-12 h-12 mb-3 mx-auto" style={{ imageRendering: "pixelated" }} />
+                <h3 className="text-lg font-semibold mb-2" style={{ color: "#F1F5F9" }}>{v.title}</h3>
+                <p className="text-sm" style={{ color: "#CBD5E1" }}>{v.desc}</p>
               </div>
             ))}
           </div>
