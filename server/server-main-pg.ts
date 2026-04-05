@@ -29,6 +29,8 @@ import { initializeSupabaseRuntime, getOrgIdFromRequest } from "./db/supabase-db
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
+import billingRoutes from "./modules/routes/billing.ts";
+import { checkAgentLimit } from "./middleware/plan-limit.ts";
 
 // ---------------------------------------------------------------------------
 // Initialize
@@ -67,6 +69,7 @@ app.get("/health", (_req, res) => {
 
 // --- Auth routes ---
 app.use(authRoutes);
+app.use("/api/billing", billingRoutes);
 
 // --- Auth middleware helper ---
 async function requireOrg(req: any, res: any): Promise<string | null> {
@@ -113,6 +116,20 @@ app.post("/api/agents", express.json(), async (req, res) => {
   try {
     const orgId = await requireOrg(req, res);
     if (!orgId) return;
+
+    // Check plan agent limit
+    const limitCheck = await checkAgentLimit(orgId);
+    if (!limitCheck.allowed) {
+      return res.status(402).json({
+        error: "Agent limit reached",
+        current: limitCheck.current,
+        limit: limitCheck.limit,
+        plan: limitCheck.plan,
+        upgrade_url: "/pricing",
+        message: `Your ${limitCheck.plan} plan allows ${limitCheck.limit} agent(s). Upgrade to add more.`,
+      });
+    }
+
     const { id, name, department_id, role, avatar_emoji, personality, ...rest } = req.body;
     const agent = await pgAdapter.insertRow("agents", {
       org_id: orgId,
