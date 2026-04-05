@@ -1,118 +1,168 @@
+/**
+ * Pricing Page — 5-Tier Plan Cards
+ * Design: Ivy Day 3 (02-pricing-design.md)
+ * Tiers: Starter (Free) → Pro → Team (recommended) → Business → Enterprise
+ */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const plans = [
-  {
-    name: "Free",
-    agents: 1,
-    price: 0,
-    priceAfterTrial: 20,
-    trialDays: 7,
-    highlight: false,
-    features: [
-      "AI 직원 1명",
-      "기본 부서 (Engineering)",
-      "7일 무료 체험",
-      "이메일 지원",
-    ],
-  },
+interface Plan {
+  name: string;
+  icon: string;
+  agents: number | null;
+  subtitle: string;
+  price: number | null;
+  color: string;
+  colorRgb: string;
+  recommended: boolean;
+  trialDays?: number;
+  features: string[];
+  cta: string;
+  ctaStyle: "ghost" | "filled" | "gradient-ghost";
+}
+
+const PLANS: Plan[] = [
   {
     name: "Starter",
-    agents: 3,
-    price: 40,
-    priceAfterTrial: null,
-    trialDays: null,
-    highlight: false,
+    icon: "🆓",
+    agents: 1,
+    subtitle: "혼자서 시작하기",
+    price: 0,
+    color: "#94A3B8",
+    colorRgb: "148,163,184",
+    recommended: false,
+    trialDays: 7,
     features: [
-      "AI 직원 3명",
-      "5개 부서",
-      "팀 협업 대시보드",
-      "이메일 + 채팅 지원",
-      "기본 분석 리포트",
+      "AI 에이전트 1명",
+      "기본 오피스 (1룸)",
+      "일 50회 메시지",
+      "커뮤니티 지원",
+      "기본 캐릭터 스킨",
     ],
+    cta: "Start Free",
+    ctaStyle: "ghost",
   },
   {
     name: "Pro",
+    icon: "🚀",
     agents: 5,
-    price: 60,
-    priceAfterTrial: null,
-    trialDays: null,
-    highlight: true,
+    subtitle: "소규모 팀 빌딩",
+    price: 29,
+    color: "#2563EB",
+    colorRgb: "37,99,235",
+    recommended: false,
     features: [
-      "AI 직원 5명",
-      "모든 부서 접근",
-      "Soul 커스터마이징",
-      "고급 분석 + 인사이트",
-      "우선 지원",
-      "API 접근",
+      "AI 에이전트 5명",
+      "확장 오피스 (3룸)",
+      "일 500회 메시지",
+      "이메일 지원",
+      "커스텀 Soul 설정",
+      "기본 워크플로우 자동화",
+      "다크/라이트 테마",
     ],
+    cta: "Get Pro",
+    ctaStyle: "filled",
   },
   {
-    name: "Max",
-    agents: 10,
-    price: 100,
-    priceAfterTrial: null,
-    trialDays: null,
-    highlight: false,
+    name: "Team",
+    icon: "⭐",
+    agents: 15,
+    subtitle: "본격적인 AI 오피스",
+    price: 79,
+    color: "#06B6D4",
+    colorRgb: "6,182,212",
+    recommended: true,
     features: [
-      "AI 직원 10명",
-      "모든 부서 + 커스텀 부서",
-      "전체 Soul 커스터마이징",
-      "팀 관리 + 권한 설정",
-      "전용 매니저 지원",
-      "API + Webhook",
-      "화이트라벨 옵션",
+      "AI 에이전트 15명",
+      "풀 오피스 (10룸 + 회의실)",
+      "무제한 메시지",
+      "우선 지원",
+      "고급 Soul 커스터마이징",
+      "팀 협업 대시보드",
+      "워크플로우 빌더",
+      "API 액세스",
+      "멀티 AI 프로바이더",
     ],
+    cta: "Start Team",
+    ctaStyle: "filled",
+  },
+  {
+    name: "Business",
+    icon: "💼",
+    agents: 50,
+    subtitle: "스케일업을 위한 파워",
+    price: 199,
+    color: "#6366F1",
+    colorRgb: "99,102,241",
+    recommended: false,
+    features: [
+      "AI 에이전트 50명",
+      "멀티 오피스 (무제한 룸)",
+      "무제한 메시지",
+      "전담 지원",
+      "어드민 콘솔",
+      "SSO / 팀 관리",
+      "고급 분석 대시보드",
+      "커스텀 워크플로우",
+      "프라이빗 모델 연결",
+      "SLA 99.9%",
+    ],
+    cta: "Get Business",
+    ctaStyle: "filled",
   },
   {
     name: "Enterprise",
+    icon: "🏢",
     agents: null,
+    subtitle: "맞춤형 AI 조직",
     price: null,
-    priceAfterTrial: null,
-    trialDays: null,
-    highlight: false,
+    color: "#6366F1",
+    colorRgb: "99,102,241",
+    recommended: false,
     features: [
-      "AI 직원 무제한",
+      "무제한 에이전트",
+      "온프레미스 / 프라이빗 클라우드",
       "전용 인프라",
-      "커스텀 AI 모델 연동",
-      "SLA 보장",
-      "온프레미스 배포 옵션",
-      "전담 엔지니어 배정",
+      "커스텀 AI 모델 학습",
+      "화이트 라벨링",
+      "전담 CSM",
+      "맞춤 SLA",
+      "보안 감사 리포트",
+      "24/7 프리미엄 지원",
     ],
+    cta: "Contact Sales",
+    ctaStyle: "gradient-ghost",
   },
+];
+
+const FAQ = [
+  { q: "플랜을 변경할 수 있나요?", a: "네, 언제든 업그레이드/다운그레이드 가능합니다. 차액은 일할 계산됩니다." },
+  { q: "어떤 AI 모델을 지원하나요?", a: "Claude, GPT-5, Gemini, Codex, LLaMA 등 10+ 모델을 지원합니다. Pro 이상에서 모델 선택이 가능합니다." },
+  { q: "데이터는 안전한가요?", a: "모든 데이터는 암호화 저장되며, SOC 2 Type II 인증을 준비 중입니다. Enterprise 플랜은 전용 인프라를 제공합니다." },
+  { q: "무료 체험은 어떻게 작동하나요?", a: "Starter 플랜으로 가입하면 7일간 모든 기본 기능을 무료로 사용할 수 있습니다. 카드 등록 없이 시작하세요." },
 ];
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: "var(--th-bg-primary)",
-        color: "var(--th-text-primary)",
-        fontFamily: "var(--th-font-body)",
-      }}
-    >
-      {/* Header */}
-      <nav className="flex items-center justify-between px-8 py-5" style={{ background: "var(--th-bg-header)" }}>
+    <div className="min-h-screen" style={{ background: "#0B1120", color: "#E2E8F0" }}>
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-8 py-5"
+        style={{ background: "rgba(11,17,32,0.9)", borderBottom: "1px solid rgba(37,99,235,0.1)" }}>
         <a href="/landing" className="flex items-center gap-2 no-underline">
-          <img src="/logo.svg" alt="Next AI Crew" className="h-8 w-8" />
-          <span
-            className="text-xl font-bold"
-            style={{ fontFamily: "var(--th-font-display)", color: "var(--th-text-heading)" }}
-          >
+          <img src="/logo.svg" alt="" className="h-8 w-8" />
+          <span className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Next AI Crew
           </span>
         </a>
         <div className="flex items-center gap-4">
-          <a href="/landing" className="text-sm no-underline" style={{ color: "var(--th-text-secondary)" }}>
-            Home
-          </a>
-          <a
-            href="/login"
+          <a href="/landing" className="text-sm no-underline" style={{ color: "#94A3B8" }}>Home</a>
+          <a href="/login"
             className="rounded-lg px-4 py-2 text-sm font-medium text-white no-underline"
-            style={{ background: "var(--color-crew-blue)" }}
-          >
+            style={{ background: "#2563EB" }}>
             Get Started
           </a>
         </div>
@@ -120,130 +170,209 @@ export default function PricingPage() {
 
       {/* Hero */}
       <section className="px-8 pt-16 pb-12 text-center">
-        <h1
-          className="mb-4 text-4xl font-bold md:text-5xl"
-          style={{ fontFamily: "var(--th-font-display)", color: "var(--th-text-heading)" }}
-        >
-          Build Your <span className="soul-text">AI Team</span>
+        <h1 className="mb-4 text-4xl font-bold md:text-5xl"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          Build Your{" "}
+          <span className="bg-clip-text text-transparent"
+            style={{ backgroundImage: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
+            AI Team
+          </span>
         </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg" style={{ color: "var(--th-text-secondary)" }}>
+        <p className="mx-auto mb-8 max-w-2xl text-lg" style={{ color: "#94A3B8" }}>
           AI 직원 수에 맞는 플랜을 선택하세요. 모든 플랜에 Soul 커스터마이징이 포함됩니다.
         </p>
 
-        {/* Annual toggle */}
+        {/* Monthly/Annual toggle */}
         <div className="mb-12 flex items-center justify-center gap-3">
-          <span className="text-sm" style={{ color: annual ? "var(--th-text-muted)" : "var(--th-text-primary)" }}>
-            Monthly
-          </span>
-          <button
-            onClick={() => setAnnual(!annual)}
+          <span className="text-sm" style={{ color: annual ? "#64748B" : "#E2E8F0" }}>Monthly</span>
+          <button onClick={() => setAnnual(!annual)}
             className="relative h-7 w-12 rounded-full transition-colors"
-            style={{ background: annual ? "var(--color-crew-blue)" : "var(--th-border-strong)" }}
-          >
-            <span
-              className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform"
-              style={{ left: annual ? "calc(100% - 1.625rem)" : "0.125rem" }}
-            />
+            style={{ background: annual ? "#2563EB" : "#334155" }}>
+            <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-200"
+              style={{ left: annual ? "calc(100% - 1.625rem)" : "0.125rem" }} />
           </button>
-          <span className="text-sm" style={{ color: annual ? "var(--th-text-primary)" : "var(--th-text-muted)" }}>
-            Annual <span className="font-medium" style={{ color: "var(--color-crew-emerald)" }}>(-20%)</span>
+          <span className="text-sm" style={{ color: annual ? "#E2E8F0" : "#64748B" }}>
+            Annual{" "}
+            <span className="font-medium" style={{ color: "#10B981" }}>Save 20%</span>
           </span>
         </div>
       </section>
 
-      {/* Plans Grid */}
-      <section className="mx-auto grid max-w-7xl gap-6 px-8 pb-20 md:grid-cols-3 lg:grid-cols-5">
-        {plans.map((plan) => {
-          const monthlyPrice = plan.price !== null ? (annual ? Math.round(plan.price * 0.8) : plan.price) : null;
+      {/* ─── Plans Grid ─── */}
+      <section className="mx-auto grid max-w-7xl gap-5 px-6 pb-20"
+        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+        {PLANS.map((plan) => {
+          const monthlyPrice = plan.price !== null
+            ? (annual ? Math.round(plan.price * 0.8) : plan.price)
+            : null;
 
           return (
-            <div
-              key={plan.name}
-              className="relative flex flex-col rounded-2xl p-6 transition-transform hover:scale-[1.02]"
+            <div key={plan.name}
+              className="relative flex flex-col rounded-[20px] p-8 transition-all duration-300 hover:-translate-y-1"
               style={{
-                background: plan.highlight
-                  ? "linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(99, 102, 241, 0.15))"
-                  : "var(--th-card-bg)",
-                border: plan.highlight
-                  ? "2px solid var(--color-crew-blue)"
-                  : "1px solid var(--th-card-border)",
+                background: plan.recommended
+                  ? "var(--th-card-bg, rgba(15,23,41,0.65))"
+                  : "rgba(15,23,41,0.65)",
+                border: plan.recommended ? "2px solid transparent" : "1px solid rgba(37,99,235,0.1)",
+                ...(plan.recommended ? {
+                  backgroundImage: "linear-gradient(rgba(15,23,41,0.65), rgba(15,23,41,0.65)), linear-gradient(135deg, #2563EB, #06B6D4, #6366F1)",
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+                  transform: "scale(1.03)",
+                  boxShadow: "0 0 30px rgba(6,182,212,0.12)",
+                } : {}),
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.3)`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = plan.recommended
+                  ? "0 0 30px rgba(6,182,212,0.12)" : "none";
               }}
             >
-              {plan.highlight && (
-                <div
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold text-white"
-                  style={{ background: "var(--color-crew-blue)" }}
-                >
-                  MOST POPULAR
+              {/* MOST POPULAR badge */}
+              {plan.recommended && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-white whitespace-nowrap"
+                  style={{
+                    background: "linear-gradient(135deg, #2563EB, #06B6D4)",
+                    fontFamily: "'Press Start 2P', monospace",
+                    fontSize: 8,
+                    letterSpacing: 1,
+                  }}>
+                  ⭐ MOST POPULAR
                 </div>
               )}
 
-              <h3
-                className="mb-1 text-lg font-bold"
-                style={{ fontFamily: "var(--th-font-display)", color: "var(--th-text-heading)" }}
-              >
+              {/* Icon + Name */}
+              <div className="text-2xl mb-2">{plan.icon}</div>
+              <h3 className="text-lg font-bold mb-1"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {plan.name}
               </h3>
-
-              <p className="mb-4 text-sm" style={{ color: "var(--th-text-muted)" }}>
-                {plan.agents !== null ? `AI 직원 ${plan.agents}명` : "무제한"}
+              <p className="text-sm mb-4" style={{ color: "#64748B" }}>
+                {plan.subtitle}
               </p>
 
+              {/* Price */}
               <div className="mb-6">
                 {monthlyPrice !== null ? (
                   <>
-                    <span
-                      className="text-3xl font-bold"
-                      style={{ fontFamily: "var(--th-font-display)", color: "var(--th-text-heading)" }}
-                    >
+                    <span className="text-[42px] font-bold"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       ${monthlyPrice}
                     </span>
-                    <span className="text-sm" style={{ color: "var(--th-text-muted)" }}>
-                      /mo
-                    </span>
+                    <span className="text-sm" style={{ color: "#64748B" }}>/mo</span>
                     {plan.trialDays && (
-                      <p className="mt-1 text-xs" style={{ color: "var(--color-crew-cyan)" }}>
-                        {plan.trialDays}일 무료 체험 → ${plan.priceAfterTrial}/mo
+                      <p className="mt-1 text-xs" style={{ color: "#06B6D4" }}>
+                        {plan.trialDays}일 무료 체험
                       </p>
                     )}
                   </>
                 ) : (
-                  <span className="text-2xl font-bold" style={{ color: "var(--th-text-heading)" }}>
-                    Contact Us
-                  </span>
+                  <span className="text-2xl font-bold">Custom</span>
                 )}
               </div>
 
+              {/* Features */}
               <ul className="mb-6 flex-1 space-y-2">
                 {plan.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-2 text-sm" style={{ color: "var(--th-text-secondary)" }}>
-                    <span style={{ color: "var(--color-crew-emerald)" }}>✓</span>
+                  <li key={feat} className="flex items-start gap-2 text-sm" style={{ color: "#CBD5E1" }}>
+                    <span className="font-bold text-xs mt-0.5" style={{ color: "#10B981" }}>✓</span>
                     {feat}
                   </li>
                 ))}
               </ul>
 
+              {/* CTA */}
               <button
-                className="w-full rounded-lg py-2.5 text-sm font-medium transition-colors"
+                onClick={() => plan.price === null ? undefined : navigate("/login")}
+                className="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
-                  background: plan.highlight ? "var(--color-crew-blue)" : "transparent",
-                  color: plan.highlight ? "white" : "var(--color-crew-blue)",
-                  border: plan.highlight ? "none" : "1px solid var(--color-crew-blue)",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  ...(plan.ctaStyle === "filled" ? {
+                    background: plan.color,
+                    color: "white",
+                    border: "none",
+                  } : plan.ctaStyle === "gradient-ghost" ? {
+                    background: "transparent",
+                    color: "#94A3B8",
+                    border: "1.5px solid transparent",
+                    backgroundImage: "linear-gradient(#0B1120, #0B1120), linear-gradient(135deg, #2563EB, #06B6D4, #6366F1)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                  } : {
+                    background: "transparent",
+                    color: plan.color,
+                    border: `1.5px solid ${plan.color}`,
+                  }),
+                }}
+                onMouseEnter={(e) => {
+                  if (plan.ctaStyle === "filled") {
+                    e.currentTarget.style.filter = "brightness(1.1)";
+                    e.currentTarget.style.boxShadow = `0 4px 20px rgba(${plan.colorRgb},0.3)`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = "";
+                  e.currentTarget.style.boxShadow = "";
                 }}
               >
-                {plan.price === null ? "Contact Sales" : plan.trialDays ? "Start Free Trial" : "Get Started"}
+                {plan.cta}
               </button>
             </div>
           );
         })}
       </section>
 
-      {/* FAQ teaser */}
-      <section className="px-8 pb-16 text-center">
-        <p className="text-sm" style={{ color: "var(--th-text-muted)" }}>
+      {/* ─── FAQ ─── */}
+      <section className="max-w-3xl mx-auto px-8 pb-20">
+        <h2 className="text-2xl font-bold text-center mb-8"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          자주 묻는 질문
+        </h2>
+        <div className="space-y-3">
+          {FAQ.map((item, i) => (
+            <div key={i} className="rounded-xl overflow-hidden"
+              style={{ background: "rgba(15,23,41,0.5)", border: "1px solid rgba(37,99,235,0.1)" }}>
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium text-white"
+              >
+                {item.q}
+                <span className="ml-4 text-lg" style={{ color: "#64748B" }}>
+                  {openFaq === i ? "−" : "+"}
+                </span>
+              </button>
+              {openFaq === i && (
+                <div className="px-6 pb-4 text-sm" style={{ color: "#94A3B8" }}>
+                  {item.a}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer note */}
+      <section className="px-8 pb-12 text-center">
+        <p className="text-sm" style={{ color: "#64748B" }}>
           모든 플랜은 언제든 업그레이드/다운그레이드 가능합니다. 연간 결제 시 20% 할인.
         </p>
       </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="text-sm" style={{ color: "#64748B" }}>
+            © 2026 Next AI Crew. All rights reserved.
+          </span>
+          <div className="flex items-center gap-6 text-sm" style={{ color: "#64748B" }}>
+            <a href="#" className="hover:text-white transition">Terms</a>
+            <a href="#" className="hover:text-white transition">Privacy</a>
+            <a href="#" className="hover:text-white transition">Contact</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
