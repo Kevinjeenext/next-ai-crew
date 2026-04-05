@@ -111,7 +111,7 @@ export function LoginPage() {
         {/* Divider */}
         <div className="flex items-center gap-4">
           <div className="flex-1 h-px bg-gray-600" />
-          <span className="text-gray-500 text-sm">or</span>
+          <span className="text-gray-400 text-sm">or</span>
           <div className="flex-1 h-px bg-gray-600" />
         </div>
 
@@ -167,7 +167,7 @@ export function LoginPage() {
           </p>
         )}
 
-        <p className="text-center text-gray-500 text-xs">
+        <p className="text-center text-gray-400 text-xs">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>

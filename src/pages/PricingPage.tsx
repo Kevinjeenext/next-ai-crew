@@ -191,14 +191,14 @@ export default function PricingPage() {
 
         {/* Monthly/Annual toggle */}
         <div className="mb-12 flex items-center justify-center gap-3">
-          <span className="text-sm" style={{ color: annual ? "#64748B" : "#E2E8F0" }}>Monthly</span>
+          <span className="text-sm" style={{ color: annual ? "#94A3B8" : "#E2E8F0" }}>Monthly</span>
           <button onClick={() => setAnnual(!annual)}
             className="relative h-7 w-12 rounded-full transition-colors"
             style={{ background: annual ? "#2563EB" : "#334155" }}>
             <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform duration-200"
               style={{ left: annual ? "calc(100% - 1.625rem)" : "0.125rem" }} />
           </button>
-          <span className="text-sm" style={{ color: annual ? "#E2E8F0" : "#64748B" }}>
+          <span className="text-sm" style={{ color: annual ? "#E2E8F0" : "#94A3B8" }}>
             Annual{" "}
             <span className="font-medium" style={{ color: "#10B981" }}>Save 20%</span>
           </span>
@@ -256,7 +256,7 @@ export default function PricingPage() {
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {plan.name}
               </h3>
-              <p className="text-sm mb-4" style={{ color: "#64748B" }}>
+              <p className="text-sm mb-4" style={{ color: "#94A3B8" }}>
                 {plan.subtitle}
               </p>
 
@@ -282,9 +282,9 @@ export default function PricingPage() {
                       style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       ₩{fmtKrw(monthlyKrw)}
                     </span>
-                    <span className="text-sm" style={{ color: "#64748B" }}>/월</span>
+                    <span className="text-sm" style={{ color: "#94A3B8" }}>/월</span>
                     {plan.trialDays && (
-                      <p className="mt-1 text-xs" style={{ color: "#64748B" }}>
+                      <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>
                         7일 무료 체험 후
                       </p>
                     )}
@@ -347,7 +347,7 @@ export default function PricingPage() {
 
       {/* ─── FAQ ─── */}
       <section className="max-w-3xl mx-auto px-8 pb-20">
-        <h2 className="text-2xl font-bold text-center mb-8"
+        <h2 className="text-2xl font-bold text-center mb-8 text-white"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           자주 묻는 질문
         </h2>
@@ -360,7 +360,7 @@ export default function PricingPage() {
                 className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium text-white"
               >
                 {item.q}
-                <span className="ml-4 text-lg" style={{ color: "#64748B" }}>
+                <span className="ml-4 text-lg" style={{ color: "#94A3B8" }}>
                   {openFaq === i ? "−" : "+"}
                 </span>
               </button>
@@ -376,7 +376,7 @@ export default function PricingPage() {
 
       {/* Footer note */}
       <section className="px-8 pb-12 text-center">
-        <p className="text-sm" style={{ color: "#64748B" }}>
+        <p className="text-sm" style={{ color: "#94A3B8" }}>
           모든 플랜은 언제든 업그레이드/다운그레이드 가능합니다. 연간 결제 시 20% 할인.
         </p>
       </section>
@@ -384,10 +384,10 @@ export default function PricingPage() {
       {/* Footer */}
       <footer className="py-8 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm" style={{ color: "#64748B" }}>
+          <span className="text-sm" style={{ color: "#94A3B8" }}>
             © 2026 Next AI Crew. All rights reserved.
           </span>
-          <div className="flex items-center gap-6 text-sm" style={{ color: "#64748B" }}>
+          <div className="flex items-center gap-6 text-sm" style={{ color: "#94A3B8" }}>
             <a href="#" className="hover:text-white transition">Terms</a>
             <a href="#" className="hover:text-white transition">Privacy</a>
             <a href="#" className="hover:text-white transition">Contact</a>
