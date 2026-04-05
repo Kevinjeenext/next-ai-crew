@@ -1,7 +1,12 @@
+import { supabase } from "../lib/supabase";
+
 const base = "";
 const SESSION_BOOTSTRAP_PATH = "/api/auth/session";
 const API_AUTH_TOKEN_SESSION_KEY = "claw_api_auth_token";
 const API_CSRF_TOKEN_SESSION_KEY = "claw_api_csrf_token";
+
+// Supabase auth mode: skip legacy token prompt entirely
+const SUPABASE_AUTH = true;
 const POST_RETRY_LIMIT = 2;
 const POST_TIMEOUT_MS = 12_000;
 const POST_BACKOFF_BASE_MS = 250;
@@ -108,9 +113,11 @@ function writeStoredCsrfToken(token: string): void {
   }
 }
 
-function promptForApiAuthToken(hasExistingToken: boolean): string {
+function promptForApiAuthToken(_hasExistingToken: boolean): string {
+  // Supabase auth mode: never show legacy token prompt
+  if (SUPABASE_AUTH) return "";
   if (typeof window === "undefined") return "";
-  const promptText = hasExistingToken
+  const promptText = _hasExistingToken
     ? "Stored API token was rejected. Enter a new API token:"
     : "Enter API token for this server:";
   return normalizeApiAuthToken(window.prompt(promptText));
@@ -241,6 +248,11 @@ function withAuthHeaders(init?: HeadersInit, method?: string): Headers {
 }
 
 async function doBootstrapSession(promptOnUnauthorized: boolean): Promise<boolean> {
+  // Supabase auth: skip legacy session bootstrap, use Supabase session directly
+  if (SUPABASE_AUTH) {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  }
   try {
     const response = await fetch(`${base}${SESSION_BOOTSTRAP_PATH}`, {
       method: "GET",
@@ -283,6 +295,13 @@ export async function bootstrapSession(options?: {
 
 export async function request<T>(url: string, init?: RequestInit, canRetryAuth = true): Promise<T> {
   const headers = withAuthHeaders(init?.headers, init?.method);
+  // Inject Supabase bearer token for API requests
+  if (SUPABASE_AUTH && !headers.has("authorization")) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers.set("authorization", `Bearer ${session.access_token}`);
+    }
+  }
   const requestUrl = `${base}${url}`;
   const r = await fetch(requestUrl, {
     credentials: "same-origin",
