@@ -69,7 +69,7 @@ export function initializeDatabaseRuntime(): {
       const src = LEGACY_DB_PATH + suffix;
       if (fs.existsSync(src)) fs.renameSync(src, DEFAULT_DB_PATH + suffix);
     }
-    console.log("[Next AI Crew] Migrated database: climpire.sqlite -> claw-empire.sqlite");
+    console.log("[Next AI Crew] Migrated database: climpire.sqlite -> next-ai-crew.sqlite");
   }
 
   const dbPath = process.env.DB_PATH ?? DEFAULT_DB_PATH;

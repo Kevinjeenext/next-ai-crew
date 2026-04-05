@@ -29,7 +29,7 @@ export function registerUpdateAutoRoutes(ctx: RuntimeContext): void {
   const killPidTree = __ctx.killPidTree;
 
   const UPDATE_CHECK_ENABLED = String(process.env.UPDATE_CHECK_ENABLED ?? "1").trim() !== "0";
-  const UPDATE_CHECK_REPO = String(process.env.UPDATE_CHECK_REPO ?? "GreenSheep01201/claw-empire").trim();
+  const UPDATE_CHECK_REPO = String(process.env.UPDATE_CHECK_REPO ?? "GreenSheep01201/next-ai-crew").trim();
   const UPDATE_CHECK_TTL_MS = Math.max(
     60_000,
     Number(process.env.UPDATE_CHECK_TTL_MS ?? 30 * 60 * 1000) || 30 * 60 * 1000,
@@ -240,7 +240,7 @@ export function registerUpdateAutoRoutes(ctx: RuntimeContext): void {
             method: "GET",
             headers: {
               accept: "application/vnd.github+json",
-              "user-agent": "claw-empire-update-check",
+              "user-agent": "next-ai-crew-update-check",
             },
             signal: controller.signal,
           });

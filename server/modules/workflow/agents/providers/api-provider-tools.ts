@@ -167,7 +167,7 @@ export function createApiProviderTools(deps: CreateApiProviderToolsDeps) {
       headers["Authorization"] = `Bearer ${apiKey}`;
     }
     if (provider.type === "openrouter") {
-      headers["HTTP-Referer"] = "https://claw-empire.app";
+      headers["HTTP-Referer"] = "https://next-ai-crew.app";
       headers["X-Title"] = "Claw-Empire";
     }
 

@@ -82,7 +82,7 @@ export function createWorktreeLifecycleTools(deps: CreateWorktreeLifecycleToolsD
         });
       }
       if (!readConfig("user.email")) {
-        execFileSync("git", ["config", "user.email", "claw-empire@local"], {
+        execFileSync("git", ["config", "user.email", "next-ai-crew@local"], {
           cwd: projectPath,
           stdio: "pipe",
           timeout: 3000,

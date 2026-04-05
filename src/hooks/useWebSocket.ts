@@ -10,8 +10,19 @@ export function useWebSocket() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    const url = `${proto}//${location.host}/ws`;
+    // Vercel rewrites don't support WebSocket upgrade → connect directly to API server
+    const apiUrl = import.meta.env.VITE_API_URL
+      || (location.hostname.includes("nextaicrew.com")
+        ? "https://next-ai-crew-production.up.railway.app"
+        : "");
+    let url: string;
+    if (apiUrl) {
+      url = apiUrl.replace(/^http/, "ws") + "/ws";
+    } else {
+      // Same-origin fallback (local dev or served from backend directly)
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      url = `${proto}//${location.host}/ws`;
+    }
     let alive = true;
     let ws: WebSocket;
     let reconnectTimer: ReturnType<typeof setTimeout>;

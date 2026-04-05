@@ -263,7 +263,7 @@ export function autoCommitWorktreePendingChanges(
         "-c",
         "user.name=Claw-Empire",
         "-c",
-        "user.email=claw-empire@local",
+        "user.email=next-ai-crew@local",
         "commit",
         "-m",
         `chore: auto-commit pending task changes (${taskId.slice(0, 8)})`,

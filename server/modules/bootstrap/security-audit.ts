@@ -155,7 +155,7 @@ export function createSecurityAuditTools(deps: SecurityAuditDeps) {
 
   const securityAuditLogPath = path.join(logsDir, "security-audit.ndjson");
   const securityAuditFallbackLogPath = path.join(logsDir, "security-audit-fallback.ndjson");
-  const SECURITY_AUDIT_CHAIN_SEED = process.env.SECURITY_AUDIT_CHAIN_SEED?.trim() || "claw-empire-security-audit-v1";
+  const SECURITY_AUDIT_CHAIN_SEED = process.env.SECURITY_AUDIT_CHAIN_SEED?.trim() || "next-ai-crew-security-audit-v1";
   const SECURITY_AUDIT_CHAIN_KEY = process.env.SECURITY_AUDIT_CHAIN_KEY ?? "";
 
   function computeAuditChainHash(

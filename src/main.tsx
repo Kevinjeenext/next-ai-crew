@@ -11,7 +11,7 @@ import PricingPage from "./pages/PricingPage";
 import "./index.css";
 
 /**
- * Route guard: shows the original Claw-Empire office app only when authenticated.
+ * Route guard: shows the original Next AI Crew office app only when authenticated.
  * Unauthenticated users see Landing → Login flow.
  */
 function ProtectedApp() {

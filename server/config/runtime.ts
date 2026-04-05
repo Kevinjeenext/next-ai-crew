@@ -106,4 +106,4 @@ function resolveDefaultDataRoot(): string {
 export const DEFAULT_DATA_ROOT = resolveDefaultDataRoot();
 export const DEFAULT_DB_PATH = path.join(DEFAULT_DATA_ROOT, "next-ai-crew.sqlite");
 export const DEFAULT_LOGS_DIR = path.join(DEFAULT_DATA_ROOT, "logs");
-export const LEGACY_DB_PATH = path.join(process.cwd(), "claw-empire.sqlite");
+export const LEGACY_DB_PATH = path.join(process.cwd(), "next-ai-crew.sqlite");
