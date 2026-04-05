@@ -58,7 +58,8 @@ router.post("/api/auth/setup", async (req, res) => {
       { id: "engineering", name: "Engineering", name_ko: "엔지니어링", icon: "⚙️", color: "#3b82f6", sort_order: 1 },
       { id: "design", name: "Design", name_ko: "디자인", icon: "🎨", color: "#8b5cf6", sort_order: 2 },
       { id: "marketing", name: "Marketing", name_ko: "마케팅", icon: "📢", color: "#f59e0b", sort_order: 3 },
-      { id: "operations", name: "Operations", name_ko: "운영", icon: "📋", color: "#10b981", sort_order: 4 },
+      { id: "planning", name: "Planning", name_ko: "기획", icon: "📊", color: "#6366f1", sort_order: 4 },
+      { id: "operations", name: "Operations", name_ko: "운영", icon: "📋", color: "#10b981", sort_order: 5 },
     ];
 
     for (const dept of defaultDepartments) {

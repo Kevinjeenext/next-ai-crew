@@ -23,7 +23,8 @@ BEGIN
     ('engineering', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Engineering', '엔지니어링', '⚙️', '#3b82f6', 1),
     ('design', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Design', '디자인', '🎨', '#8b5cf6', 2),
     ('marketing', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Marketing', '마케팅', '📢', '#f59e0b', 3),
-    ('operations', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Operations', '운영', '📋', '#10b981', 4);
+    ('planning', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Planning', '기획', '📊', '#6366f1', 4),
+    ('operations', (SELECT id FROM organizations WHERE owner_id = NEW.id ORDER BY created_at DESC LIMIT 1), 'Operations', '운영', '📋', '#10b981', 5);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
