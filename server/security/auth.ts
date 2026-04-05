@@ -28,6 +28,14 @@ export function isLoopbackRequest(req: { socket?: { remoteAddress?: string } }):
   return isLoopbackAddress(req.socket?.remoteAddress);
 }
 
+// Hardcoded trusted domains for Next AI Crew MVP
+const HARDCODED_TRUSTED_DOMAINS = [
+  "nextaicrew.com",
+  "www.nextaicrew.com",
+  "vercel.app",        // Vercel preview deploys
+  "railway.app",       // Railway backend
+];
+
 export function isTrustedOrigin(origin: string): boolean {
   // MVP open CORS mode — allow all origins
   if (CORS_OPEN) return true;
@@ -35,6 +43,8 @@ export function isTrustedOrigin(origin: string): boolean {
     const u = new URL(origin);
     if (u.protocol !== "http:" && u.protocol !== "https:") return false;
     if (isLoopbackHostname(u.hostname)) return true;
+    // Hardcoded trusted domains (always allowed)
+    if (HARDCODED_TRUSTED_DOMAINS.some((d) => u.hostname === d || u.hostname.endsWith(`.${d}`))) return true;
     if (ALLOWED_ORIGINS.includes(origin)) return true;
     return ALLOWED_ORIGIN_SUFFIXES.some((suffix) => u.hostname.endsWith(suffix));
   } catch {
