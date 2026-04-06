@@ -11,9 +11,12 @@ export function useWebSocket() {
 
   useEffect(() => {
     // Vercel rewrites don't support WebSocket upgrade → connect directly to API server
+    const RAILWAY_URL = "https://next-ai-crew-production.up.railway.app";
     const apiUrl = import.meta.env.VITE_API_URL
       || (location.hostname.includes("nextaicrew.com")
-        ? "https://next-ai-crew-production.up.railway.app"
+        || location.hostname.includes("vercel.app")
+        || location.hostname.includes("next-ai-crew")
+        ? RAILWAY_URL
         : "");
     let url: string;
     if (apiUrl) {
