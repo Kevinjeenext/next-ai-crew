@@ -120,7 +120,11 @@ export function cookieToken(req: Request): string | null {
 
 export function isAuthenticated(req: Request): boolean {
   const bearer = bearerToken(req);
+  // Legacy session token
   if (bearer && bearer === SESSION_AUTH_TOKEN) return true;
+  // Supabase JWT Bearer token — actual validation happens in requireOrg per-route
+  // A non-empty bearer that isn't the session token is treated as a Supabase JWT
+  if (bearer && bearer.length > 20) return true;
   const token = cookieToken(req);
   return token === SESSION_AUTH_TOKEN;
 }
