@@ -6,6 +6,7 @@
  */
 import { useState, useRef } from "react";
 import * as api from "../../api";
+import { supabase } from "../../lib/supabase";
 import type { Agent } from "../../types";
 
 interface Props {
@@ -130,6 +131,22 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
     setCreating(true);
     setStep("creating");
     setError("");
+
+    // Ensure org exists before creating agents (guards against setup race condition)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        await fetch("/api/auth/setup", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+    } catch {
+      // Non-fatal: proceed and let createAgent surface real errors
+    }
 
     let lastAgent: Agent | null = null;
     for (const idx of selected) {

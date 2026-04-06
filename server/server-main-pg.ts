@@ -25,7 +25,7 @@ import {
   isIncomingMessageOriginTrusted,
 } from "./security/auth.ts";
 import { supabaseAdmin, SUPABASE_CONFIGURED } from "./lib/supabase.ts";
-import { initializeSupabaseRuntime, getOrgIdFromRequest } from "./db/supabase-db-shim.ts";
+import { initializeSupabaseRuntime, getOrgIdFromRequest, createOrgForUser } from "./db/supabase-db-shim.ts";
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
@@ -74,12 +74,45 @@ app.use("/api/webhooks", webhookRouter);
 
 // --- Auth middleware helper ---
 async function requireOrg(req: any, res: any): Promise<string | null> {
+  // Get auth token from request
+  const authHeader = req.get?.("authorization") ?? req.headers?.authorization;
+  const token = typeof authHeader === "string" ? authHeader.replace("Bearer ", "") : undefined;
+
+  if (!token) {
+    res.status(401).json({ error: "Authentication required", detail: "No authorization token" });
+    return null;
+  }
+
   try {
     return await getOrgIdFromRequest(req);
   } catch (err: any) {
-    // MVP fallback: if no auth token, use DEFAULT_ORG_ID for development
-    const fallbackOrgId = process.env.DEFAULT_ORG_ID;
-    if (fallbackOrgId) return fallbackOrgId;
+    console.error("[requireOrg] getOrgIdFromRequest failed:", err.message, "| path:", req.path);
+
+    // Auto-create org if user is valid but has no org yet (first-time login race condition)
+    // This handles the case where /api/auth/setup was never called or failed silently
+    try {
+      const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+      if (!userError && user) {
+        console.log("[requireOrg] Auto-creating org for user:", user.id);
+        const displayName = user.user_metadata?.full_name
+          ?? user.user_metadata?.name
+          ?? user.email?.split("@")[0]
+          ?? "My Team";
+        const orgId = await createOrgForUser(user.id, `${displayName}'s Team`);
+        console.log("[requireOrg] Auto-created org:", orgId);
+        return orgId;
+      }
+    } catch (autoCreateErr: any) {
+      console.error("[requireOrg] Auto-create org failed:", autoCreateErr.message);
+    }
+
+    // Dev-only fallback (never set DEFAULT_ORG_ID in production)
+    const fallbackOrgId = process.env.NODE_ENV !== "production" ? process.env.DEFAULT_ORG_ID : undefined;
+    if (fallbackOrgId) {
+      console.warn("[requireOrg] Using DEFAULT_ORG_ID fallback — dev mode only");
+      return fallbackOrgId;
+    }
+
     res.status(401).json({ error: "Authentication required", detail: err.message });
     return null;
   }
