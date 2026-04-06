@@ -50,11 +50,19 @@ const { wsClients, broadcast } = createWsHub(() => Date.now());
 // ---------------------------------------------------------------------------
 // Health check (Railway checks /api/health per railway.toml)
 app.get("/api/health", (_req, res) => {
+  const supabaseConfigured = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
   res.json({
     status: "ok",
     mode: "supabase",
     version: process.env.npm_package_version ?? "0.1.0",
     timestamp: new Date().toISOString(),
+    config: {
+      supabase_url: !!process.env.SUPABASE_URL,
+      supabase_service_role_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      supabase_anon_key: !!process.env.SUPABASE_ANON_KEY,
+      database_url: !!process.env.DATABASE_URL,
+      auth_ready: supabaseConfigured,
+    },
   });
 });
 
@@ -451,7 +459,12 @@ if (isProduction) {
 // ---------------------------------------------------------------------------
 async function start() {
   console.log(`[Next AI Crew] Starting... PORT=${PORT} HOST=${HOST} NODE_ENV=${process.env.NODE_ENV ?? 'unset'}`);
-  console.log(`[Next AI Crew] SUPABASE_URL=${SUPABASE_CONFIGURED ? 'SET' : 'MISSING'} DATABASE_URL=${process.env.DATABASE_URL ? 'SET' : 'MISSING'}`);
+  const supabaseUrlSet = !!process.env.SUPABASE_URL;
+  const supabaseKeySet = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  console.log(`[Next AI Crew] SUPABASE_URL=${supabaseUrlSet ? 'SET' : 'MISSING'} SUPABASE_SERVICE_ROLE_KEY=${supabaseKeySet ? 'SET' : 'MISSING'} DATABASE_URL=${process.env.DATABASE_URL ? 'SET' : 'MISSING'}`);
+  if (!supabaseUrlSet || !supabaseKeySet) {
+    console.error('[Next AI Crew] CRITICAL: Supabase env vars missing! JWT auth will fail for ALL requests. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Railway Variables.');
+  }
 
   // Initialize Supabase runtime (create default org, etc.)
   try {
