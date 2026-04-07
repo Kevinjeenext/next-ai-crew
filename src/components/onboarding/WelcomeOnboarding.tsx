@@ -126,52 +126,83 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
     );
   };
 
+  // Wrap a promise with a timeout
+  function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout after ${ms}ms: ${label}`)), ms)
+      ),
+    ]);
+  }
+
   const handleCreate = async () => {
     if (selected.length === 0) return;
     setCreating(true);
     setStep("creating");
     setError("");
+    setCreatedCount(0);
 
     // Ensure org exists before creating agents (guards against setup race condition)
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        await fetch("/api/auth/setup", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      const sessionResult = await withTimeout(supabase.auth.getSession(), 5000, "getSession");
+      const token = sessionResult.data.session?.access_token;
+      if (token) {
+        await withTimeout(
+          fetch("/api/auth/setup", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          }),
+          8000,
+          "auth/setup"
+        );
+      } else {
+        console.warn("[Onboarding] No session token — skipping setup call");
       }
-    } catch {
-      // Non-fatal: proceed and let createAgent surface real errors
+    } catch (setupErr: any) {
+      console.warn("[Onboarding] Setup call failed (non-fatal):", setupErr.message);
     }
 
     let lastAgent: Agent | null = null;
+    let successCount = 0;
+    const errors: string[] = [];
+
     for (const idx of selected) {
       const preset = PRESET_AGENTS[idx];
       try {
-        lastAgent = await api.createAgent({
-          name: preset.name,
-          name_ko: preset.name_ko,
-          department_id: preset.department_id,
-          role: preset.role,
-          cli_provider: preset.cli_provider,
-          avatar_emoji: "🤖",
-          personality: preset.personality,
-        });
-        setCreatedCount((c) => c + 1);
+        const created = await withTimeout(
+          api.createAgent({
+            name: preset.name,
+            name_ko: preset.name_ko,
+            department_id: preset.department_id,
+            role: preset.role,
+            cli_provider: preset.cli_provider,
+            avatar_emoji: "🤖",
+            personality: preset.personality,
+          }),
+          10000,
+          `createAgent:${preset.name}`
+        );
+        lastAgent = created;
+        successCount++;
+        setCreatedCount(successCount);
       } catch (err: any) {
         console.error("[Onboarding] Failed to create agent:", preset.name, err);
-        setError(err.message || "Failed to create agent");
+        errors.push(`${preset.name}: ${err.message || "Unknown error"}`);
+        setError(errors[0]); // Show first error
       }
     }
 
     setCreating(false);
+
     if (lastAgent) {
+      // At least one agent created successfully
       setStep("done");
       setTimeout(() => onComplete(lastAgent!), 2000);
+    } else {
+      // All failed — go back to pick step with error visible
+      setStep("pick");
+      setError(errors.length > 0 ? errors[0] : "Agent creation failed. Please try again.");
     }
   };
 
@@ -432,6 +463,11 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
               })}
             </div>
 
+            {error && (
+              <p style={{ color: "#F87171", fontSize: "0.85rem", marginBottom: "0.75rem", padding: "0.5rem 0.75rem", background: "rgba(248,113,113,0.1)", borderRadius: "0.5rem", border: "1px solid rgba(248,113,113,0.3)" }}>
+                {error}
+              </p>
+            )}
             <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
               <button onClick={() => setStep("team-name")} style={backBtnStyle}>
                 {ko ? "뒤로" : "Back"}
