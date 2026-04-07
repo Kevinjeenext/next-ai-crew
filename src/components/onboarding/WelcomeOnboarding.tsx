@@ -19,7 +19,7 @@ const PRESET_AGENTS = [
   {
     name: "Alex",
     name_ko: "알렉스",
-    role: "Full-Stack Developer",
+    role: "senior",
     role_ko: "풀스택 개발자",
     department_id: "engineering",
     avatar: "/icons/departments/icon-developer.svg",
@@ -29,7 +29,7 @@ const PRESET_AGENTS = [
   {
     name: "Maya",
     name_ko: "마야",
-    role: "UI/UX Designer",
+    role: "senior",
     role_ko: "UI/UX 디자이너",
     department_id: "design",
     avatar: "/icons/departments/icon-designer.svg",
@@ -39,7 +39,7 @@ const PRESET_AGENTS = [
   {
     name: "Sam",
     name_ko: "샘",
-    role: "Project Manager",
+    role: "team_leader",
     role_ko: "프로젝트 매니저",
     department_id: "planning",
     avatar: "/icons/departments/icon-pm.svg",
@@ -49,7 +49,7 @@ const PRESET_AGENTS = [
   {
     name: "Kai",
     name_ko: "카이",
-    role: "Marketing Strategist",
+    role: "senior",
     role_ko: "마케팅 전략가",
     department_id: "marketing",
     avatar: "/icons/departments/icon-marketer.svg",
@@ -59,7 +59,7 @@ const PRESET_AGENTS = [
   {
     name: "Jordan",
     name_ko: "조던",
-    role: "DevOps Engineer",
+    role: "senior",
     role_ko: "DevOps 엔지니어",
     department_id: "engineering",
     avatar: "/icons/departments/icon-devops.svg",
@@ -69,7 +69,7 @@ const PRESET_AGENTS = [
   {
     name: "Rina",
     name_ko: "리나",
-    role: "Data Analyst",
+    role: "junior",
     role_ko: "데이터 분석가",
     department_id: "operations",
     avatar: "/icons/departments/icon-ea.svg",
