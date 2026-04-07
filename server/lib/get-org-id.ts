@@ -47,7 +47,7 @@ export async function createOrgForUser(
       name: orgName,
       slug,
       owner_id: userId,
-      plan: "starter",
+      plan: "team",  // New signups get team plan (generous trial for onboarding)
     })
     .select("id")
     .single();

@@ -15,9 +15,11 @@ interface AgentLimitResult {
 const FALLBACK_LIMITS: Record<string, number> = {
   free: 1,
   starter: 3,
-  pro: 5,
-  max: 10,
+  pro: 10,
+  team: 20,
+  max: 50,
   enterprise: -1,
+  trial: -1, // Unlimited during trial
 };
 
 /**

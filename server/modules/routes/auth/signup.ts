@@ -35,6 +35,22 @@ router.post("/api/auth/setup", async (req, res) => {
     // Check if user already has an org
     try {
       const existingOrgId = await getOrgIdForUser(user.id);
+
+      // Upgrade existing orgs on free/starter to team plan (trial)
+      // This ensures Kevin and early users can create multiple agents
+      const { data: existingOrg } = await supabaseAdmin
+        .from("organizations")
+        .select("plan")
+        .eq("id", existingOrgId)
+        .single();
+      if (existingOrg && (existingOrg.plan === "free" || existingOrg.plan === "starter")) {
+        await supabaseAdmin
+          .from("organizations")
+          .update({ plan: "team" })
+          .eq("id", existingOrgId);
+        console.log(`[Auth Setup] Upgraded org ${existingOrgId} from ${existingOrg.plan} → team`);
+      }
+
       return res.json({
         org_id: existingOrgId,
         created: false,
