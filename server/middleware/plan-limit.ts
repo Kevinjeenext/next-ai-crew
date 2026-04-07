@@ -42,6 +42,17 @@ export async function checkAgentLimit(orgId: string): Promise<AgentLimitResult> 
     return { allowed: true, current: 0, limit: -1, plan: "unknown" };
   }
 
+  // Auto-upgrade free/starter orgs to team (MVP: generous trial for all users)
+  // This ensures the upgrade happens even if /api/auth/setup wasn't called recently
+  if (org.plan === "free" || org.plan === "starter") {
+    console.log(`[plan-limit] Auto-upgrading org ${orgId} from ${org.plan} → team`);
+    await supabaseAdmin
+      .from("organizations")
+      .update({ plan: "team" })
+      .eq("id", orgId);
+    org.plan = "team";
+  }
+
   const limit = org.agent_limit ?? FALLBACK_LIMITS[org.plan] ?? 1;
 
   // Unlimited
