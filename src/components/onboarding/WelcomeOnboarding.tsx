@@ -24,7 +24,7 @@ const PRESET_AGENTS = [
     department_id: "engineering",
     avatar: "/icons/departments/icon-developer.svg",
     personality: "Pragmatic and detail-oriented. Writes clean, tested code.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
   {
     name: "Maya",
@@ -34,7 +34,7 @@ const PRESET_AGENTS = [
     department_id: "design",
     avatar: "/icons/departments/icon-designer.svg",
     personality: "Creative and user-focused. Obsessed with pixel-perfect designs.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
   {
     name: "Sam",
@@ -44,7 +44,7 @@ const PRESET_AGENTS = [
     department_id: "planning",
     avatar: "/icons/departments/icon-pm.svg",
     personality: "Organized and communicative. Keeps the team aligned.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
   {
     name: "Kai",
@@ -54,7 +54,7 @@ const PRESET_AGENTS = [
     department_id: "marketing",
     avatar: "/icons/departments/icon-marketer.svg",
     personality: "Data-driven and creative. Finds the right audience.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
   {
     name: "Jordan",
@@ -64,7 +64,7 @@ const PRESET_AGENTS = [
     department_id: "engineering",
     avatar: "/icons/departments/icon-devops.svg",
     personality: "Calm under pressure. Automates everything.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
   {
     name: "Rina",
@@ -74,7 +74,7 @@ const PRESET_AGENTS = [
     department_id: "operations",
     avatar: "/icons/departments/icon-ea.svg",
     personality: "Curious and thorough. Turns data into insights.",
-    cli_provider: "anthropic",
+    cli_provider: "claude",
   },
 ];
 
