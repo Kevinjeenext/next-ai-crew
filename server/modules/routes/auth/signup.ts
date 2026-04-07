@@ -14,6 +14,36 @@ import * as pgAdapter from "../../../db/pg-adapter.ts";
 
 const router = Router();
 
+const DEFAULT_DEPARTMENTS = [
+  { id: "engineering", name: "Engineering", name_ko: "엔지니어링", icon: "⚙️", color: "#3b82f6", sort_order: 1 },
+  { id: "design", name: "Design", name_ko: "디자인", icon: "🎨", color: "#8b5cf6", sort_order: 2 },
+  { id: "marketing", name: "Marketing", name_ko: "마케팅", icon: "📢", color: "#f59e0b", sort_order: 3 },
+  { id: "planning", name: "Planning", name_ko: "기획", icon: "📊", color: "#6366f1", sort_order: 4 },
+  { id: "operations", name: "Operations", name_ko: "운영", icon: "📋", color: "#10b981", sort_order: 5 },
+];
+
+/**
+ * Ensure org has default departments (idempotent — skips existing rows).
+ */
+async function ensureDepartments(orgId: string): Promise<void> {
+  const { data: existing } = await supabaseAdmin
+    .from("departments")
+    .select("id")
+    .eq("org_id", orgId);
+  const existingIds = new Set((existing ?? []).map((d: any) => d.id));
+  const missing = DEFAULT_DEPARTMENTS.filter((d) => !existingIds.has(d.id));
+  if (missing.length === 0) return;
+  console.log(`[Auth Setup] Seeding ${missing.length} missing departments for org ${orgId}`);
+  for (const dept of missing) {
+    try {
+      await pgAdapter.insertRow("departments", { org_id: orgId, ...dept });
+    } catch (e: any) {
+      // Ignore duplicate key errors (race condition)
+      if (!e.message?.includes("duplicate") && !e.message?.includes("unique")) throw e;
+    }
+  }
+}
+
 /**
  * POST /api/auth/setup
  * Called after first login to ensure user has an organization.
@@ -51,6 +81,9 @@ router.post("/api/auth/setup", async (req, res) => {
         console.log(`[Auth Setup] Upgraded org ${existingOrgId} from ${existingOrg.plan} → team`);
       }
 
+      // Ensure departments exist (idempotent — fixes orgs created before dept seeding)
+      await ensureDepartments(existingOrgId);
+
       return res.json({
         org_id: existingOrgId,
         created: false,
@@ -70,17 +103,7 @@ router.post("/api/auth/setup", async (req, res) => {
     const orgId = await createOrgForUser(user.id, orgName);
 
     // Seed default departments for new org
-    const defaultDepartments = [
-      { id: "engineering", name: "Engineering", name_ko: "엔지니어링", icon: "⚙️", color: "#3b82f6", sort_order: 1 },
-      { id: "design", name: "Design", name_ko: "디자인", icon: "🎨", color: "#8b5cf6", sort_order: 2 },
-      { id: "marketing", name: "Marketing", name_ko: "마케팅", icon: "📢", color: "#f59e0b", sort_order: 3 },
-      { id: "planning", name: "Planning", name_ko: "기획", icon: "📊", color: "#6366f1", sort_order: 4 },
-      { id: "operations", name: "Operations", name_ko: "운영", icon: "📋", color: "#10b981", sort_order: 5 },
-    ];
-
-    for (const dept of defaultDepartments) {
-      await pgAdapter.insertRow("departments", { org_id: orgId, ...dept });
-    }
+    await ensureDepartments(orgId);
 
     return res.status(201).json({
       org_id: orgId,

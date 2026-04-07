@@ -173,20 +173,42 @@ app.post("/api/agents", express.json(), async (req, res) => {
     }
 
     const { id, name, department_id, role, avatar_emoji, personality, ...rest } = req.body;
-    const agent = await pgAdapter.insertRow("agents", {
-      org_id: orgId,
-      id: id ?? crypto.randomUUID(),
-      name: name ?? "New Agent",
-      department_id,
-      role: role ?? "junior",
-      avatar_emoji: avatar_emoji ?? "🤖",
-      personality,
-      ...rest,
-    });
+    const agentId = id ?? crypto.randomUUID();
+    let agent: any;
+    try {
+      agent = await pgAdapter.insertRow("agents", {
+        org_id: orgId,
+        id: agentId,
+        name: name ?? "New Agent",
+        department_id,
+        role: role ?? "junior",
+        avatar_emoji: avatar_emoji ?? "🤖",
+        personality,
+        ...rest,
+      });
+    } catch (insertErr: any) {
+      // FK violation on department_id — retry with null
+      if (department_id && (insertErr.message?.includes("foreign key") || insertErr.message?.includes("violates") || insertErr.code === "23503")) {
+        console.warn(`[API] department_id FK violation for '${department_id}', retrying with null`);
+        agent = await pgAdapter.insertRow("agents", {
+          org_id: orgId,
+          id: agentId,
+          name: name ?? "New Agent",
+          department_id: null,
+          role: role ?? "junior",
+          avatar_emoji: avatar_emoji ?? "🤖",
+          personality,
+          ...rest,
+        });
+      } else {
+        throw insertErr;
+      }
+    }
     broadcast("agent_update", agent);
     res.status(201).json(agent);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error("[API] POST /api/agents error:", err.message, err.code);
+    res.status(500).json({ error: err.message, code: err.code });
   }
 });
 
