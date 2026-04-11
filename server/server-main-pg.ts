@@ -55,6 +55,7 @@ app.get("/api/health", (_req, res) => {
     status: "ok",
     mode: "supabase",
     version: process.env.npm_package_version ?? "0.1.0",
+    git_sha: process.env.GIT_SHA ?? process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 8) ?? "unknown",
     timestamp: new Date().toISOString(),
     config: {
       supabase_url: !!process.env.SUPABASE_URL,
@@ -62,6 +63,7 @@ app.get("/api/health", (_req, res) => {
       supabase_anon_key: !!process.env.SUPABASE_ANON_KEY,
       database_url: !!process.env.DATABASE_URL,
       auth_ready: supabaseConfigured,
+      demo_bypass_limits: process.env.DEMO_BYPASS_LIMITS === "true",
     },
   });
 });
@@ -87,7 +89,7 @@ async function requireOrg(req: any, res: any): Promise<string | null> {
   const token = typeof authHeader === "string" ? authHeader.replace("Bearer ", "") : undefined;
 
   if (!token) {
-    res.status(401).json({ error: "Authentication required", detail: "No authorization token" });
+    res.status(401).json({ error: "Authentication required", detail: "NO_AUTH_HEADER", hint: "Supabase JWT missing from Authorization: Bearer header" });
     return null;
   }
 

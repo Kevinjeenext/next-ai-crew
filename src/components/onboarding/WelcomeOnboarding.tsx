@@ -174,7 +174,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
           api.createAgent({
             name: preset.name,
             name_ko: preset.name_ko,
-            department_id: preset.department_id,
+            department_id: null, // Always null in onboarding — FK constraint safety
             role: preset.role,
             cli_provider: preset.cli_provider,
             avatar_emoji: "🤖",

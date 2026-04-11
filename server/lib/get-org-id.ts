@@ -38,7 +38,10 @@ export async function createOrgForUser(
   orgName: string,
   orgSlug?: string,
 ): Promise<string> {
-  const slug = orgSlug ?? orgName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+  // Always include a unique suffix to avoid organizations_slug_key conflicts
+  const base = (orgSlug ?? orgName).toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "") || "team";
+  const uniqueSuffix = userId.slice(0, 8);
+  const slug = `${base}-${uniqueSuffix}`;
 
   // Create organization
   const { data: org, error: orgError } = await supabaseAdmin

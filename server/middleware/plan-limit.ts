@@ -26,6 +26,12 @@ const FALLBACK_LIMITS: Record<string, number> = {
  * Check if org can create another agent
  */
 export async function checkAgentLimit(orgId: string): Promise<AgentLimitResult> {
+  // DEMO_BYPASS: env flag to completely disable limit checks (for demos/testing)
+  if (process.env.DEMO_BYPASS_LIMITS === "true") {
+    console.log(`[plan-limit] DEMO_BYPASS_LIMITS=true — skipping limit check for org ${orgId}`);
+    return { allowed: true, current: 0, limit: -1, plan: "demo" };
+  }
+
   if (!SUPABASE_CONFIGURED) {
     return { allowed: true, current: 0, limit: -1, plan: "dev" };
   }
@@ -38,22 +44,31 @@ export async function checkAgentLimit(orgId: string): Promise<AgentLimitResult> 
 
   if (orgErr || !org) {
     console.error("[plan-limit] Org lookup failed:", orgErr?.message);
-    // Fail open for MVP — don't block if DB is unreachable
+    // Fail open — don't block if DB is unreachable
     return { allowed: true, current: 0, limit: -1, plan: "unknown" };
   }
 
-  // Auto-upgrade free/starter orgs to team (MVP: generous trial for all users)
-  // This ensures the upgrade happens even if /api/auth/setup wasn't called recently
+  // Auto-upgrade free/starter orgs to team
   if (org.plan === "free" || org.plan === "starter") {
-    console.log(`[plan-limit] Auto-upgrading org ${orgId} from ${org.plan} → team`);
-    await supabaseAdmin
+    console.log(`[plan-limit] Auto-upgrading org ${orgId} from ${org.plan} → team (agent_limit=20)`);
+    const { error: upErr } = await supabaseAdmin
       .from("organizations")
-      .update({ plan: "team" })
+      .update({ plan: "team", agent_limit: 20 })
       .eq("id", orgId);
+    if (upErr) {
+      console.error(`[plan-limit] Upgrade failed (fail-open):`, upErr.message);
+      // Fail open: allow creation even if upgrade failed
+      return { allowed: true, current: 0, limit: -1, plan: "team" };
+    }
     org.plan = "team";
+    org.agent_limit = 20;
   }
 
-  const limit = org.agent_limit ?? FALLBACK_LIMITS[org.plan] ?? 1;
+  // agent_limit in DB: use it only if it's a meaningful value (>= team default)
+  // If it's set to a low value (1 or 3 from old free/starter era), ignore it
+  const dbLimit = (org.agent_limit != null && org.agent_limit > 3) ? org.agent_limit : null;
+  const limit = dbLimit ?? FALLBACK_LIMITS[org.plan] ?? 20;
+  console.log(`[plan-limit] org=${orgId} plan=${org.plan} db_limit=${org.agent_limit} effective_limit=${limit}`);
 
   // Unlimited
   if (limit === -1) {

@@ -297,9 +297,16 @@ export async function request<T>(url: string, init?: RequestInit, canRetryAuth =
   const headers = withAuthHeaders(init?.headers, init?.method);
   // Inject Supabase bearer token for API requests
   if (SUPABASE_AUTH && !headers.has("authorization")) {
-    const { data: { session } } = await supabase.auth.getSession();
+    let { data: { session } } = await supabase.auth.getSession();
+    // If no session, try refreshSession once (handles stale/expired tokens)
+    if (!session) {
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      session = refreshed.session;
+    }
     if (session?.access_token) {
       headers.set("authorization", `Bearer ${session.access_token}`);
+    } else {
+      console.warn("[api] No Supabase session available for request to", url);
     }
   }
   const requestUrl = `${base}${url}`;
