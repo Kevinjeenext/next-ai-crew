@@ -137,7 +137,7 @@ app.get("/api/agents", async (req, res) => {
       orderBy: "created_at",
       ascending: true,
     });
-    res.json(agents);
+    res.json({ agents });
   } catch (err: any) {
     console.error("[API] GET /api/agents error:", err.message);
     res.status(500).json({ error: err.message });
@@ -150,7 +150,7 @@ app.get("/api/agents/:id", async (req, res) => {
     if (!orgId) return;
     const agent = await pgAdapter.queryOne("agents", orgId, req.params.id);
     if (!agent) return res.status(404).json({ error: "Agent not found" });
-    res.json(agent);
+    res.json({ agent });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -207,7 +207,7 @@ app.post("/api/agents", express.json(), async (req, res) => {
       }
     }
     broadcast("agent_update", agent);
-    res.status(201).json(agent);
+    res.status(201).json({ ok: true, agent });
   } catch (err: any) {
     console.error("[API] POST /api/agents error:", err.message, err.code);
     res.status(500).json({ error: err.message, code: err.code });
@@ -221,7 +221,7 @@ app.patch("/api/agents/:id", express.json(), async (req, res) => {
     const updated = await pgAdapter.updateRow("agents", orgId, req.params.id, req.body);
     if (!updated) return res.status(404).json({ error: "Agent not found" });
     broadcast("agent_update", updated);
-    res.json(updated);
+    res.json({ agent: updated });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -249,7 +249,7 @@ app.get("/api/departments", async (req, res) => {
       orderBy: "sort_order",
       ascending: true,
     });
-    res.json(departments);
+    res.json({ departments });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -264,7 +264,7 @@ app.post("/api/departments", express.json(), async (req, res) => {
       ...req.body,
     });
     broadcast("department_update", dept);
-    res.status(201).json(dept);
+    res.status(201).json({ ok: true, department: dept });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -298,7 +298,7 @@ app.get("/api/tasks", async (req, res) => {
       ascending: false,
       limit: req.query.limit ? Number(req.query.limit) : 100,
     });
-    res.json(tasks);
+    res.json({ tasks });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -310,7 +310,7 @@ app.get("/api/tasks/:id", async (req, res) => {
     if (!orgId) return;
     const task = await pgAdapter.queryOne("tasks", orgId, req.params.id);
     if (!task) return res.status(404).json({ error: "Task not found" });
-    res.json(task);
+    res.json({ task });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -328,7 +328,7 @@ app.post("/api/tasks", express.json(), async (req, res) => {
       ...req.body,
     });
     broadcast("task_update", task);
-    res.status(201).json(task);
+    res.status(201).json({ ok: true, task });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
