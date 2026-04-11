@@ -4,6 +4,14 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{"type": "host", "value": "www.nextaicrew.com"}],
+      "destination": "https://nextaicrew.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

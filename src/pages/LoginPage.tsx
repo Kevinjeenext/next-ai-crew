@@ -22,7 +22,8 @@ export function LoginPage() {
   // Track which providers failed (not enabled in Supabase)
   const [disabledProviders, setDisabledProviders] = useState<Set<Provider>>(new Set());
 
-  const redirectTo = `${window.location.origin}/auth/callback`;
+  // Always redirect to apex domain to avoid www/apex session split
+  const redirectTo = "https://nextaicrew.com/auth/callback";
 
   const handleOAuth = useCallback(async (provider: Provider) => {
     setLoading(true);

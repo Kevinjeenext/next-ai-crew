@@ -50,7 +50,7 @@ export function useSupabaseAuth() {
   const signInWithOAuth = useCallback(async (provider: "google" | "github") => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: "https://nextaicrew.com/auth/callback" },
     });
     return { error };
   }, []);
