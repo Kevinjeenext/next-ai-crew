@@ -551,6 +551,179 @@ app.get("/api/org-budget", async (req, res) => {
   }
 });
 
+// ========== SOUL CRUD API ==========
+import { generateSoulPrompt } from "./services/soul-generator.ts";
+
+// GET /api/souls — list org Souls
+app.get("/api/souls", async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const { data, error } = await supabaseAdmin
+      .from("agents")
+      .select("id, name, display_name, role, department, status, avatar_url, avatar_style, persona_prompt, personality_traits, skill_tags, tools, llm_model, llm_temperature, memory_enabled, preset_id, created_at, updated_at")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    res.json({ souls: data || [] });
+  } catch (err: any) {
+    console.error("[API] GET /api/souls error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/souls/:id — single Soul detail
+app.get("/api/souls/:id", async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const { data, error } = await supabaseAdmin
+      .from("agents")
+      .select("*")
+      .eq("id", req.params.id)
+      .eq("org_id", orgId)
+      .single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Soul not found" });
+    // Generate system prompt for reference
+    const systemPrompt = generateSoulPrompt({
+      name: data.name,
+      display_name: data.display_name || data.name,
+      role: data.role || "AI Agent",
+      department: data.department || "general",
+      persona_prompt: data.persona_prompt,
+      personality_traits: data.personality_traits,
+      communication_style: data.communication_style,
+      skill_tags: data.skill_tags,
+      tools: data.tools,
+      boundaries: data.boundaries,
+      memory_enabled: data.memory_enabled ?? false,
+      long_term_memory: data.long_term_memory,
+      greeting_message: data.greeting_message,
+    });
+    res.json({ soul: data, systemPrompt });
+  } catch (err: any) {
+    console.error("[API] GET /api/souls/:id error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/souls — create Soul (from preset or custom)
+app.post("/api/souls", express.json(), async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const { preset_id, name, display_name, role, department, persona_prompt, personality_traits, communication_style, skill_tags, tools, llm_model, llm_temperature, boundaries, greeting_message, avatar_url, avatar_style } = req.body;
+
+    let soulData: Record<string, any> = {
+      org_id: orgId,
+      name: name || "New Soul",
+      display_name: display_name || name || "New Soul",
+      role: role || "AI Agent",
+      department: department || "general",
+      status: "active",
+      persona_prompt: persona_prompt || null,
+      personality_traits: personality_traits || null,
+      communication_style: communication_style || null,
+      skill_tags: skill_tags || [],
+      tools: tools || [],
+      llm_model: llm_model || "auto",
+      llm_temperature: llm_temperature ?? 0.7,
+      boundaries: boundaries || [],
+      greeting_message: greeting_message || null,
+      memory_enabled: true,
+      avatar_url: avatar_url || null,
+      avatar_style: avatar_style || "pixel",
+      preset_id: preset_id || null,
+    };
+
+    // If creating from preset, merge preset data
+    if (preset_id) {
+      const { data: preset } = await supabaseAdmin
+        .from("soul_presets")
+        .select("*")
+        .eq("id", preset_id)
+        .single();
+      if (preset) {
+        soulData = {
+          ...soulData,
+          name: name || preset.name,
+          display_name: display_name || preset.display_name,
+          role: role || preset.description,
+          department: department || preset.category,
+          persona_prompt: persona_prompt || preset.persona_prompt,
+          personality_traits: personality_traits || preset.personality_traits,
+          communication_style: communication_style || preset.communication_style,
+          skill_tags: skill_tags || preset.skill_tags,
+          tools: tools || preset.default_tools,
+          llm_model: llm_model || preset.default_model || "auto",
+          llm_temperature: llm_temperature ?? preset.default_temperature ?? 0.7,
+          boundaries: boundaries || preset.boundaries,
+          greeting_message: greeting_message || preset.greeting_message,
+          avatar_url: avatar_url || preset.thumbnail_url,
+        };
+      }
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("agents")
+      .insert(soulData)
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, soul: data });
+  } catch (err: any) {
+    console.error("[API] POST /api/souls error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/souls/:id — update Soul
+app.put("/api/souls/:id", express.json(), async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const updates: Record<string, any> = {};
+    const allowed = ["name", "display_name", "role", "department", "persona_prompt", "personality_traits", "communication_style", "skill_tags", "tools", "llm_model", "llm_temperature", "boundaries", "greeting_message", "memory_enabled", "long_term_memory", "heartbeat_enabled", "heartbeat_interval_min", "heartbeat_tasks", "avatar_url", "avatar_style", "status"];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+    updates.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabaseAdmin
+      .from("agents")
+      .update(updates)
+      .eq("id", req.params.id)
+      .eq("org_id", orgId)
+      .select()
+      .single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Soul not found" });
+    res.json({ ok: true, soul: data });
+  } catch (err: any) {
+    console.error("[API] PUT /api/souls/:id error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/souls/:id — delete Soul
+app.delete("/api/souls/:id", async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const { error } = await supabaseAdmin
+      .from("agents")
+      .delete()
+      .eq("id", req.params.id)
+      .eq("org_id", orgId);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.error("[API] DELETE /api/souls/:id error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Static file serving (production)
 // ---------------------------------------------------------------------------
