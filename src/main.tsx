@@ -8,7 +8,7 @@ import { AuthCallback } from "./pages/AuthCallback";
 import LandingPage from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import AppShell from "./components/layout/AppShell";
-import SoulHireMarket from "./components/hire/SoulHireMarket";
+import SoulHireV2 from "./components/hire/SoulHireV2";
 import SettingsPage from "./components/settings/SettingsPage";
 import "./styles/design-system.css";
 import "./index.css";
@@ -104,7 +104,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/hire" element={<ProtectedApp><SoulHireMarket /></ProtectedApp>} />
+            <Route path="/hire" element={<ProtectedApp><SoulHireV2 /></ProtectedApp>} />
               <Route path="/settings" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
             <Route path="/dashboard/billing" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
             <Route path="/*" element={<ProtectedApp />} />
