@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>AuthorizationQueryParametersError</Code><Message>X-Amz-Date must be in the ISO8601 Long Format "yyyyMMdd'T'HHmmss'Z'"</Message><RequestId>7F3T7X66M5PAT78F</RequestId><HostId>yR0vKGlYrcIynt3GsBB4+7xHTEX8Emky7YhTYq3WcxczpHxFfTUvdhDmsGgMbTfLZsmz5hFwMn4=</HostId></Error>
