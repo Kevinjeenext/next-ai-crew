@@ -158,6 +158,8 @@ export function isPublicApiPath(pathname: string): boolean {
   if (pathname === "/api/oauth/start") return true;
   if (pathname.startsWith("/api/oauth/callback/")) return true;
   if (pathname.startsWith("/api/webhooks/")) return true; // Payment webhooks
+  if (pathname === "/api/soul-presets" || pathname.startsWith("/api/soul-presets/")) return true; // Public catalog
+  if (pathname === "/api/llm/status") return true; // LLM health check
   return false;
 }
 
