@@ -12,6 +12,7 @@ import SoulChatPanel from "./components/chat/SoulChatPanel";
 import AppShell from "./components/layout/AppShell";
 import SoulHirePage from "./components/hire/SoulHirePage";
 import BillingPage from "./components/billing/BillingPage";
+import "./styles/design-system.css";
 import "./index.css";
 
 /**

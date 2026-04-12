@@ -1,0 +1,153 @@
+/**
+ * Pro UI Design System — CSS Custom Properties
+ * Based on Ivy's 00-design-system.md (Kevin pivot)
+ * Notion/Linear/ClawPoD tone
+ */
+:root {
+  /* 배경 계층 */
+  --bg-base:      #0F1117;
+  --bg-surface:   #161B27;
+  --bg-elevated:  #1E2536;
+  --bg-overlay:   #252D40;
+
+  /* 테두리 */
+  --border-subtle:  rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong:  rgba(255,255,255,0.18);
+
+  /* 텍스트 */
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-tertiary:  #475569;
+  --text-disabled:  #334155;
+
+  /* 브랜드 */
+  --brand-blue:   #2563EB;
+  --brand-blue-h: #1D4ED8;
+  --brand-cyan:   #06B6D4;
+
+  /* 시멘틱 */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error:   #EF4444;
+  --info:    #3B82F6;
+
+  /* 폰트 */
+  --font-ui:   "Inter", "Space Grotesk", -apple-system, sans-serif;
+  --font-body: "Pretendard", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* 스케일 */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  32px;
+}
+
+/* ─── Reset/Base ─────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+}
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font-family: var(--font-ui);
+  border: none; background: none;
+  cursor: pointer;
+}
+
+/* ─── Common Components ──────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.card:hover {
+  border-color: var(--border-default);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.btn-primary {
+  background: var(--brand-blue);
+  color: #fff; border: none;
+  padding: 9px 18px; border-radius: 8px;
+  font: 600 var(--text-sm) var(--font-ui);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+  background: var(--brand-blue-h);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  padding: 9px 18px; border-radius: 8px;
+  font: 500 var(--text-sm) var(--font-ui);
+  transition: border-color 0.15s, background 0.15s;
+}
+.btn-secondary:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+}
+
+.input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-default);
+  border-radius: 8px; padding: 9px 13px;
+  font: 400 var(--text-sm) var(--font-ui);
+  color: var(--text-primary);
+  outline: none; width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+.input::placeholder { color: var(--text-tertiary); }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 5px;
+  font: 500 11px var(--font-ui);
+}
+.badge-blue  { background: rgba(37,99,235,0.15);  color: #93BBFC; }
+.badge-green { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+.badge-amber { background: rgba(245,158,11,0.15); color: #FCD34D; }
+.badge-red   { background: rgba(239,68,68,0.15);  color: #FCA5A5; }
+
+/* Status dots */
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.online  { background: #10B981; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+.status-dot.busy    { background: #F59E0B; }
+.status-dot.offline { background: #475569; }
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  border: none; margin: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
