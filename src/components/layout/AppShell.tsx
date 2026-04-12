@@ -7,6 +7,7 @@ import SoulChatPanel from "../chat/SoulChatPanel";
 import Dashboard from "../dashboard/Dashboard";
 import SoulAvatar from "../ui/SoulAvatar";
 import ThemeToggle from "../ui/ThemeToggle";
+import { useTheme } from "../../ThemeContext";
 import "./app-shell.css";
 
 interface Soul {
@@ -66,6 +67,7 @@ export default function AppShell({ onNavigate }: Props) {
   const [souls, setSouls] = useState<Soul[]>([]);
   const [selectedSoulId, setSelectedSoulId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -101,8 +103,8 @@ export default function AppShell({ onNavigate }: Props) {
         <div className="sidebar-header">
           <div className="sidebar-logo">
             {sidebarCollapsed
-              ? <img src="/logo-symbol.svg" alt="" style={{ width: 32, height: 32 }} />
-              : <img src="/logo-full.svg" alt="Next AI Crew" style={{ height: 32 }} />
+              ? <span style={{ font: '700 20px Inter,sans-serif', background: 'linear-gradient(90deg,#3B82F6,#00D4FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>N</span>
+              : <img src={theme === 'dark' ? '/logo.svg' : '/logo-light.svg'} alt="Next AI Crew" style={{ height: 28 }} />
             }
           </div>
           <button

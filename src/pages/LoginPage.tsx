@@ -6,12 +6,14 @@
  */
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { useTheme } from "../ThemeContext";
 import "./auth.css";
 
 type Mode = "login" | "signup";
 type Provider = "google" | "github" | "kakao";
 
 export function LoginPage() {
+  const { theme } = useTheme();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -93,7 +95,7 @@ export function LoginPage() {
       <div className="auth-hero">
         <div className="auth-hero-content">
           <div className="auth-hero-logo">
-            <img src="/logo-full.svg" alt="Next AI Crew" style={{ height: 40 }} />
+            <img src={theme === 'dark' ? '/logo.svg' : '/logo-light.svg'} alt="Next AI Crew" style={{ height: 36 }} />
           </div>
           <span className="auth-hero-badge">AI Agent Platform</span>
           <h1 className="auth-hero-title">
