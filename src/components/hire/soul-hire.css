@@ -604,3 +604,84 @@
 
 /* ─── 유틸 ─────────────────────────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* ============================================================
+   14. 반응형 최적화 (Ivy 04-responsive-design P0)
+   ============================================================ */
+
+/* 터치 타겟 44px */
+.hire-btn,
+.soul-filter-tab,
+.soul-profile-btn,
+.soul-modal-confirm,
+.soul-modal-cancel {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Safe Area */
+.soul-hire-section {
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+}
+
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .soul-hire-card,
+  .hire-btn,
+  .soul-avatar,
+  .soul-profile-btn,
+  .soul-modal-confirm {
+    transition: none !important;
+    animation: none !important;
+  }
+  .hire-spark { display: none; }
+  .soul-enter-character { animation: none !important; opacity: 1; }
+}
+
+/* Tablet — bottom-sheet modal */
+@media (max-width: 768px) {
+  .soul-hire-modal-overlay {
+    align-items: flex-end;
+  }
+  .soul-hire-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Mobile — compact cards */
+@media (max-width: 480px) {
+  .soul-hire-card {
+    padding: 16px;
+  }
+  .soul-personality,
+  .soul-quote {
+    display: none;
+  }
+  .soul-profile-btn {
+    display: none;
+  }
+  .hire-btn {
+    flex: 1;
+  }
+  .soul-filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .soul-search-input {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+/* ARIA enhancements */
+.soul-hire-card:focus-visible {
+  outline: 2px solid #06B6D4;
+  outline-offset: 2px;
+}

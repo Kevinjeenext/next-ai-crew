@@ -9,6 +9,7 @@ import { AuthCallback } from "./pages/AuthCallback";
 import { LandingPage } from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import SoulHirePage from "./components/hire/SoulHirePage";
+import BillingPage from "./components/billing/BillingPage";
 import "./index.css";
 
 /**
@@ -90,6 +91,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/hire" element={<ProtectedApp><SoulHirePage /></ProtectedApp>} />
+            <Route path="/dashboard/billing" element={<ProtectedApp><BillingPage /></ProtectedApp>} />
             <Route path="/*" element={<ProtectedApp />} />
           </Routes>
         </AuthProvider>
