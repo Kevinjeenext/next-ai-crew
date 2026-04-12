@@ -3,6 +3,7 @@
  * Design: Ivy Day 3 (01-landing-hero-design.md)
  */
 import { useNavigate } from "react-router-dom";
+import SoulAvatar from "../components/ui/SoulAvatar";
 
 /* ── Department icon data (10 departments) ── */
 const DEPARTMENTS = [
@@ -23,7 +24,7 @@ const AGENTS = [
   {
     name: "Sophia",
     role: "Senior Developer",
-    icon: "/icons/departments/icon-developer.svg",
+    department: "engineering",
     color: "#2563EB",
     skills: ["React", "Python", "TypeScript"],
     task: "API 리팩토링 완료",
@@ -35,7 +36,7 @@ const AGENTS = [
   {
     name: "Marcus",
     role: "Security Lead",
-    icon: "/icons/departments/icon-security.svg",
+    department: "security",
     color: "#F43F5E",
     skills: ["Audit", "Pentest", "SAST"],
     task: "보안 스캔 진행 중",
@@ -47,7 +48,7 @@ const AGENTS = [
   {
     name: "Ivy",
     role: "UX Designer",
-    icon: "/icons/departments/icon-designer.svg",
+    department: "design",
     color: "#06B6D4",
     skills: ["Figma", "CSS", "Motion"],
     task: "랜딩 디자인 QA",
@@ -108,7 +109,7 @@ export function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen" data-theme="dark" style={{ background: "#0B1120", color: "#E2E8F0" }}>
+    <div className="min-h-screen" data-theme="dark" style={{ background: "#080B12", color: "#E2E8F0" }}>
       {/* Global animations */}
       <style>{`
         @keyframes soul-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
@@ -118,7 +119,7 @@ export function LandingPage() {
 
       {/* Nav */}
       <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b"
-        style={{ background: "rgba(11,17,32,0.85)", borderColor: "rgba(37,99,235,0.1)" }}>
+        style={{ background: "rgba(8,11,18,0.9)", backdropFilter: "blur(20px)", borderColor: "rgba(59,130,246,0.1)" }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/logo.svg" alt="" className="h-8 w-8" />
@@ -199,8 +200,10 @@ export function LandingPage() {
               <div key={agent.name}
                 className="rounded-2xl p-5 transition-all duration-300 cursor-pointer group"
                 style={{
-                  background: "rgba(15,23,41,0.65)",
-                  border: "1px solid rgba(37,99,235,0.1)",
+                  background: "rgba(13,17,32,0.7)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(59,130,246,0.15)",
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget;
@@ -217,11 +220,10 @@ export function LandingPage() {
               >
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
-                  <img src={agent.icon} alt="" className="w-10 h-10"
-                    style={{ animation: "float 3s ease-in-out infinite" }} />
+                  <SoulAvatar name={agent.name} size="lg" department={agent.department} status={agent.status === "working" ? "active" : agent.status === "online" ? "active" : "offline"} />
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-white text-sm">{agent.name}</div>
-                    <div className="text-xs" style={{ color: "#64748B", fontFamily: "'Press Start 2P', monospace", fontSize: 9 }}>
+                    <div className="text-xs" style={{ color: "#94A3B8", fontFamily: "var(--font-ui)", fontSize: 11 }}>
                       {agent.role}
                     </div>
                   </div>
