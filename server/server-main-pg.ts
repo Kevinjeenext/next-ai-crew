@@ -509,11 +509,11 @@ const AVATAR_FALLBACKS: Record<string, string> = {
   noah:    "/avatars/souls/soul_11_noah.webp",
   diego:   "/avatars/souls/soul_13_diego.webp",
   nadia:   "/avatars/souls/soul_14_nadia.webp",
-  zoe:     "https://randomuser.me/api/portraits/women/25.jpg",
-  samuel:  "https://randomuser.me/api/portraits/men/92.jpg",
-  mei:     "https://randomuser.me/api/portraits/women/48.jpg",
-  ethan:   "https://randomuser.me/api/portraits/men/35.jpg",
-  isabel:  "https://randomuser.me/api/portraits/women/62.jpg",
+  zoe:     "/avatars/souls/soul_16_zoe.webp",
+  samuel:  "/avatars/souls/soul_17_samuel.webp",
+  mei:     "/avatars/souls/soul_18_mei.webp",
+  ethan:   "/avatars/souls/soul_19_ethan.webp",
+  isabel:  "/avatars/souls/soul_20_isabel.webp",
 };
 
 app.get("/api/soul-presets", async (_req, res) => {
