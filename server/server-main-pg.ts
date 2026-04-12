@@ -736,7 +736,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
       name: name || "New Soul",
       role: role || "AI Agent",
       domain: req.body.department || req.body.domain || "general",
-      status: "active",
+      status: "idle",
       persona_prompt: persona_prompt || null,
       skill_tags: skill_tags || [],
       tools: tools || [],
