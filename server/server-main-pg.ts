@@ -29,6 +29,8 @@ import { initializeSupabaseRuntime, getOrgIdFromRequest, createOrgForUser } from
 import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
+import { soulChatRoutes } from "./routes/soul-chat.ts";
+import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
 import { checkAgentLimit } from "./middleware/plan-limit.ts";
 
@@ -549,6 +551,24 @@ app.get("/api/org-budget", async (req, res) => {
     console.error("[API] GET /api/org-budget error:", err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ========== SOUL CHAT (LLM Proxy) ==========
+// Mount soul chat routes with org middleware
+app.use("/api/souls", async (req: any, _res, next) => {
+  try {
+    req.orgId = await getOrgIdFromRequest(req);
+  } catch { /* handled in route */ }
+  next();
+}, soulChatRoutes);
+
+// --- LLM Health ---
+app.get("/api/llm/status", (_req, res) => {
+  const router = getModelRouter();
+  res.json({
+    ready: router.isReady(),
+    providers: router.getProviders(),
+  });
 });
 
 // ========== SOUL CRUD API ==========
