@@ -45,7 +45,7 @@ export function AuthCallback() {
 
         if (errorParam) {
           log("OAuth error:", errorParam, errorDesc);
-          setStatus(`Login error: ${errorDesc || errorParam}`);
+          setStatus(`로그인 오류: ${errorDesc || errorParam}`);
           setDebugInfo(`Error: ${errorParam}\n${errorDesc || ""}`);
           setTimeout(() => navigate("/login"), 3000);
           return;
@@ -55,11 +55,11 @@ export function AuthCallback() {
         const code = searchParams.get("code");
         if (code) {
           log("PKCE code found, exchanging...");
-          setStatus("Authenticating...");
+          setStatus("인증 중...");
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
             log("Code exchange failed:", error.message);
-            setStatus("Authentication failed. Redirecting...");
+            setStatus("인증에 실패했습니다. 이동 중...");
             setDebugInfo(`exchangeCodeForSession error: ${error.message}`);
             setTimeout(() => navigate("/login"), 2000);
             return;
@@ -111,7 +111,7 @@ export function AuthCallback() {
 
         if (!session) {
           log("FAILED: No session after all attempts");
-          setStatus("Login failed. Please try again.");
+          setStatus("로그인에 실패했습니다. 다시 시도해주세요.");
           setDebugInfo("No session detected. Check Supabase redirect URL settings.");
           setTimeout(() => navigate("/login"), 3000);
           return;
@@ -119,9 +119,10 @@ export function AuthCallback() {
 
         // 4. Call setup endpoint to ensure org exists
         log("Session OK, calling /api/auth/setup...");
-        setStatus("Creating your AI team...");
+        setStatus("AI 팀을 생성하고 있습니다...");
         try {
-          const res = await fetch("/api/auth/setup", {
+          const API = import.meta.env.VITE_API_URL || "";
+          const res = await fetch(`${API}/api/auth/setup`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${session.access_token}`,
@@ -135,12 +136,12 @@ export function AuthCallback() {
         }
 
         // 5. Redirect to dashboard
-        setStatus("Welcome aboard! 🚀");
+        setStatus("환영합니다! 🚀");
         log("Redirecting to dashboard...");
         setTimeout(() => navigate("/"), 500);
       } catch (err) {
         console.error("[AuthCallback] Unexpected error:", err);
-        setStatus("Something went wrong. Redirecting...");
+        setStatus("문제가 발생했습니다. 이동 중...");
         setDebugInfo(String(err));
         setTimeout(() => navigate("/login"), 2000);
       }

@@ -137,7 +137,6 @@ router.get("/api/auth/me", async (req, res) => {
     let orgRole: string | null = null;
     try {
       orgId = await getOrgIdForUser(user.id);
-      // Get role
       const { data: member } = await supabaseAdmin
         .from("org_members")
         .select("role")
@@ -149,6 +148,35 @@ router.get("/api/auth/me", async (req, res) => {
       // No org yet
     }
 
+    // Try to get profile + system_role (006 DDL)
+    let profile: any = null;
+    let orgs: any[] = [];
+    try {
+      const { data: p } = await supabaseAdmin
+        .from("profiles")
+        .select("id, email, full_name, avatar_url, system_role, is_active, created_at")
+        .eq("id", user.id)
+        .single();
+      profile = p;
+    } catch {
+      // profiles table may not exist yet
+    }
+
+    // Get all org memberships
+    try {
+      const { data: memberships } = await supabaseAdmin
+        .from("org_members")
+        .select("org_id, role, organizations(id, name, slug, status)")
+        .eq("user_id", user.id);
+      orgs = (memberships || []).map((m: any) => ({
+        org_id: m.org_id,
+        role: m.role,
+        ...(m.organizations || {}),
+      }));
+    } catch {
+      // org_members join may fail
+    }
+
     return res.json({
       user_id: user.id,
       email: user.email,
@@ -156,6 +184,15 @@ router.get("/api/auth/me", async (req, res) => {
       avatar_url: user.user_metadata?.avatar_url ?? null,
       org_id: orgId,
       org_role: orgRole,
+      // Enhanced fields (006 DDL)
+      system_role: profile?.system_role || "user",
+      user: profile ? {
+        id: user.id,
+        email: user.email,
+        ...profile,
+        system_role: profile.system_role || "user",
+      } : undefined,
+      orgs: orgs.length > 0 ? orgs : undefined,
     });
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to get user info" });

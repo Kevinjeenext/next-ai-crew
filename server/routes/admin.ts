@@ -10,53 +10,6 @@ import { requireSystemRole, getProfile, logAdminAction } from "../middleware/req
 
 const router = Router();
 
-// ─── GET /api/auth/me ─── (public for authenticated users)
-// Returns profile + system_role + org memberships
-router.get("/api/auth/me", async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-    const token = authHeader.slice(7);
-
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-
-    // Get profile (may not exist if DDL not run)
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("id, email, full_name, avatar_url, system_role, is_active, metadata, created_at")
-      .eq("id", user.id)
-      .single();
-
-    // Get org memberships
-    const { data: memberships } = await supabaseAdmin
-      .from("org_members")
-      .select("org_id, role, organizations(id, name, slug, status)")
-      .eq("user_id", user.id);
-
-    res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        ...(profile || {}),
-        system_role: profile?.system_role || "user",
-      },
-      orgs: (memberships || []).map((m: any) => ({
-        org_id: m.org_id,
-        role: m.role,
-        ...(m.organizations || {}),
-      })),
-    });
-  } catch (err: any) {
-    console.error("[API] GET /api/auth/me error:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ─── All /api/admin/* routes require admin role ───
 router.use("/api/admin", requireSystemRole("admin"));
 

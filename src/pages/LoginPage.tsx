@@ -41,7 +41,7 @@ export function LoginPage() {
       const msg = error.message.toLowerCase();
       if (msg.includes("provider") && (msg.includes("not enabled") || msg.includes("not supported") || msg.includes("unsupported"))) {
         setDisabledProviders((prev) => new Set(prev).add(provider));
-        setMessage({ text: `${provider} login is not yet configured.`, type: "error" });
+        setMessage({ text: `${provider} 로그인이 아직 설정되지 않았습니다.`, type: "error" });
       } else {
         setMessage({ text: error.message, type: "error" });
       }
@@ -53,7 +53,7 @@ export function LoginPage() {
     e.preventDefault();
     if (!email || !password) return;
     if (mode === "signup" && !agreedToS) {
-      setMessage({ text: "Please agree to the Terms of Service and Privacy Policy.", type: "error" });
+      setMessage({ text: "이용약관 동의가 필요합니다.", type: "error" });
       return;
     }
     setLoading(true);
@@ -75,14 +75,22 @@ export function LoginPage() {
       if (error) {
         setMessage({ text: error.message, type: "error" });
       } else {
-        setMessage({ text: "Check your email to confirm your account!", type: "success" });
+        setMessage({ text: "인증 메일이 발송되었습니다. 메일함을 확인해주세요!", type: "success" });
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setMessage({ text: error.message, type: "error" });
+        const msg = error.message.toLowerCase();
+        if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+          setMessage({ text: "이메일 또는 비밀번호가 올바르지 않습니다.", type: "error" });
+        } else if (msg.includes("email not confirmed")) {
+          setMessage({ text: "이메일 인증이 필요합니다. 메일함을 확인해주세요.", type: "error" });
+        } else {
+          setMessage({ text: error.message, type: "error" });
+        }
       } else {
-        window.location.href = "/auth/callback";
+        // Session already active — redirect to home directly
+        window.location.href = "/";
       }
     }
     setLoading(false);

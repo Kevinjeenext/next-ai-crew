@@ -87,13 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchOrgId = async (token: string) => {
     try {
-      const res = await fetch("/api/auth/me", {
+      const API = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${API}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setOrgId(data.org_id);
-        console.log("[AuthProvider] Org ID:", data.org_id);
+        console.log("[AuthProvider] Org ID:", data.org_id, "system_role:", data.system_role);
       } else {
         console.log("[AuthProvider] /api/auth/me failed:", res.status);
       }
