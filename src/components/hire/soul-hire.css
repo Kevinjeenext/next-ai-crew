@@ -685,3 +685,22 @@
   outline: 2px solid #06B6D4;
   outline-offset: 2px;
 }
+
+/* Safari fallback for legend gradient border */
+@supports not (background-clip: border-box) {
+  .soul-hire-card[data-level-tier="legend"] {
+    border-color: #FBBF24;
+    background-image: none;
+  }
+}
+
+/* Grid overflow prevention */
+.soul-hire-card { min-width: 0; }
+
+/* Adjust 3-col breakpoint for tighter layouts */
+@media (max-width: 1100px) and (min-width: 561px) {
+  .soul-hire-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
