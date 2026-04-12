@@ -719,18 +719,31 @@ app.post("/api/souls", express.json(), async (req, res) => {
       greeting_message: greeting_message || null,
       memory_enabled: true,
       avatar_style: avatar_style || "pixel",
-      preset_id: preset_id || null,
+      preset_id: null, // Will be set to actual UUID if preset found
     };
     // Only add org_id if column exists (try/catch on insert)
     if (orgId) soulData.org_id = orgId;
 
     // If creating from preset, merge preset data
     if (preset_id) {
-      const { data: preset } = await supabaseAdmin
-        .from("soul_presets")
-        .select("*")
-        .eq("id", preset_id)
-        .single();
+      // Try by id first (UUID), then by name/slug (TEXT)
+      let preset: any = null;
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(preset_id);
+      if (isUUID) {
+        const { data } = await supabaseAdmin.from("soul_presets").select("*").eq("id", preset_id).single();
+        preset = data;
+      }
+      if (!preset) {
+        // Try slug match: "alex-developer" → name ILIKE
+        const { data } = await supabaseAdmin.from("soul_presets").select("*").ilike("name", preset_id.replace(/-/g, "%")).limit(1).single();
+        preset = data;
+      }
+      if (!preset) {
+        // Fallback: try exact name match on first part
+        const firstName = preset_id.split("-")[0];
+        const { data } = await supabaseAdmin.from("soul_presets").select("*").ilike("name", `${firstName}%`).limit(1).single();
+        preset = data;
+      }
       if (preset) {
         soulData = {
           ...soulData,
@@ -743,6 +756,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
           llm_model: llm_model || preset.default_model || "auto",
           llm_temperature: llm_temperature ?? preset.default_temperature ?? 0.7,
           greeting_message: greeting_message || preset.greeting_message,
+          preset_id: preset.id, // Use actual UUID from DB, not slug
         };
       }
     }
