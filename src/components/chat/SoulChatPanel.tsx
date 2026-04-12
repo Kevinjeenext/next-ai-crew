@@ -6,6 +6,49 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import "./soul-chat.css";
 
+/** Render message content with code blocks (``` ... ```) */
+function MessageContent({ content }: { content: string }) {
+  const parts = content.split(/(```[\s\S]*?```)/g);
+  if (parts.length === 1) return <>{content}</>;
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("```") && part.endsWith("```")) {
+          const inner = part.slice(3, -3);
+          const nlIdx = inner.indexOf("\n");
+          const lang = nlIdx > 0 && nlIdx < 20 ? inner.slice(0, nlIdx).trim() : "";
+          const code = lang ? inner.slice(nlIdx + 1) : inner;
+          return <CodeBlock key={i} lang={lang} code={code} />;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
+function CodeBlock({ lang, code }: { lang: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* fallback */ }
+  };
+  return (
+    <div className="chat-code-block">
+      <div className="chat-code-header">
+        <span className="chat-code-lang">{lang || "code"}</span>
+        <button className="chat-code-copy" onClick={handleCopy}>
+          {copied ? "✓ 복사됨" : "복사"}
+        </button>
+      </div>
+      <pre className="chat-code-pre"><code>{code}</code></pre>
+    </div>
+  );
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -268,7 +311,7 @@ export default function SoulChatPanel({
                   <span className="msg-sender-name">{msg.role === "assistant" ? soulNameKo : "나"}</span>
                   <span className="msg-timestamp">{msg.timestamp.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
                 </div>
-                <div className="msg-text">{msg.content}</div>
+                <div className="msg-text"><MessageContent content={msg.content} /></div>
                 {msg.model && <span className="msg-model-tag">{msg.model}</span>}
               </div>
             </div>

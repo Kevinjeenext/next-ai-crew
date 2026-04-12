@@ -44,9 +44,11 @@ interface HireModalProps {
   onClose: () => void;
   onConfirm: (presetId: string, tasks: string[], instruction: string) => void;
   hiring: boolean;
+  teamCount: number;
+  maxSouls: number;
 }
 
-function HireModal({ preset, onClose, onConfirm, hiring }: HireModalProps) {
+function HireModal({ preset, onClose, onConfirm, hiring, teamCount, maxSouls: MAX_SOULS }: HireModalProps) {
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   const [instruction, setInstruction] = useState("");
   const tasks = DEFAULT_TASKS[preset.category] || DEFAULT_TASKS.general;
@@ -99,16 +101,16 @@ function HireModal({ preset, onClose, onConfirm, hiring }: HireModalProps) {
         </div>
         <div className="hire-modal-footer">
           <div className="hire-modal-capacity">
-            정원 <strong>—/15</strong>명 이용 가능
+            정원 <strong>{teamCount}/{MAX_SOULS}</strong>명 이용 가능
           </div>
           <div className="hire-modal-actions">
             <button className="btn-secondary" onClick={onClose}>취소</button>
             <button
               className="btn-primary"
               onClick={() => onConfirm(preset.id, [...selectedTasks], instruction)}
-              disabled={hiring}
+              disabled={hiring || teamCount >= MAX_SOULS}
             >
-              {hiring ? "채용 중..." : "채용 확정 →"}
+              {teamCount >= MAX_SOULS ? "정원 초과" : hiring ? "채용 중..." : "채용 확정 →"}
             </button>
           </div>
         </div>
@@ -125,12 +127,22 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
   const [modalPreset, setModalPreset] = useState<Preset | null>(null);
   const [hiring, setHiring] = useState(false);
   const [hiredIds, setHiredIds] = useState<Set<string>>(new Set());
+  const [teamCount, setTeamCount] = useState(0);
+  const MAX_SOULS = 15;
 
   useEffect(() => {
-    fetch("/api/soul-presets")
-      .then((r) => r.json())
-      .then((d) => { setPresets(d.presets || []); setLoading(false); })
-      .catch(() => setLoading(false));
+    Promise.all([
+      fetch("/api/soul-presets").then((r) => r.json()).catch(() => ({ presets: [] })),
+      fetch("/api/souls").then((r) => r.json()).catch(() => ({ agents: [] })),
+    ]).then(([presetData, soulData]) => {
+      setPresets(presetData.presets || []);
+      const souls = soulData.agents || soulData.souls || [];
+      setTeamCount(souls.length);
+      // Mark already-hired preset IDs
+      const hired = new Set<string>(souls.map((s: any) => s.preset_id).filter(Boolean));
+      setHiredIds(hired);
+      setLoading(false);
+    });
   }, []);
 
   const categories = useMemo(() => {
@@ -165,6 +177,7 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
       });
       if (res.ok) {
         setHiredIds((p) => new Set(p).add(presetId));
+        setTeamCount((c) => c + 1);
         setModalPreset(null);
       } else {
         const d = await res.json();
@@ -195,9 +208,9 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
             />
           </div>
           <div className="hire-team-badge">
-            내 팀 <strong>{hiredIds.size}</strong>/15
+            내 팀 <strong>{teamCount}</strong>/{MAX_SOULS}
             <div className="hire-team-bar">
-              <div className="hire-team-bar-fill" style={{ width: `${(hiredIds.size / 15) * 100}%` }} />
+              <div className="hire-team-bar-fill" style={{ width: `${(teamCount / MAX_SOULS) * 100}%` }} />
             </div>
           </div>
         </div>
@@ -298,6 +311,8 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
           onClose={() => setModalPreset(null)}
           onConfirm={handleHire}
           hiring={hiring}
+          teamCount={teamCount}
+          maxSouls={MAX_SOULS}
         />
       )}
     </div>
