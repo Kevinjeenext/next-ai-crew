@@ -471,27 +471,29 @@ app.get("/api/workflow-packs", async (req, res) => {
 
 // --- Soul Presets (Public catalog — no auth required) ---
 // Soul avatar fallback — demo photos until DB has thumbnail_url
+// Soul avatar fallback — Ivy curated portraits (demo/prototype)
+// ⚠️ 데모 후 generated.photos / 자체 AI 생성 이미지로 교체
 const AVATAR_FALLBACKS: Record<string, string> = {
   alex: "https://randomuser.me/api/portraits/men/32.jpg",
   sophia: "https://randomuser.me/api/portraits/women/44.jpg",
   marcus: "https://randomuser.me/api/portraits/men/83.jpg",
-  yuna: "https://randomuser.me/api/portraits/women/79.jpg",
-  liam: "https://randomuser.me/api/portraits/men/18.jpg",
-  priya: "https://randomuser.me/api/portraits/women/67.jpg",
+  yuna: "https://randomuser.me/api/portraits/women/65.jpg",
+  liam: "https://randomuser.me/api/portraits/men/11.jpg",
+  priya: "https://randomuser.me/api/portraits/women/79.jpg",
   carlos: "https://randomuser.me/api/portraits/men/46.jpg",
-  emma: "https://randomuser.me/api/portraits/women/21.jpg",
-  jin: "https://randomuser.me/api/portraits/men/55.jpg",
-  amara: "https://randomuser.me/api/portraits/women/90.jpg",
-  noah: "https://randomuser.me/api/portraits/men/22.jpg",
-  hana: "https://randomuser.me/api/portraits/women/52.jpg",
-  diego: "https://randomuser.me/api/portraits/men/67.jpg",
-  nadia: "https://randomuser.me/api/portraits/women/33.jpg",
-  ryan: "https://randomuser.me/api/portraits/men/71.jpg",
-  zoe: "https://randomuser.me/api/portraits/women/17.jpg",
-  samuel: "https://randomuser.me/api/portraits/men/81.jpg",
-  mei: "https://randomuser.me/api/portraits/women/58.jpg",
-  ethan: "https://randomuser.me/api/portraits/men/36.jpg",
-  isabel: "https://randomuser.me/api/portraits/women/85.jpg",
+  emma: "https://randomuser.me/api/portraits/women/14.jpg",
+  jin: "https://randomuser.me/api/portraits/men/56.jpg",
+  amara: "https://randomuser.me/api/portraits/women/91.jpg",
+  noah: "https://randomuser.me/api/portraits/men/23.jpg",
+  hana: "https://randomuser.me/api/portraits/women/57.jpg",
+  diego: "https://randomuser.me/api/portraits/men/68.jpg",
+  nadia: "https://randomuser.me/api/portraits/women/37.jpg",
+  ryan: "https://randomuser.me/api/portraits/men/77.jpg",
+  zoe: "https://randomuser.me/api/portraits/women/25.jpg",
+  samuel: "https://randomuser.me/api/portraits/men/92.jpg",
+  mei: "https://randomuser.me/api/portraits/women/48.jpg",
+  ethan: "https://randomuser.me/api/portraits/men/35.jpg",
+  isabel: "https://randomuser.me/api/portraits/women/62.jpg",
 };
 
 app.get("/api/soul-presets", async (_req, res) => {
