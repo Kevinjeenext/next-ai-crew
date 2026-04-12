@@ -4,8 +4,10 @@
  * Right: Clean form (login/signup toggle)
  * Supports: Email+Password, Google OAuth, GitHub OAuth, Kakao OAuth
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../components/auth/AuthProvider";
 import { useTheme } from "../ThemeContext";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import "./auth.css";
@@ -15,6 +17,15 @@ type Provider = "google" | "github" | "kakao";
 
 export function LoginPage() {
   const { theme } = useTheme();
+  const { session, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Already authenticated → redirect to home (prevent redirect loop)
+  useEffect(() => {
+    if (!authLoading && session) {
+      navigate("/", { replace: true });
+    }
+  }, [session, authLoading, navigate]);
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +39,7 @@ export function LoginPage() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [disabledProviders, setDisabledProviders] = useState<Set<Provider>>(new Set());
 
-  const redirectTo = "https://nextaicrew.com/auth/callback";
+  const redirectTo = `${window.location.origin}/auth/callback`;
 
   const handleOAuth = useCallback(async (provider: Provider) => {
     setLoading(true);
