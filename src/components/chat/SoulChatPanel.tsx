@@ -22,6 +22,7 @@ interface Props {
   soulAvatar: string;
   department: string;
   onClose: () => void;
+  embedded?: boolean;
 }
 
 const DEPT_COLORS: Record<string, string> = {
@@ -43,8 +44,9 @@ export default function SoulChatPanel({
   soulAvatar,
   department,
   onClose,
+  embedded,
 }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]); 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);

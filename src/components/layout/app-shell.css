@@ -1,0 +1,359 @@
+/**
+ * AppShell CSS — ClawPoD-style sidebar + main chat layout
+ * Dark mode first, Linear/Slack inspired
+ */
+
+/* ─── Shell Grid ─────────────────────── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  background: #0F172A;
+  color: #F1F5F9;
+  overflow: hidden;
+}
+
+/* ─── Sidebar ────────────────────────── */
+.app-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #0B1120;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease, min-width 0.2s ease;
+  overflow: hidden;
+}
+.app-sidebar.collapsed {
+  width: 64px;
+  min-width: 64px;
+}
+
+/* Header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-logo-icon {
+  color: #2563EB;
+  font-size: 20px;
+  font-weight: 700;
+}
+.sidebar-logo-text {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #F1F5F9;
+  white-space: nowrap;
+}
+.sidebar-collapse-btn {
+  width: 24px; height: 24px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.sidebar-collapse-btn:hover {
+  background: rgba(255,255,255,0.06);
+  color: #94A3B8;
+}
+
+/* Search */
+.sidebar-search {
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+}
+.sidebar-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: #F1F5F9;
+  font-family: "Pretendard", sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.sidebar-search-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+.sidebar-search-input::placeholder {
+  color: #475569;
+}
+
+/* Soul List */
+.sidebar-soul-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+.sidebar-section-label {
+  padding: 8px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sidebar-soul-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
+}
+.sidebar-soul-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+.sidebar-soul-item.active {
+  background: rgba(37,99,235,0.12);
+}
+
+/* Avatar Circle */
+.soul-avatar-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+}
+.soul-status-dot {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0B1120;
+}
+.soul-status-dot.active { background: #22C55E; }
+.soul-status-dot.idle { background: #F59E0B; }
+.soul-status-dot.offline { background: #6B7280; }
+
+/* Soul Info */
+.sidebar-soul-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sidebar-soul-name {
+  font-family: "Pretendard", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #E2E8F0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-soul-role {
+  font-size: 12px;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty */
+.sidebar-empty {
+  padding: 16px;
+  text-align: center;
+}
+.sidebar-empty p {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 12px;
+}
+.sidebar-hire-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px dashed rgba(37,99,235,0.4);
+  background: transparent;
+  color: #60A5FA;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sidebar-hire-btn:hover {
+  border-color: #2563EB;
+  background: rgba(37,99,235,0.1);
+}
+
+/* Loading */
+.sidebar-loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+.sidebar-loading-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2563EB;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Add Soul */
+.sidebar-add-soul {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 12px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  background: transparent;
+  color: #64748B;
+  font-family: "Pretendard", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.sidebar-add-soul:hover {
+  border-color: #2563EB;
+  color: #60A5FA;
+  background: rgba(37,99,235,0.06);
+}
+.sidebar-add-soul span {
+  font-size: 16px;
+}
+
+/* Bottom Nav */
+.sidebar-nav {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 8px;
+  flex-shrink: 0;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #94A3B8;
+  font-family: "Pretendard", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+}
+.sidebar-nav-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: #E2E8F0;
+}
+.sidebar-nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* ─── Main Content ───────────────────── */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #0F172A;
+}
+
+/* Embedded chat panel overrides */
+.app-main .soul-chat-panel {
+  position: static;
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+  border-left: none;
+  animation: none;
+}
+
+/* Empty state */
+.app-main-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+.app-main-empty-icon {
+  font-size: 48px;
+  color: #1E3A5F;
+  margin-bottom: 8px;
+}
+.app-main-empty h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #334155;
+}
+.app-main-empty p {
+  font-size: 15px;
+  color: #475569;
+}
+.app-main-hire-btn {
+  margin-top: 12px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: #2563EB;
+  color: #fff;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.app-main-hire-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* ─── Responsive ─────────────────────── */
+@media (max-width: 768px) {
+  .app-sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .app-sidebar.collapsed {
+    width: 260px;
+    min-width: 260px;
+  }
+}

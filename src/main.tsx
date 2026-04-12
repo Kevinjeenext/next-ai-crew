@@ -9,6 +9,7 @@ import { AuthCallback } from "./pages/AuthCallback";
 import { LandingPage } from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import SoulChatPanel from "./components/chat/SoulChatPanel";
+import AppShell from "./components/layout/AppShell";
 import SoulHirePage from "./components/hire/SoulHirePage";
 import BillingPage from "./components/billing/BillingPage";
 import "./index.css";
@@ -86,26 +87,11 @@ function ProtectedApp({ children }: { children?: React.ReactNode }) {
     return <Navigate to="/landing" replace />;
   }
 
-  // If children provided (e.g. /hire page), render them instead of App
-  return (
-    <>
-      {children || <App />}
-      {chatSoul && (
-        <>
-          <div className="soul-chat-overlay" onClick={() => setChatSoul(null)} />
-          <SoulChatPanel
-            soulId={chatSoul.id}
-            soulName={chatSoul.name}
-            soulNameKo={chatSoul.nameKo}
-            soulRole={chatSoul.role}
-            soulAvatar={chatSoul.avatar}
-            department={chatSoul.department}
-            onClose={() => setChatSoul(null)}
-          />
-        </>
-      )}
-    </>
-  );
+  const navigate = (path: string) => { window.location.href = path; };
+
+  // If children provided (e.g. /hire page), render them;
+  // Otherwise render new AppShell (sidebar + chat layout)
+  return children ? <>{children}</> : <AppShell onNavigate={navigate} />;
 }
 
 createRoot(document.getElementById("root")!).render(
