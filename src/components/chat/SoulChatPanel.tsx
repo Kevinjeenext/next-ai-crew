@@ -3,7 +3,7 @@
  * Opens from office/hire when clicking a Soul avatar
  * Supports streaming (SSE) + standard responses
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "./soul-chat.css";
 
 /** Render message content with code blocks (``` ... ```) */
@@ -295,7 +295,13 @@ export default function SoulChatPanel({
             isFirst ? "first-in-group" : "continued",
           ].filter(Boolean).join(" ");
 
+          // Date separator
+          const showDateSep = !prev || msg.timestamp.toDateString() !== prev.timestamp.toDateString();
+          const dateFmt = msg.timestamp.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+
           return (
+            <React.Fragment key={msg.id}>
+            {showDateSep && <div className="chat-date-sep">{dateFmt === new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }) ? `오늘 ${dateFmt}` : dateFmt}</div>}
             <div key={msg.id} className={groupCls}>
               <div className="msg-avatar-col">
                 {msg.role === "assistant" ? (
@@ -315,6 +321,7 @@ export default function SoulChatPanel({
                 {msg.model && <span className="msg-model-tag">{msg.model}</span>}
               </div>
             </div>
+            </React.Fragment>
           );
         })}
         {/* Typing indicator */}
