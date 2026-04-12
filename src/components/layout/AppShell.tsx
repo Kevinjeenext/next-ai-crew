@@ -3,14 +3,14 @@
  * Persistent sidebar across all authenticated pages
  * Uses react-router Outlet for nested routing
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Outlet, useNavigate, useLocation, NavLink } from "react-router-dom";
 import SoulChatPanel from "../chat/SoulChatPanel";
 import Dashboard from "../dashboard/Dashboard";
 import SoulAvatar from "../ui/SoulAvatar";
-import ThemeToggle from "../ui/ThemeToggle";
 import { useTheme } from "../../ThemeContext";
-import { LayoutDashboard, Store, Settings, Plus, Shield, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { useAuth } from "../../components/auth/AuthProvider";
+import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck } from "lucide-react";
 import "./app-shell.css";
 
 interface Soul {
@@ -166,8 +166,10 @@ export default function AppShell() {
             <Settings size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>설정</span>}
           </NavLink>
-          <ThemeToggle collapsed={sidebarCollapsed} />
         </div>
+
+        {/* User Profile Section (Claude-style) */}
+        <UserProfileSection collapsed={sidebarCollapsed} />
       </aside>
 
       {/* Main Content */}
@@ -195,6 +197,76 @@ export default function AppShell() {
         {/* Outlet renders child route content; dashboard is the index */}
         <Outlet context={{ souls, selectedSoul, selectedSoulId, setSelectedSoulId: handleSoulSelect, navigate }} />
       </main>
+    </div>
+  );
+}
+
+/* ── User Profile Section (Claude-style) ── */
+function UserProfileSection({ collapsed }: { collapsed: boolean }) {
+  const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
+  const initials = displayName.split(/[\s-]+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+
+  const handleSignOut = async () => {
+    setMenuOpen(false);
+    await signOut();
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
+  return (
+    <div className="sidebar-profile" ref={menuRef}>
+      <button
+        className="sidebar-profile-btn"
+        onClick={() => setMenuOpen(!menuOpen)}
+        title={collapsed ? displayName : undefined}
+      >
+        <div className="sidebar-profile-avatar">{initials}</div>
+        {!collapsed && (
+          <div className="sidebar-profile-info">
+            <span className="sidebar-profile-name">{displayName}</span>
+            <span className="sidebar-profile-email">{user?.email || ""}</span>
+          </div>
+        )}
+      </button>
+
+      {menuOpen && (
+        <div className="sidebar-profile-menu">
+          <button className="profile-menu-item" onClick={() => { setMenuOpen(false); navigate("/settings"); }}>
+            <User size={15} strokeWidth={1.5} /> 프로필 설정
+          </button>
+          <button className="profile-menu-item" onClick={() => { setMenuOpen(false); navigate("/settings"); }}>
+            <Settings size={15} strokeWidth={1.5} /> 계정 설정
+          </button>
+          <button className="profile-menu-item" onClick={() => { setMenuOpen(false); navigate("/dashboard/billing"); }}>
+            <CreditCard size={15} strokeWidth={1.5} /> 요금제
+          </button>
+          <div className="profile-menu-divider" />
+          <button className="profile-menu-item" onClick={() => { toggleTheme(); }}>
+            {theme === "dark" ? <Sun size={15} strokeWidth={1.5} /> : <Moon size={15} strokeWidth={1.5} />}
+            {theme === "dark" ? "라이트 모드" : "다크 모드"}
+          </button>
+          <div className="profile-menu-divider" />
+          <button className="profile-menu-item profile-menu-danger" onClick={handleSignOut}>
+            <LogOut size={15} strokeWidth={1.5} /> 로그아웃
+          </button>
+        </div>
+      )}
     </div>
   );
 }
