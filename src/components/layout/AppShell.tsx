@@ -10,7 +10,7 @@ import Dashboard from "../dashboard/Dashboard";
 import SoulAvatar from "../ui/SoulAvatar";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useTheme } from "../../ThemeContext";
-import { LayoutDashboard, Store, Settings, Plus, Shield, ArrowLeft, ChevronRight, Home } from "lucide-react";
+import { LayoutDashboard, Store, Settings, Plus, Shield, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import "./app-shell.css";
 
 interface Soul {
@@ -109,7 +109,7 @@ export default function AppShell() {
             }
           </div>
           <button className="sidebar-collapse-btn" onClick={() => setSidebarCollapsed(!sidebarCollapsed)} title={sidebarCollapsed ? "사이드바 열기" : "사이드바 접기"}>
-            {sidebarCollapsed ? "→" : "←"}
+            {sidebarCollapsed ? <PanelLeftOpen size={18} strokeWidth={1.5} /> : <PanelLeftClose size={18} strokeWidth={1.5} />}
           </button>
         </div>
 
