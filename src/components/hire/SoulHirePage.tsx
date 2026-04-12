@@ -4,7 +4,7 @@
  *
  * Ivy UX spec Steps 1-6
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import SoulHireCard from "./SoulHireCard";
 import * as api from "../../api";
 import "./soul-hire.css";
@@ -701,8 +701,53 @@ function TaskOnboarding({
   );
 }
 
+// ========== API HOOK ==========
+function useSoulPresets(): SoulTemplate[] {
+  const [presets, setPresets] = useState<SoulTemplate[]>(SOUL_CATALOG);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/soul-presets");
+        if (!res.ok) throw new Error("API unavailable");
+        const { presets: apiPresets } = await res.json();
+        if (!cancelled && apiPresets?.length > 0) {
+          // Map API fields → SoulTemplate interface
+          const mapped: SoulTemplate[] = apiPresets.map((p: any) => ({
+            id: p.id || p.name,
+            name: p.name?.split("-").map((w: string) => w[0]?.toUpperCase() + w.slice(1)).join(" ") || p.name,
+            name_ko: p.display_name || p.name,
+            role_title: p.description || p.category,
+            role_title_ko: p.display_name || p.category,
+            department: p.category === "cs" ? "operations" : p.category === "data" ? "engineering" : p.category === "research" ? "planning" : p.category || "engineering",
+            avatar: p.thumbnail_url || "/icons/departments/icon-developer.svg",
+            level: 35 + Math.floor(Math.random() * 20),
+            personality_text: p.greeting_message || "",
+            personality_text_ko: p.greeting_message || "",
+            personality: { thoroughness: 3, creativity: 3, speed: 3, teamwork: 3 },
+            skills: p.skill_tags || [],
+            greeting: p.greeting_message || "안녕하세요!",
+            greeting_ko: p.greeting_message || "안녕하세요!",
+            tier: p.is_premium ? "pro" : "standard",
+            cli_provider: p.default_model || "auto",
+          }));
+          setPresets(mapped);
+        }
+      } catch {
+        // Fallback to hardcoded SOUL_CATALOG — DDL not yet applied
+        console.log("[SoulHire] Using hardcoded catalog (API unavailable)");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return presets;
+}
+
 // ========== MAIN PAGE ==========
 export default function SoulHirePage({ language = "ko" }: { language?: "en" | "ko" }) {
+  const soulCatalog = useSoulPresets();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [hiredIds, setHiredIds] = useState<Set<string>>(new Set());
@@ -711,7 +756,7 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
   const [onboardingSoul, setOnboardingSoul] = useState<SoulTemplate | null>(null);
   const [hiring, setHiring] = useState(false);
 
-  const filtered = SOUL_CATALOG.filter((s) => {
+  const filtered = soulCatalog.filter((s) => {
     if (filter !== "all" && s.department !== filter) return false;
     if (search) {
       const q = search.toLowerCase();
