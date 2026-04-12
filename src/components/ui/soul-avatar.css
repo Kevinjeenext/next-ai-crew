@@ -1,4 +1,4 @@
-/* SoulAvatar — Neon Dark v2 */
+/* SoulAvatar — Neon Dark v2 + Photo mode */
 .soul-avatar {
   position: relative;
   display: flex;
@@ -10,7 +10,19 @@
   font-weight: 700;
   color: #fff;
   user-select: none;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+/* Photo mode: neon glow ring */
+.soul-avatar.has-photo {
+  border: 2px solid;
+  padding: 0;
+}
+.soul-avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 .soul-avatar-initials {
   line-height: 1;
@@ -22,6 +34,7 @@
   width: 9px; height: 9px;
   border-radius: 50%;
   border: 2px solid var(--bg-base, #080B12);
+  z-index: 1;
 }
 .soul-avatar-status.active {
   background: #10B981;
@@ -29,3 +42,5 @@
 }
 .soul-avatar-status.idle   { background: #F59E0B; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
 .soul-avatar-status.offline { background: #2D3A4E; }
+[data-theme="light"] .soul-avatar-status.offline { background: #D1D5DB; }
+[data-theme="light"] .soul-avatar-status { border-color: var(--bg-surface, #FFFFFF); }

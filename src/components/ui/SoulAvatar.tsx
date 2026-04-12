@@ -1,7 +1,9 @@
 /**
  * SoulAvatar — Neon Dark v2 (GuardianOps style)
- * Department-based neon glow + circular initials
+ * Photo mode: AI-generated profile image with neon glow ring
+ * Fallback: Department-based neon glow + circular initials
  */
+import { useState } from "react";
 import "./soul-avatar.css";
 
 interface Props {
@@ -52,22 +54,36 @@ const SIZE_MAP = { xs: 24, sm: 32, md: 40, lg: 56, xl: 72 };
 const FONT_MAP = { xs: 10, sm: 12, md: 14, lg: 18, xl: 22 };
 
 export default function SoulAvatar({ name, size = "md", status, department, imageUrl, className }: Props) {
+  const [imgError, setImgError] = useState(false);
   const px = SIZE_MAP[size];
   const fs = FONT_MAP[size];
   const dept = DEPT_COLORS[department || ""] || COLORS[hashIdx(name)];
 
+  const showImage = imageUrl && !imgError;
+
   return (
     <div
-      className={`soul-avatar ${className || ""}`}
+      className={`soul-avatar ${showImage ? "has-photo" : ""} ${className || ""}`}
       style={{
         width: px, height: px,
-        background: imageUrl ? `url(${imageUrl}) center/cover` : dept.bg,
+        background: showImage ? "transparent" : dept.bg,
         color: dept.fg,
         fontSize: fs,
-        boxShadow: imageUrl ? undefined : `0 0 8px ${dept.glow}`,
+        boxShadow: `0 0 ${showImage ? 10 : 8}px ${dept.glow}`,
+        borderColor: showImage ? dept.fg : undefined,
       }}
     >
-      {!imageUrl && <span className="soul-avatar-initials">{getInitials(name)}</span>}
+      {showImage ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="soul-avatar-img"
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span className="soul-avatar-initials">{getInitials(name)}</span>
+      )}
       {status && <span className={`soul-avatar-status ${status}`} />}
     </div>
   );

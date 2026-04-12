@@ -18,6 +18,7 @@ interface Preset {
   greeting_message: string;
   is_premium: boolean;
   personality?: Record<string, number>;
+  thumbnail_url?: string;
 }
 
 const CAT_LABELS: Record<string, string> = {
@@ -69,7 +70,7 @@ function HireModal({ preset, onClose, onConfirm, hiring, teamCount, maxSouls: MA
         </div>
         <div className="hire-modal-body">
           <div className="hire-modal-soul">
-            <SoulAvatar name={preset.name} size="xl" department={preset.category} />
+            <SoulAvatar name={preset.name} size="xl" department={preset.category} imageUrl={preset.thumbnail_url} />
             <div className="hire-modal-soul-info">
               <div className="hire-modal-soul-name">{preset.display_name}</div>
               <div className="hire-modal-soul-meta">{preset.name} · {CAT_LABELS[preset.category] || preset.category}</div>
@@ -258,7 +259,7 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
               return (
                 <div key={p.id} className={`hire-market-card ${isHired ? "is-hired" : ""}`}>
                   <div className="hmc-head">
-                    <SoulAvatar name={p.name} size="lg" department={p.category} />
+                    <SoulAvatar name={p.name} size="lg" department={p.category} imageUrl={p.thumbnail_url} />
                     <div className="hmc-meta">
                       <div className="hmc-name">{p.display_name}</div>
                       <div className="hmc-role">{p.name}</div>

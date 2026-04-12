@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import SoulChatPanel from "../chat/SoulChatPanel";
 import Dashboard from "../dashboard/Dashboard";
+import SoulAvatar from "../ui/SoulAvatar";
 import ThemeToggle from "../ui/ThemeToggle";
 import "./app-shell.css";
 
@@ -16,6 +17,7 @@ interface Soul {
   department: string;
   status: "active" | "idle" | "offline";
   last_active?: string;
+  avatar_url?: string;
 }
 
 interface Props {
@@ -153,15 +155,13 @@ export default function AppShell({ onNavigate }: Props) {
                 className={`sidebar-soul-item ${selectedSoulId === soul.id ? "active" : ""}`}
                 onClick={() => handleSoulSelect(soul)}
               >
-                <div
-                  className="soul-avatar-circle"
-                  style={{ background: getAvatarColor(soul.name) }}
-                >
-                  {getInitials(soul.name)}
-                  <span
-                    className={`soul-status-dot ${soul.status || "active"}`}
-                  />
-                </div>
+                <SoulAvatar
+                  name={soul.name}
+                  size="sm"
+                  department={soul.department}
+                  status={soul.status || "active"}
+                  imageUrl={soul.avatar_url}
+                />
                 {!sidebarCollapsed && (
                   <div className="sidebar-soul-info">
                     <span className="sidebar-soul-name">

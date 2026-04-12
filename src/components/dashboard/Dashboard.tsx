@@ -14,6 +14,7 @@ interface Soul {
   department: string;
   status: string;
   skill_tags?: string[];
+  avatar_url?: string;
 }
 
 interface Props {
@@ -97,6 +98,7 @@ export default function Dashboard({ onChatWithSoul, onNavigate }: Props) {
                     size="lg"
                     department={soul.department}
                     status={soul.status === "active" ? "active" : "idle"}
+                    imageUrl={soul.avatar_url}
                   />
                   <div>
                     <div className="soul-card-name">{soul.name_ko || soul.name}</div>
