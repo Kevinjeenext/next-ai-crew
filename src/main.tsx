@@ -1,4 +1,4 @@
-import { StrictMode, Component, type ReactNode } from "react";
+import { StrictMode, Component, useState, useEffect, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { AuthCallback } from "./pages/AuthCallback";
 import { LandingPage } from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
+import SoulChatPanel from "./components/chat/SoulChatPanel";
 import SoulHirePage from "./components/hire/SoulHirePage";
 import BillingPage from "./components/billing/BillingPage";
 import "./index.css";
@@ -62,6 +63,16 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { error: Erro
  */
 function ProtectedApp({ children }: { children?: React.ReactNode }) {
   const { session, loading } = useAuth();
+  const [chatSoul, setChatSoul] = useState<{
+    id: string; name: string; nameKo: string;
+    role: string; avatar: string; department: string;
+  } | null>(null);
+
+  // Expose globally so PixiJS/OfficeMinimap can trigger chat
+  useEffect(() => {
+    (window as any).__openSoulChat = (soul: typeof chatSoul) => setChatSoul(soul);
+    return () => { delete (window as any).__openSoulChat; };
+  }, []);
 
   if (loading) {
     return (
@@ -76,7 +87,25 @@ function ProtectedApp({ children }: { children?: React.ReactNode }) {
   }
 
   // If children provided (e.g. /hire page), render them instead of App
-  return children ? <>{children}</> : <App />;
+  return (
+    <>
+      {children || <App />}
+      {chatSoul && (
+        <>
+          <div className="soul-chat-overlay" onClick={() => setChatSoul(null)} />
+          <SoulChatPanel
+            soulId={chatSoul.id}
+            soulName={chatSoul.name}
+            soulNameKo={chatSoul.nameKo}
+            soulRole={chatSoul.role}
+            soulAvatar={chatSoul.avatar}
+            department={chatSoul.department}
+            onClose={() => setChatSoul(null)}
+          />
+        </>
+      )}
+    </>
+  );
 }
 
 createRoot(document.getElementById("root")!).render(
