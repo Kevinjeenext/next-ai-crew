@@ -1,6 +1,6 @@
 /**
- * AppShell CSS — Pro UI (Ivy 00~03 specs)
- * Sidebar + Main Chat layout, design system tokens
+ * AppShell CSS — Pro UI v2 Neon Dark (GuardianOps)
+ * Sidebar + Main Chat layout, glass + neon design tokens
  */
 
 /* ─── Shell ──────────────────────────── */
@@ -8,15 +8,23 @@
   display: flex;
   height: 100vh;
   background: var(--bg-base);
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(59,130,246,0.08) 0%,
+    transparent 60%
+  );
   color: var(--text-primary);
   overflow: hidden;
 }
 
 /* ─── Sidebar ────────────────────────── */
 .app-sidebar {
-  width: 260px; min-width: 260px;
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border-subtle);
+  width: 240px; min-width: 240px;
+  background: rgba(8,11,18,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(59,130,246,0.1);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
   display: flex; flex-direction: column;
   transition: width 0.2s ease, min-width 0.2s ease;
   overflow: hidden;
@@ -75,8 +83,12 @@
   transition: background 0.12s, color 0.12s;
   text-align: left;
 }
-.sidebar-nav-item:hover { background: var(--bg-overlay); color: var(--text-primary); }
-.sidebar-nav-item.active { background: rgba(37,99,235,0.12); color: #93BBFC; }
+.sidebar-nav-item:hover { background: rgba(59,130,246,0.08); color: var(--text-primary); }
+.sidebar-nav-item.active {
+  background: rgba(59,130,246,0.12);
+  color: #93BBFC;
+  box-shadow: inset 3px 0 0 var(--brand-blue);
+}
 .sidebar-nav-icon { width: 20px; text-align: center; font-size: 16px; }
 
 /* Search */
@@ -92,7 +104,7 @@
 }
 .sidebar-search-input:focus {
   border-color: var(--brand-blue);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12), 0 0 16px rgba(59,130,246,0.1);
 }
 .sidebar-search-input::placeholder { color: var(--text-tertiary); }
 
@@ -112,8 +124,11 @@
   width: 100%; padding: 6px 10px; border-radius: 7px;
   transition: background 0.12s; text-align: left;
 }
-.sidebar-soul-item:hover { background: var(--bg-overlay); }
-.sidebar-soul-item.active { background: rgba(37,99,235,0.12); }
+.sidebar-soul-item:hover { background: rgba(59,130,246,0.06); }
+.sidebar-soul-item.active {
+  background: rgba(59,130,246,0.1);
+  box-shadow: inset 2px 0 0 var(--brand-cyan);
+}
 
 /* Channel-style with hash */
 .soul-channel-hash {

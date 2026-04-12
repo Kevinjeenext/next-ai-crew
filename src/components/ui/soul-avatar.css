@@ -1,14 +1,16 @@
-/* SoulAvatar — initial circle styles */
+/* SoulAvatar — Neon Dark v2 */
 .soul-avatar {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-family: "Space Grotesk", sans-serif;
+  border-radius: 50%;
+  font-family: "Space Grotesk", var(--font-ui, sans-serif);
   font-weight: 700;
   color: #fff;
   user-select: none;
+  transition: box-shadow 0.2s;
 }
 .soul-avatar-initials {
   line-height: 1;
@@ -16,11 +18,14 @@
 }
 .soul-avatar-status {
   position: absolute;
-  bottom: 0; right: 0;
-  width: 10px; height: 10px;
+  bottom: 1px; right: 1px;
+  width: 9px; height: 9px;
   border-radius: 50%;
-  border: 2px solid #0B1120;
+  border: 2px solid var(--bg-base, #080B12);
 }
-.soul-avatar-status.active { background: #22C55E; }
-.soul-avatar-status.idle { background: #F59E0B; }
-.soul-avatar-status.offline { background: #6B7280; }
+.soul-avatar-status.active {
+  background: #10B981;
+  box-shadow: 0 0 6px rgba(16,185,129,0.6);
+}
+.soul-avatar-status.idle   { background: #F59E0B; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+.soul-avatar-status.offline { background: #2D3A4E; }

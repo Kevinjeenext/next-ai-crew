@@ -1,5 +1,5 @@
 /**
- * Dashboard CSS — Pro UI (Ivy 01-main-dashboard.md)
+ * Dashboard CSS — Pro UI v2 Neon Dark (Ivy 01 + GuardianOps)
  */
 
 .dashboard {
@@ -33,19 +33,31 @@
   gap: 12px; margin-bottom: 32px;
 }
 .summary-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px; padding: 16px 20px;
-  transition: border-color 0.15s;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 20px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.summary-card:hover { border-color: var(--border-default); }
+.summary-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent);
+}
+.summary-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.2);
+}
 .summary-label {
-  font: 500 12px var(--font-ui); color: var(--text-tertiary);
+  font: 500 11px var(--font-ui); color: var(--text-tertiary);
   margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 .summary-value {
-  font: 700 24px var(--font-ui); color: var(--text-primary);
+  font: 700 28px var(--font-mono); color: var(--text-primary);
   line-height: 1; margin-bottom: 4px;
+  text-shadow: 0 0 20px rgba(59,130,246,0.3);
 }
 .summary-sub {
   font: 400 12px var(--font-ui); color: var(--text-tertiary);
@@ -58,21 +70,30 @@
   gap: 14px; margin-bottom: 32px;
 }
 .soul-team-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px; padding: 20px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 20px;
+  transition: all 0.2s ease;
   position: relative; overflow: hidden;
+}
+.soul-team-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.4) 30%, rgba(0,212,255,0.4) 70%, transparent 100%);
 }
 .soul-team-card::after {
   content: ""; position: absolute;
   bottom: 0; left: 0; right: 0; height: 3px;
-  background: var(--brand-blue);
+  background: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-cyan) 100%);
   border-radius: 0 0 12px 12px;
+  box-shadow: 0 0 8px rgba(59,130,246,0.4);
 }
 .soul-team-card:hover {
-  border-color: var(--border-default);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  background: var(--glass-bg-hover);
+  border-color: var(--border-glow);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.2);
+  transform: translateY(-1px);
 }
 .soul-card-top {
   display: flex; align-items: center; gap: 12px;
@@ -92,9 +113,9 @@
 .soul-skill-chip {
   padding: 3px 8px; border-radius: 4px;
   font: 500 11px var(--font-mono);
-  background: var(--bg-overlay);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
+  background: rgba(59,130,246,0.08);
+  color: #93BBFC;
+  border: 1px solid rgba(59,130,246,0.15);
 }
 .soul-card-stats {
   display: flex; gap: 16px;
@@ -110,9 +131,14 @@
   background: var(--brand-blue); color: white;
   border-radius: 7px;
   font: 600 13px var(--font-ui);
-  transition: background 0.15s;
+  box-shadow: 0 0 12px var(--brand-blue-glow);
+  transition: all 0.2s;
 }
-.soul-chat-btn:hover { background: var(--brand-blue-h); }
+.soul-chat-btn:hover {
+  background: var(--brand-blue-h);
+  box-shadow: 0 0 24px var(--brand-blue-glow), 0 0 48px rgba(59,130,246,0.15);
+  transform: translateY(-1px);
+}
 .soul-settings-btn {
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;

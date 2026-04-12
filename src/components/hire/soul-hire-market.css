@@ -1,5 +1,5 @@
 /**
- * Soul Hire Market CSS — Ivy 07-hire-market.md
+ * Soul Hire Market CSS — Ivy 07 + v2 Neon Dark
  */
 .hire-market-page {
   flex: 1; display: flex; flex-direction: column;
@@ -17,8 +17,10 @@
 .hire-pro-search { flex: 1; max-width: 320px; }
 .hire-team-badge {
   display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; background: var(--bg-surface);
-  border: 1px solid var(--border-default); border-radius: 8px;
+  padding: 7px 14px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); border-radius: 8px;
   font: 500 13px var(--font-ui); color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -44,7 +46,10 @@
 }
 .filter-dropdown-btn:hover { border-color: var(--border-strong); background: var(--bg-overlay); color: var(--text-primary); }
 .filter-dropdown-btn.active {
-  border-color: var(--brand-blue); background: rgba(37,99,235,0.08); color: #93BBFC;
+  border-color: var(--brand-blue);
+  background: rgba(59,130,246,0.1);
+  color: #93BBFC;
+  box-shadow: 0 0 8px var(--brand-blue-glow);
 }
 .filter-spacer { flex: 1; }
 .filter-reset-btn {
@@ -85,24 +90,37 @@
 
 /* Card */
 .hire-market-card {
-  background: var(--bg-surface); border: 1px solid var(--border-subtle);
-  border-radius: 12px; padding: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 20px;
   display: flex; flex-direction: column;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
   position: relative; overflow: hidden;
+}
+.hire-market-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.4) 30%, rgba(0,212,255,0.4) 70%, transparent 100%);
 }
 .hire-market-card::after {
   content: ""; position: absolute;
   bottom: 0; left: 0; right: 0; height: 3px;
-  background: var(--brand-blue);
+  background: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-cyan) 100%);
   border-radius: 0 0 12px 12px;
+  box-shadow: 0 0 8px rgba(59,130,246,0.4);
 }
 .hire-market-card:hover {
-  border-color: var(--border-default);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2); transform: translateY(-1px);
+  background: var(--glass-bg-hover);
+  border-color: var(--border-glow);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.2);
+  transform: translateY(-1px);
 }
 .hire-market-card.is-hired {
-  border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.03);
+  border-color: rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.05);
+  box-shadow: 0 0 12px var(--success-glow);
 }
 
 .hmc-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
@@ -120,8 +138,10 @@
 }
 .hmc-skill {
   padding: 2px 7px; border-radius: 4px;
-  font: 500 11px var(--font-mono); background: var(--bg-overlay);
-  color: var(--text-secondary); border: 1px solid var(--border-subtle);
+  font: 500 11px var(--font-mono);
+  background: rgba(59,130,246,0.08);
+  color: #93BBFC;
+  border: 1px solid rgba(59,130,246,0.15);
 }
 .hmc-skill-more {
   padding: 2px 7px; border-radius: 4px;
