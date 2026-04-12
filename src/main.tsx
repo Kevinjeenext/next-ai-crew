@@ -5,7 +5,7 @@ import { ThemeProvider } from "./ThemeContext";
 import { AuthProvider, useAuth } from "./components/auth/AuthProvider";
 import { LoginPage } from "./pages/LoginPage";
 import { AuthCallback } from "./pages/AuthCallback";
-import { LandingPage } from "./pages/LandingPage";
+import LandingPage from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import AppShell from "./components/layout/AppShell";
 import SoulHireMarket from "./components/hire/SoulHireMarket";

@@ -1,382 +1,197 @@
 /**
- * Landing Page — "Your AI Crew, with Soul."
- * Design: Ivy Day 3 (01-landing-hero-design.md)
+ * Landing Page — Ivy 13-landing-redesign.md
+ * 5-section: Hero + Feature + Soul Showcase + Pricing + CTA/Footer
+ * Neon Dark + Glassmorphism + AI Avatar Photos
  */
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SoulAvatar from "../components/ui/SoulAvatar";
+import "./landing.css";
 
-/* ── Department icon data (10 departments) ── */
-const DEPARTMENTS = [
-  { id: "ceo",       label: "CEO",       color: "#2563EB", icon: "/icons/departments/icon-ceo.svg" },
-  { id: "cto",       label: "CTO",       color: "#6366F1", icon: "/icons/departments/icon-cto.svg" },
-  { id: "developer", label: "Developer", color: "#2563EB", icon: "/icons/departments/icon-developer.svg" },
-  { id: "designer",  label: "Designer",  color: "#06B6D4", icon: "/icons/departments/icon-designer.svg" },
-  { id: "pm",        label: "PM",        color: "#FBBF24", icon: "/icons/departments/icon-pm.svg" },
-  { id: "security",  label: "Security",  color: "#F43F5E", icon: "/icons/departments/icon-security.svg" },
-  { id: "qa",        label: "QA",        color: "#10B981", icon: "/icons/departments/icon-qa.svg" },
-  { id: "devops",    label: "DevOps",    color: "#F97316", icon: "/icons/departments/icon-devops.svg" },
-  { id: "marketer",  label: "Marketer",  color: "#EC4899", icon: "/icons/departments/icon-marketer.svg" },
-  { id: "ea",        label: "EA",        color: "#8B5CF6", icon: "/icons/departments/icon-ea.svg" },
-];
-
-/* ── Agent card showcase ── */
-const AGENTS = [
-  {
-    name: "Sophia",
-    role: "Senior Developer",
-    department: "engineering",
-    color: "#2563EB",
-    skills: ["React", "Python", "TypeScript"],
-    task: "API 리팩토링 완료",
-    progress: 78,
-    level: 42,
-    tasksToday: 12,
-    status: "working" as const,
-  },
-  {
-    name: "Marcus",
-    role: "Security Lead",
-    department: "security",
-    color: "#F43F5E",
-    skills: ["Audit", "Pentest", "SAST"],
-    task: "보안 스캔 진행 중",
-    progress: 45,
-    level: 38,
-    tasksToday: 8,
-    status: "working" as const,
-  },
-  {
-    name: "Ivy",
-    role: "UX Designer",
-    department: "design",
-    color: "#06B6D4",
-    skills: ["Figma", "CSS", "Motion"],
-    task: "랜딩 디자인 QA",
-    progress: 92,
-    level: 35,
-    tasksToday: 6,
-    status: "online" as const,
-  },
-];
-
-const VALUE_PROPS = [
-  {
-    icon: "/icons/ui/antislop-command.svg",
-    title: "지시만 하세요",
-    desc: "자연어로 업무 지시, AI가 이해하고 실행합니다.",
-  },
-  {
-    icon: "/icons/ui/antislop-team.svg",
-    title: "팀이 알아서",
-    desc: "에이전트끼리 협업, 회의, 코드 리뷰를 자율적으로 진행합니다.",
-  },
-  {
-    icon: "/icons/ui/antislop-result.svg",
-    title: "결과만 확인",
-    desc: "완료 보고, 코드 PR, 배포까지 자동으로 처리됩니다.",
-  },
+// Soul data for showcase
+const SOULS = [
+  { id: "alex-developer", name: "Alex", role: "Full-Stack Developer", img: "/avatars/souls/soul_01_alex.webp", greeting: "안녕하세요! 개발자 Alex입니다. 코드 리뷰, 디버깅, 새 기능 구현 어떤 것이든 도와드릴게요. 🚀", skills: ["React", "TypeScript", "Node.js", "PostgreSQL"] },
+  { id: "maya-designer", name: "Maya", role: "UI/UX Designer", img: "/avatars/souls/soul_02_sophia.webp", greeting: "디자인은 사용자의 마음을 읽는 일이에요. 와이어프레임부터 프로토타입까지 함께해요! 🎨", skills: ["Figma", "Tailwind", "Accessibility", "Motion"] },
+  { id: "marcus", name: "Marcus", role: "Security Engineer", img: "/avatars/souls/soul_03_marcus.webp", greeting: "보안은 사후 대응이 아니라 설계 단계부터 시작됩니다. 취약점 분석, 코드 감사 맡겨주세요. 🔒", skills: ["Penetration Testing", "OWASP", "SOC 2", "Encryption"] },
+  { id: "yuna-writer", name: "Yuna", role: "Content Writer & PM", img: "/avatars/souls/soul_04_yuna.webp", greeting: "글 한 줄이 브랜드의 첫인상이에요. 콘텐츠 전략부터 실행까지 도울게요! ✍️", skills: ["Copywriting", "SEO", "Analytics", "Notion"] },
+  { id: "liam", name: "Liam", role: "DevOps Engineer", img: "/avatars/souls/soul_05_liam.webp", greeting: "배포 자동화, 인프라 관리, 모니터링까지. 안정적인 시스템을 만들어드립니다. ⚙️", skills: ["Docker", "K8s", "CI/CD", "AWS"] },
+  { id: "priya", name: "Priya", role: "Data Analyst", img: "/avatars/souls/soul_06_priya.webp", greeting: "데이터에서 인사이트를 찾아드려요. 대시보드 설계부터 분석까지! 📊", skills: ["Python", "SQL", "Tableau", "Statistics"] },
+  { id: "carlos", name: "Carlos", role: "Backend Engineer", img: "/avatars/souls/soul_07_carlos.webp", greeting: "확장 가능한 API 설계가 전문입니다. 마이크로서비스 아키텍처 상담하세요! 🏗️", skills: ["Go", "gRPC", "Redis", "PostgreSQL"] },
+  { id: "emma", name: "Emma", role: "Customer Success", img: "/avatars/souls/soul_08_emma.webp", greeting: "고객의 목소리가 가장 중요해요. CS부터 온보딩 가이드까지 함께합니다. 💬", skills: ["Zendesk", "Intercom", "CRM", "Onboarding"] },
+  { id: "jin", name: "Jin", role: "ML Engineer", img: "/avatars/souls/soul_09_jin.webp", greeting: "모델 학습부터 배포까지, AI/ML 파이프라인을 구축해드립니다. 🤖", skills: ["PyTorch", "MLOps", "NLP", "LLM"] },
+  { id: "amara", name: "Amara", role: "Growth Marketer", img: "/avatars/souls/soul_10_amara.webp", greeting: "데이터 기반 마케팅으로 성장을 이끌어요. 퍼포먼스부터 브랜딩까지! 📈", skills: ["Google Ads", "SEO", "A/B Test", "Funnel"] },
 ];
 
 const FEATURES = [
-  { icon: "/icons/ui/feature-soul.svg", title: "Souls, Not Bots", description: "Each AI agent has a unique personality, role, and expertise. They're not tools — they're team members." },
-  { icon: "/icons/ui/feature-workflow.svg", title: "Your Virtual Office", description: "Organize departments, assign tasks, and watch your AI crew collaborate in real-time." },
-  { icon: "/icons/ui/feature-multimodel.svg", title: "Instant Scaling", description: "Spin up specialists in seconds. Engineering, design, marketing — build any team you need." },
-  { icon: "/icons/ui/feature-collaboration.svg", title: "Natural Communication", description: "Give directives in plain language. Your AI team discusses, plans, and delivers results." },
-  { icon: "/icons/ui/feature-dashboard.svg", title: "Full Visibility", description: "Track progress, review outputs, and see meeting minutes — like a real management dashboard." },
-  { icon: "/icons/ui/feature-security.svg", title: "Enterprise Ready", description: "Multi-tenant architecture, role-based access, and audit trails from day one." },
+  { icon: "🧠", color: "blue", title: "Soul Identity", desc: "Each AI has a name, personality, and expertise.", ko: "이름, 성격, 전문성을 가진 나만의 AI 동료" },
+  { icon: "🤝", color: "cyan", title: "Always Available", desc: "Your crew works 24/7. No sick days, no overtime complaints.", ko: "아픈 날도, 야근 불만도 없는 24/7 팀원" },
+  { icon: "⚡", color: "green", title: "10x Faster", desc: "Parallel AI agents complete tasks in minutes, not days.", ko: "병렬 AI 에이전트로 몇 분 안에 완료" },
 ];
 
-const STATUS_STYLES: Record<string, React.CSSProperties> = {
-  online: {
-    width: 8, height: 8, borderRadius: "50%",
-    background: "#10B981",
-    boxShadow: "0 0 8px rgba(16,185,129,0.5)",
-    animation: "soul-spark 2s ease-in-out infinite",
-  },
-  working: {
-    width: 8, height: 8, borderRadius: "50%",
-    background: "#06B6D4",
-    boxShadow: "0 0 8px rgba(6,182,212,0.5)",
-    animation: "soul-pulse 1.5s ease-in-out infinite",
-  },
-  offline: {
-    width: 8, height: 8, borderRadius: "50%",
-    background: "#475569",
-  },
-};
+const PLANS = [
+  { name: "Starter", price: "Free", period: "", souls: "2 Souls", tokens: "50K tokens/mo", features: ["Basic AI models", "Community support", "1 workspace"] },
+  { name: "Pro", price: "$19", period: "/mo", souls: "10 Souls", tokens: "500K tokens/mo", features: ["GPT-4o & Claude", "Priority support", "5 workspaces", "Custom prompts"] },
+  { name: "Team", price: "$49", period: "/mo", souls: "25 Souls", tokens: "2M tokens/mo", features: ["All Pro features", "Team collaboration", "Analytics dashboard", "API access"], popular: true },
+  { name: "Business", price: "$99", period: "/mo", souls: "Unlimited", tokens: "10M tokens/mo", features: ["All Team features", "SSO & SAML", "Dedicated support", "Custom integrations", "SLA guarantee"] },
+];
 
-export function LandingPage() {
+export default function LandingPage() {
   const navigate = useNavigate();
+  const [selectedSoul, setSelectedSoul] = useState(0);
+  const soul = SOULS[selectedSoul];
 
   return (
-    <div className="min-h-screen" data-theme="dark" style={{ background: "#080B12", color: "#E2E8F0" }}>
-      {/* Global animations */}
-      <style>{`
-        @keyframes soul-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
-        @keyframes soul-spark { 0%,100%{opacity:1} 50%{opacity:.5} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-      `}</style>
-
-      {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b"
-        style={{ background: "rgba(8,11,18,0.9)", backdropFilter: "blur(20px)", borderColor: "rgba(59,130,246,0.1)" }}>
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" alt="" className="h-8 w-8" />
-            <span className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Next AI Crew
-            </span>
+    <div className="landing-page" data-theme="dark">
+      {/* HEADER NAV */}
+      <nav className="landing-nav">
+        <div className="landing-nav-inner">
+          <a href="/" className="landing-nav-logo">
+            <img src="/logo.svg" alt="" />
+            <span>Next AI Crew</span>
+          </a>
+          <div className="landing-nav-links">
+            <a href="#features" className="landing-nav-link">Features</a>
+            <a href="#pricing" className="landing-nav-link">Pricing</a>
+            <a href="#showcase" className="landing-nav-link">Souls</a>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate("/pricing")}
-              className="text-sm hover:text-white transition" style={{ color: "#94A3B8" }}>
-              Pricing
-            </button>
-            <button onClick={() => navigate("/login")}
-              className="text-sm hover:text-white transition" style={{ color: "#94A3B8" }}>
-              Sign In
-            </button>
-            <button onClick={() => navigate("/login")}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:brightness-110"
-              style={{ background: "#2563EB", boxShadow: "0 0 20px rgba(37,99,235,0.25)" }}>
-              Start Free
-            </button>
+          <div className="landing-nav-actions">
+            <button className="btn-ghost" onClick={() => navigate("/login")}>Log in</button>
+            <button className="btn-primary" onClick={() => navigate("/login")}>Get Started →</button>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero Section ─── */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        {/* Subtle grid */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='%23fff' stroke-width='.5'/%3E%3C/svg%3E\")" }} />
-        {/* Soul gradient line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: "linear-gradient(90deg, transparent, #2563EB, #06B6D4, #6366F1, transparent)" }} />
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm mb-6"
-            style={{ background: "rgba(37,99,235,0.1)", border: "1px solid rgba(37,99,235,0.2)", color: "#60A5FA" }}>
-            ✨ Now in Early Access
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Your AI Crew,{" "}
-            <span className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
-              with Soul.
-            </span>
+      {/* 01. HERO */}
+      <section className="hero-section">
+        <div className="hero-left">
+          <div className="hero-badge">✦ AI Agent Platform</div>
+          <h1 className="hero-title">
+            Hire AI Colleagues.<br />
+            <span className="cyan">Not Tools.</span>
           </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-3" style={{ color: "#94A3B8" }}>
-            도구가 아닌 동료. 생각하고, 협력하고, 성장하는 AI 팀을 만나세요.
+          <p className="hero-sub-ko">당신의 AI 팀원을 채용하세요.</p>
+          <p className="hero-sub-en">
+            Build your AI crew with real names, personalities, and expertise.
+            Each Soul works like a real colleague — available 24/7.
           </p>
-          <p className="text-sm max-w-xl mx-auto mb-10" style={{ color: "#64748B", fontFamily: "'Space Grotesk', sans-serif" }}>
-            Meet the team that never sleeps. They think, they care, they deliver.
-          </p>
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            <button onClick={() => navigate("/login")}
-              className="px-8 py-4 rounded-xl text-lg font-semibold text-white transition hover:brightness-110"
-              style={{ background: "#2563EB", boxShadow: "0 0 30px rgba(37,99,235,0.3)" }}>
-              Start Building Your Crew
+          <div className="hero-ctas">
+            <button className="btn-primary-lg" onClick={() => navigate("/login")}>Get Started Free →</button>
+            <button className="btn-ghost-lg">Watch Demo ▶</button>
+          </div>
+          <div className="hero-trust">
+            <span>⚡ 500+ Teams</span>
+            <span>🌐 30+ Countries</span>
+            <span>⭐ 4.9/5.0</span>
+            <span>🔒 SOC 2 Ready</span>
+          </div>
+        </div>
+        <div className="hero-right">
+          <div className="hero-soul-preview">
+            <h3>Your AI Team</h3>
+            {SOULS.slice(0, 3).map((s, i) => (
+              <div className="hero-soul-item" key={s.id}>
+                <img src={s.img} alt={s.name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", objectPosition: "center top" }} />
+                <div className="hero-soul-status" style={i === 1 ? { background: "var(--text-tertiary)", boxShadow: "none" } : {}} />
+                <div className="hero-soul-info">
+                  <div className="hero-soul-name">{s.name}</div>
+                  <div className="hero-soul-role">{s.role}</div>
+                </div>
+              </div>
+            ))}
+            <div className="hero-soul-more">+17 more Souls ›</div>
+            <button className="hero-preview-cta" onClick={() => navigate("/login")}>
+              Hire Your First Soul →
             </button>
-            <button onClick={() => { document.getElementById("features")?.scrollIntoView({ behavior: "smooth" }); }}
-              className="px-8 py-4 rounded-xl text-lg font-semibold transition hover:brightness-110"
-              style={{ color: "#2563EB", border: "1.5px solid #2563EB", background: "transparent" }}>
-              Watch Demo
+          </div>
+        </div>
+      </section>
+
+      {/* 02. FEATURES */}
+      <section className="feature-section" id="features">
+        <div className="section-header">
+          <h2 className="section-title">Why teams choose Next AI Crew</h2>
+          <p className="section-sub-ko">당신의 팀이 Next AI Crew를 선택하는 이유</p>
+        </div>
+        <div className="feature-grid">
+          {FEATURES.map((f) => (
+            <div className="feature-card" key={f.title}>
+              <div className={`feature-icon ${f.color}`}>{f.icon}</div>
+              <div className="feature-title-text">{f.title}</div>
+              <div className="feature-desc">{f.desc}</div>
+              <div className="feature-desc-ko">{f.ko}</div>
+              <div className="card-bottom-bar" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 03. SOUL SHOWCASE */}
+      <section className="showcase-section" id="showcase">
+        <div className="section-header">
+          <h2 className="section-title">Meet Your AI Crew</h2>
+          <p className="section-sub-ko">AI 동료들을 만나보세요 — 20명의 AI 전문가</p>
+        </div>
+        <div className="showcase-avatars">
+          {SOULS.map((s, i) => (
+            <img
+              key={s.id}
+              src={s.img}
+              alt={s.name}
+              className={`showcase-avatar${i === selectedSoul ? " active" : ""}`}
+              onClick={() => setSelectedSoul(i)}
+            />
+          ))}
+        </div>
+        <div className="showcase-detail-card" key={soul.id}>
+          <img src={soul.img} alt={soul.name} className="showcase-photo" />
+          <div className="showcase-info">
+            <div className="showcase-name">{soul.name}</div>
+            <div className="showcase-role-text">{soul.role}</div>
+            <div className="showcase-greeting">"{soul.greeting}"</div>
+            <div className="showcase-skills">
+              {soul.skills.map((sk) => (
+                <span className="showcase-skill-tag" key={sk}>{sk}</span>
+              ))}
+            </div>
+            <button className="showcase-hire-btn" onClick={() => navigate("/login")}>
+              Hire {soul.name} →
             </button>
           </div>
         </div>
-      </section>
-
-      {/* ─── Agent Card Showcase ─── */}
-      <section className="py-16 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center text-sm font-medium uppercase tracking-wider mb-10"
-            style={{ color: "#64748B" }}>
-            Meet Your Future Team
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {AGENTS.map((agent) => (
-              <div key={agent.name}
-                className="rounded-2xl p-5 transition-all duration-300 cursor-pointer group"
-                style={{
-                  background: "rgba(13,17,32,0.7)",
-                  backdropFilter: "blur(16px)",
-                  border: "1px solid rgba(59,130,246,0.15)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget;
-                  el.style.borderColor = "rgba(6,182,212,0.3)";
-                  el.style.boxShadow = "0 0 20px rgba(6,182,212,0.1), 0 0 40px rgba(37,99,235,0.05)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget;
-                  el.style.borderColor = "rgba(37,99,235,0.1)";
-                  el.style.boxShadow = "none";
-                  el.style.transform = "translateY(0)";
-                }}
-              >
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-3">
-                  <SoulAvatar name={agent.name} size="lg" department={agent.department} status={agent.status === "working" ? "active" : agent.status === "online" ? "active" : "offline"} />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-white text-sm">{agent.name}</div>
-                    <div className="text-xs" style={{ color: "#94A3B8", fontFamily: "var(--font-ui)", fontSize: 11 }}>
-                      {agent.role}
-                    </div>
-                  </div>
-                  <div style={STATUS_STYLES[agent.status]} />
-                </div>
-
-                {/* Skills */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {agent.skills.map((s) => (
-                    <span key={s} className="text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(37,99,235,0.1)", color: "#94A3B8", border: "1px solid rgba(37,99,235,0.15)" }}>
-                      {s}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Task + progress */}
-                <div className="text-xs mb-2" style={{ color: "#94A3B8" }}>{agent.task}</div>
-                <div className="h-1.5 rounded-full overflow-hidden mb-2"
-                  style={{ background: "rgba(30,41,59,1)" }}>
-                  <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${agent.progress}%`, background: "linear-gradient(90deg, #2563EB, #06B6D4)" }} />
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between text-xs"
-                  style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9 }}>
-                  <span style={{ color: "#64748B" }}>⚡ {agent.tasksToday} tasks</span>
-                  <span style={{ color: "#FBBF24" }}>⭐ Lv.{agent.level}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="showcase-browse">
+          <a href="/hire" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>Browse All 20 Souls →</a>
         </div>
       </section>
 
-      {/* ─── Anti-Slop Value Props ─── */}
-      <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-3"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            반복은 AI에게. 결정은 당신에게.
-          </h2>
-          <p className="mb-12 max-w-xl mx-auto" style={{ color: "#94A3B8" }}>
-            코드 리뷰, 버그 수정, 배포, 보안 점검 — AI Crew가 처리하는 동안, 당신은 비즈니스에 집중하세요.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {VALUE_PROPS.map((v) => (
-              <div key={v.title} className="p-6 rounded-2xl transition hover:translate-y-[-2px]"
-                style={{ background: "rgba(15,23,41,0.5)", border: "1px solid rgba(37,99,235,0.1)" }}>
-                <img src={v.icon} alt="" className="w-12 h-12 mb-3 mx-auto" style={{ imageRendering: "pixelated" }} />
-                <h3 className="text-lg font-bold mb-2" style={{ color: "#FFFFFF" }}>{v.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#E2E8F0" }}>{v.desc}</p>
-              </div>
-            ))}
-          </div>
+      {/* 04. PRICING */}
+      <section className="pricing-section" id="pricing">
+        <div className="section-header">
+          <h2 className="section-title">Simple, Transparent Pricing</h2>
+          <p className="section-sub-ko">투명한 요금제</p>
+        </div>
+        <div className="pricing-grid">
+          {PLANS.map((p) => (
+            <div className={`pricing-card${p.popular ? " popular" : ""}`} key={p.name}>
+              <div className="pricing-plan-name">{p.name}</div>
+              <div className="pricing-price">{p.price}<span>{p.period}</span></div>
+              <div style={{ font: "400 13px var(--font-ui)", color: "var(--text-tertiary)", marginBottom: 4 }}>{p.souls} · {p.tokens}</div>
+              <ul className="pricing-features">
+                {p.features.map((f) => <li key={f}>{f}</li>)}
+              </ul>
+              <button className="pricing-cta" onClick={() => navigate("/login")}>Get Started →</button>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ─── Department Icons Showcase ─── */}
-      <section className="py-12 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center text-sm font-medium uppercase tracking-wider mb-8"
-            style={{ color: "#64748B" }}>
-            10 Specialized Departments
-          </h2>
-          <div className="flex flex-wrap justify-center gap-6">
-            {DEPARTMENTS.map((d) => (
-              <div key={d.id} className="flex flex-col items-center gap-2 group cursor-pointer">
-                <div className="w-16 h-16 rounded-xl flex items-center justify-center transition group-hover:scale-110"
-                  style={{ background: `${d.color}15`, border: `1px solid ${d.color}30` }}>
-                  <img src={d.icon} alt={d.label} className="w-10 h-10" />
-                </div>
-                <span className="text-xs font-medium" style={{ color: d.color }}>{d.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* 05. CTA + FOOTER */}
+      <section className="cta-section">
+        <h2 className="cta-title">Start building your AI crew today.</h2>
+        <p className="cta-sub-ko">오늘 당신의 AI 팀을 구성하세요.</p>
+        <button className="btn-primary-lg" onClick={() => navigate("/login")}>Get Started Free →</button>
+        <p className="cta-note">No credit card required. Free forever.</p>
       </section>
-
-      {/* ─── Social Proof ─── */}
-      <section className="py-12 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm uppercase tracking-wider mb-6" style={{ color: "#64748B" }}>
-            10+ AI Models, One Crew
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {["Claude", "GPT-5", "Gemini", "Codex", "OpenCode", "LLaMA"].map((m) => (
-              <span key={m} className="px-4 py-1.5 rounded-full text-sm"
-                style={{ background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.15)", color: "#94A3B8" }}>
-                {m}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Features Grid ─── */}
-      <section id="features" className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Everything You Need to Lead an AI Team
-            </h2>
-            <p style={{ color: "#94A3B8" }} className="max-w-xl mx-auto">
-              From hiring to delegation, review to reporting — manage your AI crew like you'd manage a real team.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((f) => (
-              <div key={f.title}
-                className="p-6 rounded-xl transition hover:border-[rgba(6,182,212,0.3)]"
-                style={{ background: "rgba(15,23,41,0.3)", border: "1px solid rgba(37,99,235,0.1)" }}>
-                <img src={f.icon} alt="" className="w-10 h-10 mb-3" style={{ imageRendering: "pixelated" }} />
-                <h3 className="text-lg font-bold mb-2" style={{ color: "#FFFFFF" }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#E2E8F0" }}>{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA ─── */}
-      <section className="py-20 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Ready to Build Your AI Crew?
-          </h2>
-          <p className="mb-8" style={{ color: "#94A3B8" }}>
-            Start free. No credit card required. 7-day trial with full access.
-          </p>
-          <button onClick={() => navigate("/login")}
-            className="px-8 py-4 rounded-xl text-lg font-semibold text-white transition hover:brightness-110"
-            style={{ background: "#2563EB", boxShadow: "0 0 30px rgba(37,99,235,0.3)" }}>
-            Get Started Free →
-          </button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-6" style={{ borderTop: "1px solid rgba(37,99,235,0.1)" }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-sm" style={{ color: "#64748B" }}>
-            © 2026 Next AI Crew. All rights reserved.
-          </span>
-          <div className="flex items-center gap-6 text-sm" style={{ color: "#64748B" }}>
-            <a href="#" className="hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-white transition">Contact</a>
-          </div>
-        </div>
+      <footer className="landing-footer">
+        © 2026 Next AI Crew · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@nextaicrew.com">Contact</a>
       </footer>
     </div>
   );
