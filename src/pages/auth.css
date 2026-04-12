@@ -184,7 +184,10 @@
   box-sizing: border-box;
 }
 .auth-input::placeholder { color: rgba(255,255,255,0.25); }
-.auth-input:focus { border-color: #2563EB; }
+.auth-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
 
 .auth-input-wrapper {
   position: relative;
@@ -260,20 +263,37 @@
   width: 100%;
   padding: 12px 0;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #DC2626, #EF4444);
+  border-radius: 8px;
+  background: #2563EB;
   color: #fff;
   font-family: "Space Grotesk", sans-serif;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s, box-shadow 0.15s;
   margin-bottom: 20px;
+  position: relative;
 }
 .auth-submit:hover:not(:disabled) {
-  box-shadow: 0 4px 16px rgba(239,68,68,0.35);
-  transform: translateY(-1px);
+  background: #1D4ED8;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
 }
+.auth-submit.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.auth-submit.loading::after {
+  content: "";
+  position: absolute;
+  right: 50%; top: 50%;
+  transform: translate(50%, -50%);
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: auth-spin 0.6s linear infinite;
+}
+@keyframes auth-spin { to { transform: translate(50%, -50%) rotate(360deg); } }
 .auth-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -381,4 +401,62 @@
   .auth-hero-cta { display: none; }
   .auth-form-side { padding: 24px 20px; }
   .auth-radio-group { flex-direction: column; gap: 10px; }
+}
+
+/* ─── Soul Preview (hero) ────────────── */
+.auth-soul-preview {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 32px;
+  margin-bottom: 24px;
+  opacity: 0.85;
+}
+.auth-soul-preview img {
+  width: 32px; height: 32px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.auth-soul-preview span {
+  font: 500 13px "Space Grotesk", sans-serif;
+  color: rgba(255,255,255,0.7);
+  margin-left: 4px;
+}
+
+/* ─── Purpose Pills (A-5) ────────────── */
+.purpose-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.purpose-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  font: 500 13px "Space Grotesk", sans-serif;
+  color: var(--th-text-muted, #94A3B8);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.purpose-pill:hover {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.04);
+}
+.purpose-pill.selected {
+  border-color: #2563EB;
+  background: rgba(37,99,235,0.12);
+  color: #93BBFC;
+}
+
+/* ─── Error state (A-6) ─────────────── */
+.auth-input.error {
+  border-color: rgba(239,68,68,0.5);
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+}
+.auth-field-error {
+  font: 400 12px "Space Grotesk", sans-serif;
+  color: #FCA5A5;
+  margin-top: 4px;
 }

@@ -98,12 +98,18 @@ export function LoginPage() {
           </div>
           <span className="auth-hero-badge">AI Agent Platform</span>
           <h1 className="auth-hero-title">
-            Hire AI Souls,<br />Build Your Team.
+            Your AI Crew,<br />with Soul.
           </h1>
           <p className="auth-hero-desc">
-            Recruit specialized AI agents, build your elite team in one click
-            — powered by next-generation Soul engine.
+            AI 직원을 채용하고, 함께 성장하세요.<br />
+            Recruit specialized AI agents — powered by next-generation Soul engine.
           </p>
+          <div className="auth-soul-preview">
+            <img src="/icons/departments/icon-developer.svg" alt="Dev" />
+            <img src="/icons/departments/icon-designer.svg" alt="Design" />
+            <img src="/icons/departments/icon-pm.svg" alt="PM" />
+            <span>+17 Souls</span>
+          </div>
           <a href="https://nextaicrew.com" className="auth-hero-cta" target="_blank" rel="noopener noreferrer">
             Explore Next AI Crew ↗
           </a>
@@ -195,19 +201,16 @@ export function LoginPage() {
             <>
               <div className="auth-field">
                 <label className="auth-label">Usage Purpose</label>
-                <div className="auth-radio-group">
+                <div className="purpose-pills">
                   {(["personal", "business", "other"] as const).map((opt) => (
-                    <label key={opt} className="auth-radio-label">
-                      <input
-                        type="radio"
-                        name="usage"
-                        className="auth-radio"
-                        checked={usagePurpose === opt}
-                        onChange={() => setUsagePurpose(opt)}
-                      />
-                      <span className={`auth-radio-dot${usagePurpose === opt ? " active" : ""}`} />
-                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                    </label>
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`purpose-pill${usagePurpose === opt ? " selected" : ""}`}
+                      onClick={() => setUsagePurpose(opt)}
+                    >
+                      {opt === "personal" ? "개인 프로젝트" : opt === "business" ? "비즈니스" : "기타"}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -249,9 +252,9 @@ export function LoginPage() {
           <button
             onClick={handleEmailAuth as any}
             disabled={loading || !email || !password || (mode === "signup" && !agreedToS)}
-            className="auth-submit"
+            className={`auth-submit${loading ? " loading" : ""}`}
           >
-            {loading ? "Loading..." : mode === "login" ? "Sign In" : "Sign Up"}
+            {loading ? "" : mode === "login" ? "Sign In" : "Sign Up"}
           </button>
 
           {/* OAuth divider */}
