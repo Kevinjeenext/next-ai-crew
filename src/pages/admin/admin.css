@@ -173,3 +173,64 @@
   .admin-sidebar-header span, .admin-nav-link span, .admin-sidebar-footer { display: none; }
   .admin-stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── System Settings ── */
+.settings-grid { display: flex; flex-direction: column; gap: 12px; }
+.setting-card {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--glass-bg); backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border); border-radius: 12px;
+  padding: 16px 20px; gap: 16px;
+}
+.setting-card-left { display: flex; align-items: center; gap: 14px; }
+.setting-icon { font-size: 20px; }
+.setting-title { font: 500 14px var(--font-ui); color: var(--text-primary); }
+.setting-desc { font: 400 12px var(--font-ui); color: var(--text-tertiary); margin-top: 2px; }
+.setting-card-right { flex-shrink: 0; }
+
+.setting-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer; padding: 4px;
+  font: 500 12px var(--font-ui); transition: color 0.15s;
+}
+.setting-toggle.on { color: #10B981; }
+.setting-toggle.off { color: var(--text-tertiary); }
+.setting-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.setting-select {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-primary); font: 400 13px var(--font-ui);
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+}
+.setting-select:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.setting-number, .setting-domains {
+  display: flex; align-items: center; gap: 6px;
+}
+.setting-number input, .setting-domains input {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  color: var(--text-primary); font: 400 13px var(--font-ui);
+  padding: 6px 12px; border-radius: 8px; width: 80px;
+}
+.setting-domains input { width: 200px; }
+.setting-number input:disabled, .setting-domains input:disabled { opacity: 0.4; }
+
+.setting-save-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+  color: var(--brand-blue); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.15s;
+}
+.setting-save-btn:hover { background: rgba(59,130,246,0.2); }
+.setting-save-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.settings-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(16,185,129,0.9); backdrop-filter: blur(12px);
+  color: #fff; font: 500 13px var(--font-ui);
+  padding: 10px 20px; border-radius: 10px;
+  animation: toast-in 0.2s ease-out;
+  z-index: 200;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

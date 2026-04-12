@@ -18,6 +18,7 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminTenants = lazy(() => import("./pages/admin/AdminTenants"));
 const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
 import "./styles/design-system.css";
 import "./index.css";
@@ -95,6 +96,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="users" element={<AdminSuspense><AdminUsers /></AdminSuspense>} />
               <Route path="tenants" element={<AdminSuspense><AdminTenants /></AdminSuspense>} />
               <Route path="audit" element={<AdminSuspense><AdminAuditLog /></AdminSuspense>} />
+              <Route path="settings" element={<AdminSuspense><AdminSettings /></AdminSuspense>} />
             </Route>
           </Routes>
         </AuthProvider>

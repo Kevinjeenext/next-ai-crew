@@ -170,4 +170,50 @@ router.get("/api/admin/audit-log", async (req, res) => {
   }
 });
 
+// ─── GET /api/admin/settings ───
+router.get("/api/admin/settings", async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("system_settings")
+      .select("key, value, updated_at");
+    if (error) throw error;
+    // Convert array to object map
+    const settings: Record<string, any> = {};
+    for (const row of (data || [])) {
+      settings[row.key] = { value: row.value, updated_at: row.updated_at };
+    }
+    res.json({ settings });
+  } catch (err: any) {
+    console.error("[API] GET /api/admin/settings error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/admin/settings/:key ─── (super_admin only)
+router.put("/api/admin/settings/:key", requireSystemRole("super_admin"), async (req, res) => {
+  try {
+    const key = req.params.key as string;
+    const { value } = req.body;
+    const profile = getProfile(req);
+
+    const { data, error } = await supabaseAdmin
+      .from("system_settings")
+      .upsert({ key, value: JSON.parse(JSON.stringify(value)), updated_by: profile!.id, updated_at: new Date().toISOString() })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await logAdminAction(
+      profile!.id, profile!.email, "update_setting",
+      "system_settings", key, { value }, req.ip
+    );
+
+    res.json({ ok: true, setting: data });
+  } catch (err: any) {
+    console.error("[API] PUT /api/admin/settings/:key error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
