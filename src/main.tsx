@@ -11,6 +11,7 @@ import PricingPage from "./pages/PricingPage";
 import SoulChatPanel from "./components/chat/SoulChatPanel";
 import AppShell from "./components/layout/AppShell";
 import SoulHireMarket from "./components/hire/SoulHireMarket";
+import SettingsPage from "./components/settings/SettingsPage";
 import SoulHirePage from "./components/hire/SoulHirePage";
 import BillingPage from "./components/billing/BillingPage";
 import "./styles/design-system.css";
@@ -108,6 +109,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/hire" element={<ProtectedApp><SoulHireMarket /></ProtectedApp>} />
+              <Route path="/settings" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
             <Route path="/dashboard/billing" element={<ProtectedApp><BillingPage /></ProtectedApp>} />
             <Route path="/*" element={<ProtectedApp />} />
           </Routes>

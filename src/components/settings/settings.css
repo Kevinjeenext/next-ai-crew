@@ -1,0 +1,131 @@
+/**
+ * Settings CSS — Ivy 04-settings-billing.md
+ */
+.settings-page {
+  flex: 1; display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden; background: var(--bg-base);
+}
+
+.settings-header {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 32px; border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.settings-back {
+  font: 400 13px var(--font-ui); color: var(--text-tertiary);
+  transition: color 0.12s;
+}
+.settings-back:hover { color: var(--text-secondary); }
+.settings-title {
+  font: 700 20px var(--font-ui); color: var(--text-primary);
+}
+
+.settings-layout { display: flex; flex: 1; overflow: hidden; }
+
+.settings-nav {
+  width: 200px; flex-shrink: 0;
+  padding: 24px 12px;
+  border-right: 1px solid var(--border-subtle);
+}
+.settings-nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: 7px; width: 100%;
+  font: 500 13px var(--font-ui); color: var(--text-secondary);
+  transition: background 0.12s, color 0.12s;
+  margin-bottom: 2px; text-align: left;
+}
+.settings-nav-item:hover { background: var(--bg-overlay); color: var(--text-primary); }
+.settings-nav-item.active { background: rgba(37,99,235,0.1); color: #93BBFC; }
+
+.settings-content {
+  flex: 1; padding: 32px 40px; overflow-y: auto; max-width: 760px;
+}
+.settings-section-title {
+  font: 700 20px var(--font-ui); color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+/* Plan card */
+.billing-plan-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px; padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.billing-plan-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.billing-plan-name {
+  font: 700 18px var(--font-ui); color: var(--text-primary);
+}
+.billing-plan-meta {
+  font: 400 13px var(--font-ui); color: var(--text-tertiary);
+  margin-bottom: 14px;
+}
+
+/* Capacity bar */
+.billing-capacity-bar { margin-bottom: 4px; }
+.billing-capacity-label {
+  display: flex; justify-content: space-between;
+  font: 400 12px var(--font-ui); color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+.billing-bar-track {
+  height: 6px; background: var(--bg-overlay); border-radius: 3px; overflow: hidden;
+}
+.billing-bar-fill {
+  height: 100%; border-radius: 3px; background: var(--brand-blue);
+  transition: width 0.8s ease;
+}
+.billing-bar-fill[data-usage="caution"] { background: var(--warning); }
+.billing-bar-fill[data-usage="danger"]  { background: var(--error); }
+
+/* Soul usage */
+.soul-usage-table { display: flex; flex-direction: column; }
+.soul-usage-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border-subtle);
+}
+.soul-usage-row:last-child { border-bottom: none; }
+.soul-usage-info { flex: 1; min-width: 0; }
+.soul-usage-name { font: 500 13px var(--font-ui); color: var(--text-primary); }
+.soul-usage-role { font: 400 11px var(--font-ui); color: var(--text-tertiary); }
+.soul-usage-bar-wrap { width: 120px; }
+.soul-usage-bar-track {
+  height: 4px; background: var(--bg-overlay); border-radius: 2px; overflow: hidden;
+}
+.soul-usage-bar-fill { height: 100%; border-radius: 2px; background: var(--brand-blue); }
+.soul-usage-stat {
+  font: 500 12px var(--font-mono); color: var(--text-tertiary);
+  text-align: right; width: 80px; white-space: nowrap;
+}
+
+/* Token packs */
+.token-packs { display: flex; gap: 12px; margin-top: 4px; }
+.token-pack {
+  flex: 1; background: var(--bg-surface);
+  border: 1px solid var(--border-default); border-radius: 10px;
+  padding: 16px; text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.token-pack:hover {
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 1px rgba(37,99,235,0.2);
+}
+.token-pack-amount { font: 700 16px var(--font-mono); color: var(--text-primary); margin-bottom: 4px; }
+.token-pack-price  { font: 400 13px var(--font-ui); color: var(--text-tertiary); margin-bottom: 12px; }
+.token-pack-btn {
+  width: 100%; padding: 7px 0;
+  background: var(--brand-blue); color: white;
+  border-radius: 6px; font: 600 12px var(--font-ui);
+  transition: background 0.15s;
+}
+.token-pack-btn:hover { background: var(--brand-blue-h); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings-nav { display: none; }
+  .settings-content { padding: 20px; }
+  .token-packs { flex-direction: column; }
+}
