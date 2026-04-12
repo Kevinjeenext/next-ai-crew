@@ -3,15 +3,16 @@
  * Tab navigation + Billing content
  */
 import { useState } from "react";
+import { Settings as SettingsIcon, Users, CreditCard, Lock, Bell, LucideIcon } from "lucide-react";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./settings.css";
 
-const TABS = [
-  { id: "general",  icon: "⚙", label: "일반" },
-  { id: "team",     icon: "👥", label: "내 팀 (Soul)" },
-  { id: "billing",  icon: "💳", label: "빌링" },
-  { id: "security", icon: "🔒", label: "보안" },
-  { id: "alerts",   icon: "🔔", label: "알림" },
+const TABS: { id: string; Icon: LucideIcon; label: string }[] = [
+  { id: "general",  Icon: SettingsIcon, label: "일반" },
+  { id: "team",     Icon: Users, label: "내 팀 (Soul)" },
+  { id: "billing",  Icon: CreditCard, label: "빌링" },
+  { id: "security", Icon: Lock, label: "보안" },
+  { id: "alerts",   Icon: Bell, label: "알림" },
 ];
 
 const TOKEN_PACKS = [
@@ -46,7 +47,7 @@ export default function SettingsPage({ onNavigate }: { onNavigate?: (p: string) 
               className={`settings-nav-item ${tab === t.id ? "active" : ""}`}
               onClick={() => setTab(t.id)}
             >
-              <span>{t.icon}</span> {t.label}
+              <t.Icon size={16} strokeWidth={1.5} /> {t.label}
             </button>
           ))}
         </nav>

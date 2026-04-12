@@ -7,6 +7,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useTheme } from "../ThemeContext";
+import { Shield } from "lucide-react";
 import "./auth.css";
 
 type Mode = "login" | "signup";
@@ -116,7 +117,7 @@ export function LoginPage() {
           </a>
         </div>
         <div className="auth-hero-footer">
-          <span>🔒 Enterprise-grade security</span>
+          <span><Shield size={14} strokeWidth={1.5} /> Enterprise-grade security</span>
         </div>
       </div>
 

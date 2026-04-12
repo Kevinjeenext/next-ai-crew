@@ -2,6 +2,7 @@
  * Dashboard — Pro UI (Ivy 01-main-dashboard.md)
  * Summary cards + Soul team cards + Activity timeline
  */
+import { Bot, CheckCircle, Activity, CreditCard, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./dashboard.css";
@@ -79,7 +80,7 @@ export default function Dashboard({ onChatWithSoul, onNavigate }: Props) {
         </div>
       ) : souls.length === 0 ? (
         <div className="dashboard-empty">
-          <div className="dashboard-empty-icon">◆</div>
+          <Sparkles size={32} strokeWidth={1.5} className="dashboard-empty-icon" />
           <h3>아직 채용한 Soul이 없습니다</h3>
           <p>마켓에서 첫 번째 AI Soul을 채용해보세요</p>
           <button className="btn-primary" onClick={() => onNavigate?.("/hire")}>

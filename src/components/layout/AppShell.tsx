@@ -8,6 +8,7 @@ import Dashboard from "../dashboard/Dashboard";
 import SoulAvatar from "../ui/SoulAvatar";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useTheme } from "../../ThemeContext";
+import { LayoutDashboard, Store, Settings, Plus } from "lucide-react";
 import "./app-shell.css";
 
 interface Soul {
@@ -185,7 +186,7 @@ export default function AppShell({ onNavigate }: Props) {
             className="sidebar-add-soul"
             onClick={() => onNavigate?.("/hire")}
           >
-            <span>+</span> Soul 추가
+            <Plus size={16} strokeWidth={2} /> Soul 추가
           </button>
         )}
 
@@ -195,21 +196,21 @@ export default function AppShell({ onNavigate }: Props) {
             className="sidebar-nav-item"
             onClick={() => onNavigate?.("/dashboard/billing")}
           >
-            <span className="sidebar-nav-icon">📊</span>
+            <LayoutDashboard size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>대시보드</span>}
           </button>
           <button
             className="sidebar-nav-item"
             onClick={() => onNavigate?.("/hire")}
           >
-            <span className="sidebar-nav-icon">🏪</span>
+            <Store size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>마켓</span>}
           </button>
           <button
             className="sidebar-nav-item"
             onClick={() => onNavigate?.("/settings")}
           >
-            <span className="sidebar-nav-icon">⚙️</span>
+            <Settings size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>설정</span>}
           </button>
           <ThemeToggle collapsed={sidebarCollapsed} />

@@ -4,6 +4,7 @@
  * Supports streaming (SSE) + standard responses
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { X, Copy, Check, Send } from "lucide-react";
 import "./soul-chat.css";
 
 /** Render message content with code blocks (``` ... ```) */
@@ -41,7 +42,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       <div className="chat-code-header">
         <span className="chat-code-lang">{lang || "code"}</span>
         <button className="chat-code-copy" onClick={handleCopy}>
-          {copied ? "✓ 복사됨" : "복사"}
+          {copied ? <><Check size={14} strokeWidth={1.5} /> 복사됨</> : <><Copy size={14} strokeWidth={1.5} /> 복사</>}
         </button>
       </div>
       <pre className="chat-code-pre"><code>{code}</code></pre>
@@ -258,7 +259,7 @@ export default function SoulChatPanel({
             <span className="soul-chat-badge online">온라인</span>
           )}
           <button className="soul-chat-close" onClick={onClose}>
-            ✕
+            <X size={18} strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -374,7 +375,7 @@ export default function SoulChatPanel({
             onClick={sendMessage}
             disabled={!input.trim() || loading}
           >
-            ↑
+            <Send size={16} strokeWidth={2} />
           </button>
         </div>
         <div className="soul-chat-input-hint">Enter 전송 · Shift+Enter 줄바꿈</div>

@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserCheck, Clock, Zap, Shield, Globe, Star, ArrowRight, Play, Sparkles } from "lucide-react";
 import "./landing.css";
 
 // Soul data for showcase
@@ -22,9 +23,9 @@ const SOULS = [
 ];
 
 const FEATURES = [
-  { icon: "🧠", color: "blue", title: "Soul Identity", desc: "Each AI has a name, personality, and expertise.", ko: "이름, 성격, 전문성을 가진 나만의 AI 동료" },
-  { icon: "🤝", color: "cyan", title: "Always Available", desc: "Your crew works 24/7. No sick days, no overtime complaints.", ko: "아픈 날도, 야근 불만도 없는 24/7 팀원" },
-  { icon: "⚡", color: "green", title: "10x Faster", desc: "Parallel AI agents complete tasks in minutes, not days.", ko: "병렬 AI 에이전트로 몇 분 안에 완료" },
+  { Icon: UserCheck, color: "blue", title: "Soul Identity", desc: "Each AI has a name, personality, and expertise.", ko: "이름, 성격, 전문성을 가진 나만의 AI 동료" },
+  { Icon: Clock, color: "cyan", title: "Always Available", desc: "Your crew works 24/7. No sick days, no overtime complaints.", ko: "아픈 날도, 야근 불만도 없는 24/7 팀원" },
+  { Icon: Zap, color: "green", title: "10x Faster", desc: "Parallel AI agents complete tasks in minutes, not days.", ko: "병렬 AI 에이전트로 몇 분 안에 완료" },
 ];
 
 const PLANS = [
@@ -62,7 +63,7 @@ export default function LandingPage() {
       {/* 01. HERO */}
       <section className="hero-section">
         <div className="hero-left">
-          <div className="hero-badge">✦ AI Agent Platform</div>
+          <div className="hero-badge"><Sparkles size={14} strokeWidth={1.5} /> AI Agent Platform</div>
           <h1 className="hero-title">
             Hire AI Colleagues.<br />
             <span className="cyan">Not Tools.</span>
@@ -74,13 +75,13 @@ export default function LandingPage() {
           </p>
           <div className="hero-ctas">
             <button className="btn-primary-lg" onClick={() => navigate("/login")}>Get Started Free →</button>
-            <button className="btn-ghost-lg">Watch Demo ▶</button>
+            <button className="btn-ghost-lg"><Play size={16} strokeWidth={2} /> Watch Demo</button>
           </div>
           <div className="hero-trust">
-            <span>⚡ 500+ Teams</span>
-            <span>🌐 30+ Countries</span>
-            <span>⭐ 4.9/5.0</span>
-            <span>🔒 SOC 2 Ready</span>
+            <span><Zap size={14} strokeWidth={1.5} /> 500+ Teams</span>
+            <span><Globe size={14} strokeWidth={1.5} /> 30+ Countries</span>
+            <span><Star size={14} strokeWidth={1.5} /> 4.9/5.0</span>
+            <span><Shield size={14} strokeWidth={1.5} /> SOC 2 Ready</span>
           </div>
         </div>
         <div className="hero-right">
@@ -113,7 +114,7 @@ export default function LandingPage() {
         <div className="feature-grid">
           {FEATURES.map((f) => (
             <div className="feature-card" key={f.title}>
-              <div className={`feature-icon ${f.color}`}>{f.icon}</div>
+              <div className={`feature-icon ${f.color}`}><f.Icon size={24} strokeWidth={1.5} /></div>
               <div className="feature-title-text">{f.title}</div>
               <div className="feature-desc">{f.desc}</div>
               <div className="feature-desc-ko">{f.ko}</div>
