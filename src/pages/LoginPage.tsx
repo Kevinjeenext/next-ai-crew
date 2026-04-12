@@ -96,7 +96,7 @@ export function LoginPage() {
       <div className="auth-hero">
         <div className="auth-hero-content">
           <div className="auth-hero-logo">
-            <img src={theme === 'dark' ? '/logo.svg' : '/logo-light.svg'} alt="Next AI Crew" style={{ height: 36 }} />
+            <img src='/logo.svg' alt="Next AI Crew" style={{ height: 48, width: 'auto', filter: 'drop-shadow(0 0 20px rgba(59,130,246,0.4))' }} />
           </div>
           <span className="auth-hero-badge">AI Agent Platform</span>
           <h1 className="auth-hero-title">
