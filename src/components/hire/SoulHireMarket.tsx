@@ -3,6 +3,7 @@
  * Top filter bar + 3-col grid + personality bars + hire modal
  */
 import { useState, useEffect, useMemo } from "react";
+import { supabase } from "../../lib/supabase";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./soul-hire-market.css";
 
@@ -168,23 +169,38 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
     setActiveCats((prev) => { const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; });
   };
 
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 4000);
+  };
+
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+  };
+
   const handleHire = async (presetId: string, _tasks: string[], _instruction: string) => {
     setHiring(true);
     try {
+      const headers = await getAuthHeaders();
       const res = await fetch("/api/souls", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ preset_id: presetId }),
       });
       if (res.ok) {
         setHiredIds((p) => new Set(p).add(presetId));
         setTeamCount((c) => c + 1);
         setModalPreset(null);
+        showToast(`✅ Soul 채용 완료!`);
       } else {
-        const d = await res.json();
-        alert(d.error || "채용 실패");
+        const d = await res.json().catch(() => ({}));
+        showToast(d.error || "채용 실패 — 다시 시도해주세요");
       }
-    } catch { alert("네트워크 오류"); }
+    } catch { showToast("네트워크 오류 — 연결을 확인해주세요"); }
     finally { setHiring(false); }
   };
 
@@ -315,6 +331,11 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
           teamCount={teamCount}
           maxSouls={MAX_SOULS}
         />
+      )}
+
+      {/* Toast */}
+      {toastMsg && (
+        <div className="hmc-toast" onClick={() => setToastMsg(null)}>{toastMsg}</div>
       )}
     </div>
   );
