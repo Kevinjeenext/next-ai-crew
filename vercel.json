@@ -22,7 +22,7 @@
       "destination": "https://next-ai-crew-production.up.railway.app/ws"
     },
     {
-      "source": "/((?!assets/|avatars/).*)",
+      "source": "/((?!assets/|avatars/|logo.*\\.svg|favicon.*).*)",
       "destination": "/index.html"
     }
   ],
