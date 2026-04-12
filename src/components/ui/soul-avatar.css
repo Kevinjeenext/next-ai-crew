@@ -1,0 +1,26 @@
+/* SoulAvatar — initial circle styles */
+.soul-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  color: #fff;
+  user-select: none;
+}
+.soul-avatar-initials {
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.soul-avatar-status {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0B1120;
+}
+.soul-avatar-status.active { background: #22C55E; }
+.soul-avatar-status.idle { background: #F59E0B; }
+.soul-avatar-status.offline { background: #6B7280; }
