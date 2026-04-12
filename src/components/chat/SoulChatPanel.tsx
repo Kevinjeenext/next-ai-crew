@@ -282,24 +282,26 @@ export default function SoulChatPanel({
 
       {/* Input */}
       <div className="soul-chat-input-area">
-        <textarea
-          ref={inputRef}
-          className="soul-chat-input"
-          placeholder={`${soulNameKo}에게 메시지 보내기...`}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          disabled={loading}
-        />
-        <button
-          className="soul-chat-send"
-          onClick={sendMessage}
-          disabled={!input.trim() || loading}
-          style={{ background: deptColor }}
-        >
-          ↑
-        </button>
+        <div className="soul-chat-input-box">
+          <textarea
+            ref={inputRef}
+            className="soul-chat-input"
+            placeholder={`${soulNameKo}에게 메시지 보내기...`}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            disabled={loading}
+          />
+          <button
+            className="soul-chat-send"
+            onClick={sendMessage}
+            disabled={!input.trim() || loading}
+          >
+            ↑
+          </button>
+        </div>
+        <div className="soul-chat-input-hint">Enter 전송 · Shift+Enter 줄바꿈</div>
       </div>
     </div>
   );
