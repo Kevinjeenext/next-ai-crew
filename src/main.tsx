@@ -1,19 +1,15 @@
 import { StrictMode, Component, useState, useEffect, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import App from "./App";
 import { ThemeProvider } from "./ThemeContext";
 import { AuthProvider, useAuth } from "./components/auth/AuthProvider";
 import { LoginPage } from "./pages/LoginPage";
 import { AuthCallback } from "./pages/AuthCallback";
 import { LandingPage } from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
-import SoulChatPanel from "./components/chat/SoulChatPanel";
 import AppShell from "./components/layout/AppShell";
 import SoulHireMarket from "./components/hire/SoulHireMarket";
 import SettingsPage from "./components/settings/SettingsPage";
-import SoulHirePage from "./components/hire/SoulHirePage";
-import BillingPage from "./components/billing/BillingPage";
 import "./styles/design-system.css";
 import "./index.css";
 
@@ -110,7 +106,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/hire" element={<ProtectedApp><SoulHireMarket /></ProtectedApp>} />
               <Route path="/settings" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
-            <Route path="/dashboard/billing" element={<ProtectedApp><BillingPage /></ProtectedApp>} />
+            <Route path="/dashboard/billing" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
             <Route path="/*" element={<ProtectedApp />} />
           </Routes>
         </AuthProvider>
