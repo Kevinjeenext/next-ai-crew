@@ -1,0 +1,41 @@
+/* ThemeToggle — Ivy 11-theme-dual.md track style */
+.theme-toggle {
+  display: flex; align-items: center; gap: 8px;
+  background: transparent; border: none; cursor: pointer;
+  padding: 6px 10px; border-radius: 8px; width: 100%;
+  transition: background 0.15s;
+}
+.theme-toggle:hover { background: var(--bg-overlay); }
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+.theme-icon-dark, .theme-icon-light { font-size: 14px; line-height: 1; }
+
+.theme-toggle-track {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--toggle-off-bg);
+  border: 1px solid var(--border-default);
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.theme-toggle-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--toggle-off-dot);
+  position: absolute; top: 2px; left: 2px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+}
+[data-theme="light"] .theme-toggle-track {
+  background: var(--toggle-on-bg);
+  border-color: var(--brand-blue);
+}
+[data-theme="light"] .theme-toggle-dot {
+  transform: translateX(18px);
+  background: var(--toggle-on-dot);
+}
+
+/* Collapsed sidebar: just icons */
+.app-sidebar.collapsed .theme-toggle { justify-content: center; padding: 8px; }
+.app-sidebar.collapsed .theme-toggle-track { display: none; }

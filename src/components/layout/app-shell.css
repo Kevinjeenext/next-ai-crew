@@ -222,30 +222,29 @@
 }
 .app-main-hire-btn:hover { background: var(--brand-blue-h); transform: translateY(-1px); }
 
-/* ─── Theme Toggle ────────────────────── */
-.theme-toggle {
-  display: flex; align-items: center; gap: 10px;
-  width: 100%; padding: 8px 10px; border-radius: 7px;
-  font: 500 13px var(--font-ui); color: var(--text-secondary);
-  transition: background 0.12s, color 0.12s;
-  text-align: left; cursor: pointer;
-}
-.theme-toggle:hover { background: rgba(59,130,246,0.08); color: var(--text-primary); }
-.theme-toggle-icon { width: 20px; text-align: center; font-size: 16px; }
-.theme-toggle-label { font-size: 13px; }
-.app-sidebar.collapsed .theme-toggle { justify-content: center; padding: 8px; }
-.app-sidebar.collapsed .theme-toggle-label { display: none; }
-
 /* Light sidebar override */
 [data-theme="light"] .app-sidebar {
-  background: rgba(255,255,255,0.95);
+  background: rgba(248,250,255,0.95);
   border-right: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+  box-shadow: 2px 0 16px rgba(0,0,0,0.06);
 }
-[data-theme="light"] .sidebar-soul-item:hover { background: rgba(37,99,235,0.06); }
+[data-theme="light"] .sidebar-soul-item:hover { background: rgba(29,78,216,0.06); }
 [data-theme="light"] .sidebar-soul-item.active {
-  background: rgba(37,99,235,0.08);
-  box-shadow: inset 2px 0 0 var(--brand-blue);
+  background: rgba(29,78,216,0.1);
+  box-shadow: inset 2px 0 0 #1D4ED8;
+}
+[data-theme="light"] .sidebar-nav-item:hover { background: rgba(29,78,216,0.06); }
+[data-theme="light"] .sidebar-nav-item.active {
+  background: rgba(29,78,216,0.1);
+  color: #1D4ED8;
+  box-shadow: inset 3px 0 0 #1D4ED8;
+}
+[data-theme="light"] .sidebar-search-input {
+  background: #FFFFFF;
+  border-color: rgba(0,0,0,0.12);
+}
+[data-theme="light"] .sidebar-search-input:focus {
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
 }
 
 /* ─── Responsive ─────────────────────── */
