@@ -5,6 +5,7 @@
  * Ivy UX spec Steps 1-6
  */
 import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SoulHireCard from "./SoulHireCard";
 import OfficeMinimap, { createDefaultSections, placeSoul } from "../office/OfficeMinimap";
 import type { OfficeSection } from "../office/OfficeMinimap";
@@ -750,6 +751,7 @@ function useSoulPresets(): SoulTemplate[] {
 
 // ========== MAIN PAGE ==========
 export default function SoulHirePage({ language = "ko" }: { language?: "en" | "ko" }) {
+  const navigate = useNavigate();
   const soulCatalog = useSoulPresets();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -924,19 +926,21 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
         <TaskOnboarding
           soul={onboardingSoul}
           onComplete={(_tasks, _desc, _role) => {
-            // TODO: Save task assignments to backend
-            // Transition to Step 6: Office Placement
-            setOfficeSections((prev) =>
-              placeSoul(prev, {
-                id: onboardingSoul.id,
-                name: onboardingSoul.name,
-                name_ko: onboardingSoul.name_ko,
-                avatar: onboardingSoul.avatar,
-                role: onboardingSoul.role_title_ko,
-              }, onboardingSoul.department)
-            );
-            setPlacementSoul(onboardingSoul);
+            // Save task assignments to backend (TODO: API call)
+            // Transition to Step 6 with 0.8s delay for Soul response
             setOnboardingSoul(null);
+            setTimeout(() => {
+              setOfficeSections((prev) =>
+                placeSoul(prev, {
+                  id: onboardingSoul.id,
+                  name: onboardingSoul.name,
+                  name_ko: onboardingSoul.name_ko,
+                  avatar: onboardingSoul.avatar,
+                  role: onboardingSoul.role_title_ko,
+                }, onboardingSoul.department)
+              );
+              setPlacementSoul(onboardingSoul);
+            }, 800);
           }}
           language={language}
         />
@@ -966,7 +970,7 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
               <button className="office-placement-skip" onClick={() => setPlacementSoul(null)}>
                 \ub098\uc911\uc5d0
               </button>
-              <button className="office-placement-go" onClick={() => { setPlacementSoul(null); /* TODO: navigate to /office */ }}>
+              <button className="office-placement-go" onClick={() => { setPlacementSoul(null); navigate("/"); }}>
                 \ud83c\udfe2 \uc624\ud53c\uc2a4 \ubc14\ub85c\uac00\uae30 \u2192
               </button>
             </div>
