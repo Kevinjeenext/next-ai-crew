@@ -30,6 +30,7 @@ import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
 import { soulChatRoutes } from "./routes/soul-chat.ts";
+import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
 import { checkAgentLimit } from "./middleware/plan-limit.ts";
@@ -81,6 +82,7 @@ app.get("/health", (_req, res) => {
 
 // --- Auth routes ---
 app.use(authRoutes);
+app.use(adminRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/webhooks", webhookRouter);
 

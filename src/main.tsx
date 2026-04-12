@@ -10,6 +10,11 @@ import PricingPage from "./pages/PricingPage";
 import AppShell from "./components/layout/AppShell";
 import SoulHireV2 from "./components/hire/SoulHireV2";
 import SettingsPage from "./components/settings/SettingsPage";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminTenants from "./pages/admin/AdminTenants";
+import AdminAuditLog from "./pages/admin/AdminAuditLog";
 import "./styles/design-system.css";
 import "./index.css";
 
@@ -107,6 +112,12 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/hire" element={<ProtectedApp><SoulHireV2 /></ProtectedApp>} />
               <Route path="/settings" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
             <Route path="/dashboard/billing" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="tenants" element={<AdminTenants />} />
+              <Route path="audit" element={<AdminAuditLog />} />
+            </Route>
             <Route path="/*" element={<ProtectedApp />} />
           </Routes>
         </AuthProvider>
