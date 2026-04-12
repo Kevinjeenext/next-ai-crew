@@ -1,225 +1,157 @@
 # Next AI Crew
 
-> 🤖 AI 직원과 함께 일하는 가상 오피스 SaaS 플랫폼
+> 🤖 Your AI Crew, with Soul — AI 직원과 함께 일하는 SaaS 플랫폼
 
 ![License](https://img.shields.io/badge/License-Proprietary-blue)
 ![Stack](https://img.shields.io/badge/Stack-Vite%207%20%2B%20React%2019%20%2B%20Express%205-green)
 ![Database](https://img.shields.io/badge/Database-Supabase%20(PostgreSQL)-purple)
+![Design](https://img.shields.io/badge/UI-Neon%20Dark%20v2%20%2B%20Glassmorphism-00D4FF)
 
 ## 📋 Overview
 
-Next AI Crew는 AI 에이전트를 "직원"으로 고용하여 팀을 빌딩하고 협업할 수 있는 SaaS 플랫폼입니다.
+Next AI Crew는 AI 에이전트를 "Soul"로 채용하여 팀을 빌딩하고 협업할 수 있는 SaaS 플랫폼입니다.
 
 **핵심 기능:**
-- 🏢 가상 오피스: 부서별 AI 직원 관리
-- 🤖 Soul 커스터마이징: AI 캐릭터 성격/스킬 설정
-- 💳 구독 결제: StepPay (한국) / Stripe (글로벌) 지원
-- 🔐 멀티테넌시: RLS 기반 조직 격리
-- 🎨 픽셀 아트 UI: 다크 테마 기반 감성 인터페이스
+- 🏪 Soul 채용 마켓: 20종 프리셋에서 AI 팀원 채용
+- 💬 1:1 Soul 대화: SSE 스트리밍 + 3개 LLM 프로바이더 라우팅
+- 📊 팀 대시보드: 실시간 Soul 상태 + 토큰 사용량 모니터링
+- 💳 빌링/설정: 플랜 관리 + 토큰 충전 + Soul별 사용량
+- 🔐 멀티테넌시: Supabase RLS 기반 조직 격리
+- 🎨 Neon Dark UI: GuardianOps 사이버보안 대시보드 스타일
+
+## 🎨 Design System
+
+**v2 Neon Dark** — ClawPoD Professional × GuardianOps HiTech
+
+- 글래스모피즘: `backdrop-filter: blur(16px)` + shimmer 라인
+- 네온 글로우: `box-shadow` + `text-shadow` 블루/시안 accent
+- GuardianOps 그리드 패턴: 40px 블루 라인
+- 부서별 네온 아바타: 11색 글로우 (engineering=blue, design=cyan, devops=orange...)
+- CSS Custom Properties: `design-system.css` 단일 소스 (토큰 교체로 전체 톤 전환)
+- 저사양 폴백: `prefers-reduced-motion` → solid background
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────┐
-│  Frontend (Vite + React) │  → Vercel
-│  - Landing / Pricing     │
-│  - Login (Supabase Auth) │
-│  - Office (Agent CRUD)   │
-└────────┬────────────────┘
-         │ REST API
-┌────────▼────────────────┐
-│  Backend (Express 5)     │  → Railway
-│  - Auth middleware        │
-│  - Agent/Dept CRUD       │
-│  - Billing routes        │
-│  - WebSocket (WS)        │
-└────────┬────────────────┘
+┌──────────────────────────────┐
+│  Frontend (Vite 7 + React 19) │  → Vercel
+│  - Landing / Pricing          │
+│  - Login (Supabase OAuth)     │
+│  - AppShell (Sidebar + Chat)  │
+│  - Dashboard / Hire / Settings│
+└────────┬─────────────────────┘
+         │ REST API + SSE
+┌────────▼─────────────────────┐
+│  Backend (Express 5 + PG)     │  → Railway
+│  - Soul CRUD API              │
+│  - LLM Proxy (3 providers)    │
+│  - Soul Chat API (SSE)        │
+│  - Auth Middleware             │
+│  - Token Usage Tracker        │
+└────────┬─────────────────────┘
          │
-┌────────▼────────────────┐
-│  Supabase                │
-│  - PostgreSQL (RLS)      │
-│  - Auth (OAuth/Email)    │
-│  - Storage               │
-│  - Realtime              │
-└─────────────────────────┘
+┌────────▼─────────────────────┐
+│  Supabase                     │
+│  - PostgreSQL (25 tables)     │
+│  - Auth (Google OAuth)        │
+│  - RLS (multi-tenant)         │
+│  - 20 Soul Presets (seeded)   │
+└──────────────────────────────┘
 ```
 
-## 🚀 Quick Start
+## 📦 Pages
 
-### Prerequisites
+| Route | Description | Auth |
+|-------|-------------|------|
+| `/landing` | 마케팅 랜딩 페이지 | Public |
+| `/pricing` | 요금제 페이지 | Public |
+| `/login` | Google OAuth 로그인 | Public |
+| `/` | 대시보드 (AppShell) — Soul 팀 관리 | Required |
+| `/hire` | Soul 채용 마켓 — 프리셋 검색/필터/채용 | Required |
+| `/settings` | 설정/빌링 — 플랜, 토큰, 보안 | Required |
 
-- Node.js ≥ 20
-- pnpm ≥ 9
-- Supabase project (or local Supabase)
+## 🛠️ Tech Stack
 
-### 1. Clone & Install
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Vite 7, React 19, TypeScript, CSS Custom Properties |
+| Backend | Express 5, Node.js, TypeScript |
+| Database | Supabase (PostgreSQL + Auth + RLS) |
+| LLM | OpenAI (GPT-4o), Anthropic (Claude), Google (Gemini) |
+| Hosting | Vercel (frontend) + Railway (backend) |
+| Design | Neon Dark v2, Glassmorphism, CSS-only (no Tailwind) |
+
+## 🚀 Development
 
 ```bash
-git clone https://github.com/Kevinjeenext/next-ai-crew.git
-cd next-ai-crew
+# Install
 pnpm install
-```
 
-### 2. Environment Variables
-
-```bash
-cp .env.example .env
-```
-
-#### Required Variables
-
-| Variable | Description | Where |
-|----------|-------------|-------|
-| `VITE_SUPABASE_URL` | Supabase project URL | Frontend |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Frontend |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Backend |
-| `DATABASE_URL` | PostgreSQL connection string | Backend |
-| `STEPPAY_SECRET_TOKEN` | StepPay API Secret-Token | Backend |
-| `STEPPAY_PAYMENT_KEY` | StepPay Payment-Key | Backend |
-| `PAYMENT_GATEWAY` | `steppay` or `stripe` | Backend |
-
-#### Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Backend server port | `5001` |
-| `STEPPAY_PRICE_FREE` | StepPay Free plan price ID | — |
-| `STEPPAY_PRICE_STARTER` | StepPay Starter plan price ID | — |
-| `STEPPAY_PRICE_PRO` | StepPay Pro plan price ID | — |
-| `STEPPAY_PRICE_MAX` | StepPay Max plan price ID | — |
-
-### 3. Database Setup
-
-Run migrations in order on your Supabase SQL editor:
-
-```bash
-# 1. Core tables (organizations, users, etc.)
-supabase/migrations/001_schema.sql
-
-# 2. Agent tables
-supabase/migrations/002_agents.sql
-
-# 3. Department seeding (10 departments with icons)
-supabase/migrations/003_departments.sql
-
-# 4. Subscription & billing tables
-supabase/migrations/004_subscriptions.sql
-```
-
-### 4. StepPay Product Setup
-
-After setting up your StepPay portal account:
-
-```bash
-STEPPAY_SECRET_TOKEN=your_token npx tsx scripts/setup-steppay-products.ts
-```
-
-This creates 5 products with monthly/annual subscription plans and outputs the price IDs for environment variables.
-
-### 5. Run Development
-
-```bash
-# Frontend + Backend (concurrent)
+# Dev server (frontend)
 pnpm dev
 
-# Frontend only
-pnpm dev:client
+# Build
+pnpm build        # tsc -b && vite build
 
-# Backend only
-pnpm dev:server
+# Server (backend)
+pnpm start:server  # or: tsx server/server-main-pg.ts
 ```
 
-### 6. Build & Deploy
+### Environment Variables
 
-```bash
-pnpm build
+**Frontend (Vercel):**
+```
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=xxx
+VITE_API_URL=https://xxx.up.railway.app
 ```
 
-**Deploy targets:**
-- **Frontend** → Vercel (`dist/` directory)
-- **Backend** → Railway (Dockerfile provided)
+**Backend (Railway):**
+```
+DATABASE_URL=postgresql://...
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=xxx
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_AI_API_KEY=AI...
+```
 
 ## 📁 Project Structure
 
 ```
-next-ai-crew/
-├── src/                      # Frontend (React)
-│   ├── pages/                # Route pages
-│   │   ├── LandingPage.tsx   # Marketing landing
-│   │   ├── PricingPage.tsx   # 5-tier pricing (KRW)
-│   │   └── LoginPage.tsx     # Auth (OAuth + Email)
-│   ├── components/
-│   │   ├── agent-manager/    # Agent CRUD UI
-│   │   ├── billing/          # Trial banner, limit bar
-│   │   └── OfficeView.tsx    # Main office view
-│   └── lib/
-│       └── supabase.ts       # Supabase client
-├── server/                   # Backend (Express)
-│   ├── payment/
-│   │   ├── gateway.ts        # PaymentGateway interface
-│   │   ├── steppay.ts        # StepPay implementation
-│   │   └── webhook-handler.ts
-│   ├── modules/routes/
-│   │   ├── billing.ts        # Billing API
-│   │   └── auth/signup.ts    # Auth routes
-│   ├── middleware/
-│   │   └── plan-limit.ts     # Agent limit enforcement
-│   └── lib/
-│       └── supabase.ts       # Server Supabase client
-├── supabase/migrations/      # DDL files (001-004)
-├── public/icons/departments/  # Department pixel art icons
-├── scripts/
-│   └── setup-steppay-products.ts
-├── Dockerfile                # Railway deployment
-├── railway.toml              # Railway config
-└── vite.config.ts
+src/
+├── styles/design-system.css     # v2 Neon Dark 토큰
+├── components/
+│   ├── layout/AppShell.tsx      # 사이드바 + 메인 레이아웃
+│   ├── chat/SoulChatPanel.tsx   # 1:1 Soul 대화 (SSE)
+│   ├── dashboard/Dashboard.tsx  # KPI + Soul 팀 카드
+│   ├── hire/SoulHireMarket.tsx  # 채용 마켓 (필터/카드/모달)
+│   ├── settings/SettingsPage.tsx # 설정 5탭 + 빌링
+│   └── ui/SoulAvatar.tsx        # 네온 아바타 (11색)
+├── pages/
+│   ├── LandingPage.tsx          # 마케팅 랜딩
+│   ├── LoginPage.tsx            # 2-split OAuth
+│   └── PricingPage.tsx          # 요금제
+server/
+├── server-main-pg.ts            # Express 메인 (PG 모드)
+├── routes/soul-chat.ts          # SSE 채팅 API
+├── llm/providers.ts             # 3 LLM 프로바이더
+├── llm/router.ts                # 모델 라우팅 (Simple/General/Complex)
+├── llm/usage-tracker.ts         # 토큰 사용량 추적
+├── services/soul-generator.ts   # generateSoulPrompt()
+└── security/auth.ts             # JWT 인증 미들웨어
+docs/design/pro-ui/             # Ivy 디자인 스펙 10종
 ```
 
-## 💳 Pricing Plans
+## 📊 Current Status
 
-| Plan | AI Agents | Price (KRW) | Features |
-|------|-----------|-------------|----------|
-| Free | 1 | 7일 무료 → ₩25,000/월 | Basic office, 50 msgs/day |
-| Starter | 3 | ₩50,000/월 | Custom Soul, workflows |
-| **Pro** ⭐ | 5 | ₩80,000/월 | Unlimited msgs, API access |
-| Max | 10 | ₩120,000/월 | SSO, analytics, SLA 99.9% |
-| Enterprise | Unlimited | 별도 문의 | On-premise, white label |
+- **Commits**: #100 (914c802) on `main`
+- **Build**: ~5s (CSS 231KB, React 192KB, Index 262KB)
+- **Design**: v2 Neon Dark (GuardianOps style)
+- **LLM**: 3 providers configured (OpenAI + Anthropic + Google)
+- **Presets**: 20 Soul presets seeded
+- **Auth**: Google OAuth via Supabase
 
-Annual billing: 20% discount.
+---
 
-## 🔧 Payment Integration
-
-### StepPay (Phase 1 — Korea)
-
-1. Sign up at [StepPay Portal](https://portal.steppay.kr)
-2. Configure PG settings
-3. Run product setup script
-4. Register webhook URL: `POST /api/webhooks/payment`
-5. Set environment variables on Railway
-
-### Stripe (Phase 2 — Global)
-
-Coming soon. The `PaymentGateway` interface is provider-neutral — set `PAYMENT_GATEWAY=stripe` when ready.
-
-## 🧪 Development Notes
-
-### Dual Database Mode
-
-The server supports both SQLite (dev) and PostgreSQL (production):
-- Set `DATABASE_URL` → uses Supabase/PostgreSQL
-- No `DATABASE_URL` → falls back to SQLite
-
-### Graceful Degradation
-
-When Supabase DDL hasn't been run:
-- Auth routes return mock data
-- Billing routes return hardcoded plan list
-- Agent CRUD operates in SQLite mode
-
-### CSS Note
-
-This project uses Tailwind with a custom dark theme. Due to specificity conflicts, all text colors on dark backgrounds use **inline styles** rather than Tailwind color classes. This ensures visibility regardless of theme overrides.
-
-## 📝 License
-
-Proprietary — © 2026 NEXT Inc. All rights reserved.
+© 2026 Next AI Crew. All rights reserved.
