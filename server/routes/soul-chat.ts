@@ -102,13 +102,40 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       { role: "user", content: message },
     ];
 
-    // 6. Get router and complete
+    // 6. Get router
     const modelRouter = getModelRouter();
+
+    // 7. Mock mode if LLM not configured
     if (!modelRouter.isReady()) {
-      return res.status(503).json({
-        error: "LLM not configured",
-        message: "LLM API 키가 설정되지 않았습니다. 관리자에게 문의하세요.",
-        providers: [],
+      const mockResponses = [
+        `안녕하세요! 저는 ${soul.name}입니다. ${soul.role}로서 도움이 필요하시면 말씀해주세요! 😊`,
+        `네, 알겠습니다! ${soul.skill_tags?.slice(0, 3).join(", ") || "다양한 분야"}에 대해 도움드릴 수 있어요.`,
+        `좋은 질문이네요! 제가 ${soul.department || "팀"}에서 경험한 바로는...\n\n이 부분은 좀 더 자세히 살펴볼 필요가 있겠네요. 구체적인 요구사항을 알려주시면 더 정확한 답변을 드릴 수 있습니다.`,
+      ];
+      const mockContent = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      const convId = await saveMessages(soulId, orgId, conversation_id, message, mockContent);
+
+      if (wantStream) {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        // Simulate streaming
+        for (const char of mockContent) {
+          res.write(`data: ${JSON.stringify({ content: char })}\n\n`);
+        }
+        res.write(`data: ${JSON.stringify({ done: true, content: mockContent, conversation_id: convId })}\n\n`);
+        res.end();
+        return;
+      }
+
+      return res.json({
+        ok: true,
+        response: mockContent,
+        model: "mock (LLM not configured)",
+        usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        conversation_id: convId,
+        budget: { usagePct: 0 },
+        mock: true,
       });
     }
 
