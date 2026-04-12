@@ -211,13 +211,19 @@ export default function SoulHireV2() {
                 <PolarGrid stroke="rgba(255,255,255,0.1)" gridType="polygon" />
                 <PolarAngleAxis
                   dataKey="axis"
-                  tick={({ x, y, payload, index }: any) => {
+                  tick={({ x, y, payload, index, cx, cy }: any) => {
                     const d = radarData(soul.stats);
                     const val = d[index]?.value ?? 0;
+                    // Push label outward from center for readability
+                    const dx = x - cx; const dy = y - cy;
+                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const nudge = 18;
+                    const nx = x + (dx / dist) * nudge;
+                    const ny = y + (dy / dist) * nudge;
                     return (
                       <g>
-                        <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.7)" fontSize={13} fontWeight={600}>{payload.value}</text>
-                        <text x={x} y={y + 16} textAnchor="middle" dominantBaseline="central" fill="#00D4FF" fontSize={12} fontWeight={700}>{val}</text>
+                        <text x={nx} y={ny} textAnchor="middle" dominantBaseline="central" fill="var(--text-primary, rgba(255,255,255,0.85))" fontSize={13} fontWeight={600}>{payload.value}</text>
+                        <text x={nx} y={ny + 16} textAnchor="middle" dominantBaseline="central" fill="#00D4FF" fontSize={12} fontWeight={700}>{val}</text>
                       </g>
                     );
                   }}
