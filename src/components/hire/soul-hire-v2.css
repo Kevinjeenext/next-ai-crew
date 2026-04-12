@@ -275,6 +275,29 @@
   font: 700 28px var(--font-ui); color: var(--brand-cyan, #00D4FF);
 }
 .score-value small { font-size: 14px; color: var(--text-tertiary); }
+.radar-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+  margin-top: 16px;
+}
+.radar-stat-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.radar-stat-label {
+  font: 400 12px var(--font-ui); color: var(--text-tertiary);
+  width: 52px; flex-shrink: 0;
+}
+.radar-stat-bar {
+  flex: 1; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+}
+.radar-stat-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan, #00D4FF));
+}
+.radar-stat-val {
+  font: 700 12px var(--font-ui); color: var(--brand-cyan, #00D4FF);
+  width: 28px; text-align: right; flex-shrink: 0;
+}
 
 /* ===== ANIMATION ===== */
 @keyframes panel-fade {

@@ -3,7 +3,7 @@
  * Carousel + Detail Panel + Radar Chart
  */
 import { useState, useCallback } from "react";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Search, MessageCircle, UserPlus, UserCheck as UserCheckIcon, Check, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import "./soul-hire-v2.css";
@@ -205,24 +205,58 @@ export default function SoulHireV2() {
 
           {/* Right: Radar Chart */}
           <div className="radar-card">
-            <div className="radar-title">역량 분석</div>
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart data={radarData(soul.stats)} cx="50%" cy="50%" outerRadius="75%">
-                <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                <PolarAngleAxis dataKey="axis" tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 12 }} />
+            <div className="radar-title">역량 분석 — {soul.display_name}</div>
+            <ResponsiveContainer width="100%" height={380}>
+              <RadarChart data={radarData(soul.stats)} cx="50%" cy="50%" outerRadius="80%">
+                <PolarGrid stroke="rgba(255,255,255,0.1)" gridType="polygon" />
+                <PolarAngleAxis
+                  dataKey="axis"
+                  tick={({ x, y, payload, index }: any) => {
+                    const d = radarData(soul.stats);
+                    const val = d[index]?.value ?? 0;
+                    return (
+                      <g>
+                        <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.7)" fontSize={13} fontWeight={600}>{payload.value}</text>
+                        <text x={x} y={y + 16} textAnchor="middle" dominantBaseline="central" fill="#00D4FF" fontSize={12} fontWeight={700}>{val}</text>
+                      </g>
+                    );
+                  }}
+                />
+                <PolarRadiusAxis
+                  angle={90}
+                  domain={[0, 100]}
+                  tickCount={6}
+                  tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }}
+                  axisLine={false}
+                />
                 <Radar
                   name={soul.name}
                   dataKey="value"
                   stroke="#3B82F6"
-                  fill="rgba(59,130,246,0.12)"
-                  strokeWidth={2}
-                  dot={{ r: 4, fill: "#00D4FF", stroke: "transparent" }}
+                  fill="rgba(59,130,246,0.15)"
+                  strokeWidth={2.5}
+                  dot={{ r: 5, fill: "#00D4FF", stroke: "#3B82F6", strokeWidth: 1.5 }}
+                  animationDuration={300}
+                />
+                <Tooltip
+                  contentStyle={{ background: "rgba(13,17,32,0.95)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 8, fontSize: 13 }}
+                  itemStyle={{ color: "#00D4FF" }}
+                  formatter={(value: any) => [`${value}점`, ""]}
                 />
               </RadarChart>
             </ResponsiveContainer>
             <div className="radar-score-summary">
               <span>종합 점수</span>
               <span className="score-value">{avgScore(soul.stats)}<small>/100</small></span>
+            </div>
+            <div className="radar-stats-grid">
+              {radarData(soul.stats).map((d) => (
+                <div key={d.axis} className="radar-stat-item">
+                  <span className="radar-stat-label">{d.axis}</span>
+                  <div className="radar-stat-bar"><div className="radar-stat-fill" style={{ width: `${d.value}%` }} /></div>
+                  <span className="radar-stat-val">{d.value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
