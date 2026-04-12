@@ -732,6 +732,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
 
     // Only use columns that exist in the DB schema
     let soulData: Record<string, any> = {
+      id: crypto.randomUUID(),
       name: name || "New Soul",
       role: role || "AI Agent",
       domain: req.body.department || req.body.domain || "general",
