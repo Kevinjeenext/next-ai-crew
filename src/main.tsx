@@ -1,4 +1,4 @@
-import { StrictMode, Component, useState, useEffect, type ReactNode } from "react";
+import { StrictMode, Component, useState, useEffect, type ReactNode, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./ThemeContext";
@@ -8,52 +8,35 @@ import { AuthCallback } from "./pages/AuthCallback";
 import LandingPage from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import AppShell from "./components/layout/AppShell";
+import DashboardOutlet from "./components/layout/DashboardOutlet";
 import SoulHireV2 from "./components/hire/SoulHireV2";
 import SettingsPage from "./components/settings/SettingsPage";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminTenants from "./pages/admin/AdminTenants";
-import AdminAuditLog from "./pages/admin/AdminAuditLog";
+
+// Lazy load admin pages (code-split)
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminTenants = lazy(() => import("./pages/admin/AdminTenants"));
+const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
+
 import "./styles/design-system.css";
 import "./index.css";
 
 /**
  * Top-level Error Boundary — prevents full white screen on unexpected errors.
- * Shows a recoverable error UI instead of crashing the demo.
  */
 class RootErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { error: null };
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: any) { console.error("[RootErrorBoundary]", error, info); }
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-          background: "#0F172A", flexDirection: "column", gap: "1rem", padding: "2rem",
-        }}>
-          <div style={{ fontSize: "3rem" }}>⚠️</div>
-          <h1 style={{ color: "#F1F5F9", fontFamily: "sans-serif", fontSize: "1.25rem", margin: 0 }}>
-            Something went wrong
-          </h1>
-          <p style={{ color: "#94A3B8", fontFamily: "sans-serif", fontSize: "0.9rem", margin: 0, maxWidth: 400, textAlign: "center" }}>
-            {this.state.error.message}
-          </p>
-          <button
-            onClick={() => { this.setState({ error: null }); window.location.href = "/"; }}
-            style={{
-              marginTop: "0.5rem", padding: "0.625rem 1.5rem",
-              background: "linear-gradient(135deg, #06B6D4, #6366F1)",
-              color: "#fff", border: "none", borderRadius: "0.5rem",
-              cursor: "pointer", fontFamily: "sans-serif", fontSize: "0.9rem",
-            }}
-          >
-            Reload
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0A0F1C", color: "#fff", padding: 32 }}>
+          <h1 style={{ fontSize: 24, marginBottom: 16 }}>Something went wrong</h1>
+          <p style={{ color: "#94A3B8", marginBottom: 24, maxWidth: 480, textAlign: "center" }}>{this.state.error.message}</p>
+          <button onClick={() => { this.setState({ error: null }); window.location.href = "/"; }} style={{ padding: "10px 24px", borderRadius: 8, background: "#3B82F6", color: "#fff", border: "none", cursor: "pointer", fontSize: 14 }}>
+            홈으로 돌아가기
           </button>
         </div>
       );
@@ -63,21 +46,10 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { error: Erro
 }
 
 /**
- * Route guard: shows the original Next AI Crew office app only when authenticated.
- * Unauthenticated users see Landing → Login flow.
+ * Auth guard — redirects to landing if not authenticated
  */
-function ProtectedApp({ children }: { children?: React.ReactNode }) {
+function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
-  const [chatSoul, setChatSoul] = useState<{
-    id: string; name: string; nameKo: string;
-    role: string; avatar: string; department: string;
-  } | null>(null);
-
-  // Expose globally so PixiJS/OfficeMinimap can trigger chat
-  useEffect(() => {
-    (window as any).__openSoulChat = (soul: typeof chatSoul) => setChatSoul(soul);
-    return () => { delete (window as any).__openSoulChat; };
-  }, []);
 
   if (loading) {
     return (
@@ -87,16 +59,15 @@ function ProtectedApp({ children }: { children?: React.ReactNode }) {
     );
   }
 
-  if (!session) {
-    return <Navigate to="/landing" replace />;
-  }
-
-  const navigate = (path: string) => { window.location.href = path; };
-
-  // If children provided (e.g. /hire page), render them;
-  // Otherwise render new AppShell (sidebar + chat layout)
-  return children ? <>{children}</> : <AppShell onNavigate={navigate} />;
+  if (!session) return <Navigate to="/landing" replace />;
+  return <>{children}</>;
 }
+
+const AdminSuspense = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#888' }}>Loading...</div>}>
+    {children}
+  </Suspense>
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -109,16 +80,22 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/hire" element={<ProtectedApp><SoulHireV2 /></ProtectedApp>} />
-              <Route path="/settings" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
-            <Route path="/dashboard/billing" element={<ProtectedApp><SettingsPage /></ProtectedApp>} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="tenants" element={<AdminTenants />} />
-              <Route path="audit" element={<AdminAuditLog />} />
+
+            {/* Authenticated routes — AppShell persistent sidebar */}
+            <Route path="/" element={<AuthGuard><AppShell /></AuthGuard>}>
+              <Route index element={<DashboardOutlet />} />
+              <Route path="hire" element={<SoulHireV2 />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="dashboard/billing" element={<SettingsPage />} />
             </Route>
-            <Route path="/*" element={<ProtectedApp />} />
+
+            {/* Admin — separate layout, code-split */}
+            <Route path="/admin" element={<AdminSuspense><AdminLayout /></AdminSuspense>}>
+              <Route index element={<AdminSuspense><AdminDashboard /></AdminSuspense>} />
+              <Route path="users" element={<AdminSuspense><AdminUsers /></AdminSuspense>} />
+              <Route path="tenants" element={<AdminSuspense><AdminTenants /></AdminSuspense>} />
+              <Route path="audit" element={<AdminSuspense><AdminAuditLog /></AdminSuspense>} />
+            </Route>
           </Routes>
         </AuthProvider>
       </ThemeProvider>
