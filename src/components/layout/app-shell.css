@@ -22,6 +22,18 @@
   overflow: hidden;
 }
 .app-sidebar.collapsed { width: 64px; min-width: 64px; }
+.app-sidebar.collapsed .sidebar-logo-text,
+.app-sidebar.collapsed .sidebar-search,
+.app-sidebar.collapsed .sidebar-section-label,
+.app-sidebar.collapsed .sidebar-soul-info,
+.app-sidebar.collapsed .sidebar-nav-item span:not(.sidebar-nav-icon),
+.app-sidebar.collapsed .sidebar-add-soul span:last-child {
+  display: none;
+}
+.app-sidebar.collapsed .sidebar-nav-item { justify-content: center; padding: 8px; }
+.app-sidebar.collapsed .sidebar-soul-item { justify-content: center; padding: 6px; }
+.app-sidebar.collapsed .sidebar-header { justify-content: center; padding: 20px 8px 16px; }
+.app-sidebar.collapsed .sidebar-add-soul { justify-content: center; }
 
 /* Header */
 .sidebar-header {

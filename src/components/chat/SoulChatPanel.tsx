@@ -241,39 +241,65 @@ export default function SoulChatPanel({
             </div>
           </div>
         )}
-        {messages.map((msg) => (
-          <div key={msg.id} className={`soul-chat-msg ${msg.role}`}>
-            {msg.role === "assistant" && (
-              <img src={soulAvatar} alt="" className="soul-chat-msg-avatar" />
-            )}
-            <div className="soul-chat-msg-bubble">
-              <div className="soul-chat-msg-content">{msg.content}</div>
-              <div className="soul-chat-msg-meta">
-                {msg.timestamp.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-                {msg.model && <span className="soul-chat-msg-model">{msg.model}</span>}
+        {messages.map((msg, idx) => {
+          const prev = idx > 0 ? messages[idx - 1] : null;
+          const isContinued = prev && prev.role === msg.role &&
+            (msg.timestamp.getTime() - prev.timestamp.getTime()) < 60000;
+          const isFirst = !isContinued;
+          const groupCls = [
+            "msg-group",
+            msg.role === "user" ? "user" : "",
+            isFirst ? "first-in-group" : "continued",
+          ].filter(Boolean).join(" ");
+
+          return (
+            <div key={msg.id} className={groupCls}>
+              <div className="msg-avatar-col">
+                {msg.role === "assistant" ? (
+                  <div className="soul-chat-avatar" style={{ width: 40, height: 40, background: deptColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "#fff" }}>
+                    {soulName.slice(0, 2).toUpperCase()}
+                  </div>
+                ) : (
+                  <div className="soul-chat-avatar" style={{ width: 40, height: 40, background: "#334155", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "#fff" }}>나</div>
+                )}
+              </div>
+              <div className="msg-body-col">
+                <div className="msg-header">
+                  <span className="msg-sender-name">{msg.role === "assistant" ? soulNameKo : "나"}</span>
+                  <span className="msg-timestamp">{msg.timestamp.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <div className="msg-text">{msg.content}</div>
+                {msg.model && <span className="msg-model-tag">{msg.model}</span>}
               </div>
             </div>
-          </div>
-        ))}
-        {/* Typing indicator (before first chunk) */}
+          );
+        })}
+        {/* Typing indicator */}
         {loading && !isStreaming && (
-          <div className="soul-chat-msg assistant">
-            <img src={soulAvatar} alt="" className="soul-chat-msg-avatar" />
-            <div className="soul-chat-msg-bubble">
-              <div className="soul-chat-typing">
-                <span /><span /><span />
+          <div className="msg-typing-wrap">
+            <div className="msg-avatar-col">
+              <div className="soul-chat-avatar" style={{ width: 40, height: 40, background: deptColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "#fff" }}>
+                {soulName.slice(0, 2).toUpperCase()}
               </div>
+            </div>
+            <div className="msg-typing-dots">
+              <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
             </div>
           </div>
         )}
-        {/* Streaming message (with cursor) */}
+        {/* Streaming */}
         {isStreaming && streamingContent && (
-          <div className="soul-chat-msg assistant">
-            <img src={soulAvatar} alt="" className="soul-chat-msg-avatar" />
-            <div className="soul-chat-msg-bubble">
-              <div className="soul-chat-msg-content">
-                {streamingContent}<span className="streaming-cursor">▋</span>
+          <div className="msg-group first-in-group">
+            <div className="msg-avatar-col">
+              <div className="soul-chat-avatar" style={{ width: 40, height: 40, background: deptColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: "#fff" }}>
+                {soulName.slice(0, 2).toUpperCase()}
               </div>
+            </div>
+            <div className="msg-body-col">
+              <div className="msg-header">
+                <span className="msg-sender-name">{soulNameKo}</span>
+              </div>
+              <div className="msg-text streaming">{streamingContent}</div>
             </div>
           </div>
         )}
