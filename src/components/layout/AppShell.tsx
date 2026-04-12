@@ -134,7 +134,7 @@ export default function AppShell() {
             </div>
           ) : (
             filteredSouls.map((soul) => (
-              <button key={soul.id} className={`sidebar-soul-item ${selectedSoulId === soul.id ? "active" : ""}`} onClick={() => handleSoulSelect(soul)}>
+              <button key={soul.id} className={`sidebar-soul-item ${selectedSoulId === soul.id ? "active" : ""}`} onClick={() => handleSoulSelect(soul)} title={sidebarCollapsed ? (soul.name_ko || soul.name) : undefined}>
                 <SoulAvatar name={soul.name} size="sm" department={soul.department} status={soul.status || "active"} imageUrl={soul.avatar_url} />
                 {!sidebarCollapsed && (
                   <div className="sidebar-soul-info">
@@ -154,15 +154,15 @@ export default function AppShell() {
         )}
 
         <div className="sidebar-nav">
-          <NavLink to="/" end className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`}>
+          <NavLink to="/" end className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "대시보드" : undefined}>
             <LayoutDashboard size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>대시보드</span>}
           </NavLink>
-          <NavLink to="/hire" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`}>
+          <NavLink to="/hire" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "마켓" : undefined}>
             <Store size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>마켓</span>}
           </NavLink>
-          <NavLink to="/settings" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`}>
+          <NavLink to="/settings" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "설정" : undefined}>
             <Settings size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>설정</span>}
           </NavLink>

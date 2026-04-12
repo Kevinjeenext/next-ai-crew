@@ -29,7 +29,7 @@
   transition: width 0.2s ease, min-width 0.2s ease;
   overflow: hidden;
 }
-.app-sidebar.collapsed { width: 64px; min-width: 64px; }
+.app-sidebar.collapsed { width: 56px; min-width: 56px; }
 .app-sidebar.collapsed .sidebar-logo-text,
 .app-sidebar.collapsed .sidebar-search,
 .app-sidebar.collapsed .sidebar-section-label,
@@ -85,9 +85,10 @@
 }
 .sidebar-nav-item:hover { background: rgba(59,130,246,0.08); color: var(--text-primary); }
 .sidebar-nav-item.active {
-  background: rgba(59,130,246,0.12);
-  color: #93BBFC;
-  box-shadow: inset 3px 0 0 var(--brand-blue);
+  background: rgba(59,130,246,0.10);
+  color: var(--brand-cyan, #00D4FF);
+  border-left: 2px solid var(--brand-cyan, #00D4FF);
+  padding-left: 8px;
 }
 .sidebar-nav-icon { width: 20px; text-align: center; font-size: 16px; }
 
