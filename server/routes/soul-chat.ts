@@ -77,6 +77,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
         .select("role, content")
         .eq("conversation_id", conversation_id)
         .eq("agent_id", soulId)
+        .eq("org_id", orgId)
         .order("created_at", { ascending: true })
         .limit(20);
       if (msgs) {
@@ -217,6 +218,7 @@ router.get("/:id/messages", async (req: Request, res: Response) => {
       .from("soul_conversations")
       .select("id, role, content, model_used, total_tokens, created_at")
       .eq("agent_id", soulId)
+      .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(limit);
 

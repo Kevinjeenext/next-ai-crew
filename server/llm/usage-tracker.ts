@@ -25,6 +25,7 @@ export class UsageTracker {
         .from("soul_usage")
         .select("id, total_tokens, message_count")
         .eq("agent_id", soulId)
+        .eq("org_id", orgId)
         .eq("period", period)
         .maybeSingle();
 
