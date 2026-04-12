@@ -467,6 +467,90 @@ app.get("/api/workflow-packs", async (req, res) => {
   }
 });
 
+// --- Soul Presets (Public catalog — no auth required) ---
+app.get("/api/soul-presets", async (_req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("soul_presets")
+      .select("id, name, display_name, category, description, skill_tags, domain, default_model, greeting_message, thumbnail_url, is_premium, premium_price_krw, popularity_score, rating_avg")
+      .eq("is_public", true)
+      .order("popularity_score", { ascending: false });
+    if (error) throw error;
+    res.json({ presets: data || [] });
+  } catch (err: any) {
+    console.error("[API] GET /api/soul-presets error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/soul-presets/:id", async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("soul_presets")
+      .select("*")
+      .eq("id", req.params.id)
+      .eq("is_public", true)
+      .single();
+    if (error || !data) return res.status(404).json({ error: "Preset not found" });
+    res.json({ preset: data });
+  } catch (err: any) {
+    console.error("[API] GET /api/soul-presets/:id error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Soul Usage (per-org token usage) ---
+app.get("/api/soul-usage", async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const period = (req.query.period as string) || new Date().toISOString().slice(0, 7);
+    const { data, error } = await supabaseAdmin
+      .from("soul_usage")
+      .select("*, agents(name, avatar, department_id)")
+      .eq("org_id", orgId)
+      .eq("period", period)
+      .order("total_output_tokens", { ascending: false });
+    if (error) throw error;
+    res.json({ usage: data || [], period });
+  } catch (err: any) {
+    console.error("[API] GET /api/soul-usage error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Org Token Budget ---
+app.get("/api/org-budget", async (req, res) => {
+  try {
+    const orgId = await requireOrg(req, res);
+    if (!orgId) return;
+    const { data: budget } = await supabaseAdmin
+      .from("org_token_budgets")
+      .select("*")
+      .eq("org_id", orgId)
+      .maybeSingle();
+    // Also get org plan + limits
+    const { data: org } = await supabaseAdmin
+      .from("organizations")
+      .select("plan")
+      .eq("id", orgId)
+      .single();
+    let planLimits = null;
+    if (org?.plan) {
+      const { data: pl } = await supabaseAdmin
+        .from("plan_limits")
+        .select("monthly_tokens, token_overage_rate_krw, plan")
+        .eq("plan", org.plan)
+        .single();
+      planLimits = pl;
+    }
+    res.json({ budget: budget || null, planLimits });
+  } catch (err: any) {
+    console.error("[API] GET /api/org-budget error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Static file serving (production)
 // ---------------------------------------------------------------------------
