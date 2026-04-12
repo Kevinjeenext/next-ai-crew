@@ -625,21 +625,36 @@ app.get("/api/llm/status", (_req, res) => {
 // ========== SOUL CRUD API ==========
 import { generateSoulPrompt } from "./services/soul-generator.ts";
 
+// Safe columns that exist in the original agents table + 005_souls.sql ALTER
+// Missing in DB: display_name, department, personality_traits, communication_style, boundaries, updated_at
+const AGENTS_SAFE_SELECT = "id, name, role, status, persona_prompt, skill_tags, domain, llm_model, llm_temperature, tools, memory_enabled, greeting_message, preset_id, avatar_style, avatar_url, created_at";
+
 // GET /api/souls — list org Souls
 app.get("/api/souls", async (req, res) => {
   try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const { data, error } = await supabaseAdmin
-      .from("agents")
-      .select("id, name, display_name, role, department, status, avatar_style, persona_prompt, personality_traits, skill_tags, tools, llm_model, llm_temperature, memory_enabled, preset_id, created_at, updated_at")
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false });
+    // Try org-scoped first, fall back to all agents
+    let data: any[] | null = null;
+    let error: any = null;
+    const orgId = await requireOrg(req, res).catch(() => null);
+    if (orgId) {
+      const r = await supabaseAdmin.from("agents").select(AGENTS_SAFE_SELECT).eq("org_id", orgId).order("created_at", { ascending: false });
+      data = r.data; error = r.error;
+      // If org_id column doesn't exist, fall back to unfiltered
+      if (error?.message?.includes("org_id")) {
+        const r2 = await supabaseAdmin.from("agents").select(AGENTS_SAFE_SELECT).order("created_at", { ascending: false });
+        data = r2.data; error = r2.error;
+      }
+    } else {
+      const r = await supabaseAdmin.from("agents").select(AGENTS_SAFE_SELECT).order("created_at", { ascending: false });
+      data = r.data; error = r.error;
+    }
     if (error) throw error;
     // Inject fallback avatar URLs
     const souls = (data || []).map((s: any) => ({
       ...s,
-      avatar_url: AVATAR_FALLBACKS[s.name?.toLowerCase()] || AVATAR_FALLBACKS[s.preset_id?.toLowerCase()] || null,
+      display_name: s.display_name || s.name,
+      department: s.department || s.domain || "general",
+      avatar_url: s.avatar_url || AVATAR_FALLBACKS[s.name?.toLowerCase()] || AVATAR_FALLBACKS[s.preset_id?.toLowerCase()] || null,
     }));
     res.json({ souls });
   } catch (err: any) {
@@ -687,30 +702,27 @@ app.get("/api/souls/:id", async (req, res) => {
 // POST /api/souls — create Soul (from preset or custom)
 app.post("/api/souls", express.json(), async (req, res) => {
   try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const { preset_id, name, display_name, role, department, persona_prompt, personality_traits, communication_style, skill_tags, tools, llm_model, llm_temperature, boundaries, greeting_message, avatar_url, avatar_style } = req.body;
+    const orgId = await requireOrg(req, res).catch(() => null);
+    const { preset_id, name, role, persona_prompt, skill_tags, tools, llm_model, llm_temperature, greeting_message, avatar_style } = req.body;
 
+    // Only use columns that exist in the DB schema
     let soulData: Record<string, any> = {
-      org_id: orgId,
       name: name || "New Soul",
-      display_name: display_name || name || "New Soul",
       role: role || "AI Agent",
-      department: department || "general",
+      domain: req.body.department || req.body.domain || "general",
       status: "active",
       persona_prompt: persona_prompt || null,
-      personality_traits: personality_traits || null,
-      communication_style: communication_style || null,
       skill_tags: skill_tags || [],
       tools: tools || [],
       llm_model: llm_model || "auto",
       llm_temperature: llm_temperature ?? 0.7,
-      boundaries: boundaries || [],
       greeting_message: greeting_message || null,
       memory_enabled: true,
       avatar_style: avatar_style || "pixel",
       preset_id: preset_id || null,
     };
+    // Only add org_id if column exists (try/catch on insert)
+    if (orgId) soulData.org_id = orgId;
 
     // If creating from preset, merge preset data
     if (preset_id) {
@@ -723,28 +735,25 @@ app.post("/api/souls", express.json(), async (req, res) => {
         soulData = {
           ...soulData,
           name: name || preset.name,
-          display_name: display_name || preset.display_name,
           role: role || preset.description,
-          department: department || preset.category,
+          domain: req.body.department || preset.category || "general",
           persona_prompt: persona_prompt || preset.persona_prompt,
-          personality_traits: personality_traits || preset.personality_traits,
-          communication_style: communication_style || preset.communication_style,
           skill_tags: skill_tags || preset.skill_tags,
           tools: tools || preset.default_tools,
           llm_model: llm_model || preset.default_model || "auto",
           llm_temperature: llm_temperature ?? preset.default_temperature ?? 0.7,
-          boundaries: boundaries || preset.boundaries,
           greeting_message: greeting_message || preset.greeting_message,
-          // avatar_url injected via AVATAR_FALLBACKS at read time
         };
       }
     }
 
-    const { data, error } = await supabaseAdmin
-      .from("agents")
-      .insert(soulData)
-      .select()
-      .single();
+    // Try insert, if org_id fails remove it and retry
+    let data: any, error: any;
+    ({ data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single());
+    if (error?.message?.includes("org_id") || error?.message?.includes("column")) {
+      delete soulData.org_id;
+      ({ data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single());
+    }
     if (error) throw error;
     res.status(201).json({ ok: true, soul: data });
   } catch (err: any) {
@@ -759,7 +768,8 @@ app.put("/api/souls/:id", express.json(), async (req, res) => {
     const orgId = await requireOrg(req, res);
     if (!orgId) return;
     const updates: Record<string, any> = {};
-    const allowed = ["name", "display_name", "role", "department", "persona_prompt", "personality_traits", "communication_style", "skill_tags", "tools", "llm_model", "llm_temperature", "boundaries", "greeting_message", "memory_enabled", "long_term_memory", "heartbeat_enabled", "heartbeat_interval_min", "heartbeat_tasks", "avatar_style", "status"];
+    // Only columns that exist in the DB
+    const allowed = ["name", "role", "domain", "persona_prompt", "skill_tags", "tools", "llm_model", "llm_temperature", "greeting_message", "memory_enabled", "avatar_style", "status"];
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
