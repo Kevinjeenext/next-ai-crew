@@ -10,15 +10,17 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return "light";
+    if (typeof window === "undefined") return "dark";
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return stored === "dark" ? "dark" : "light";
+    if (stored === "light" || stored === "dark") return stored;
+    // Default to dark (Neon Dark v2)
+    return "dark";
   });
 
   useEffect(() => {

@@ -67,6 +67,45 @@
   --text-2xl:  32px;
 }
 
+/* ═══════ Light Mode ═══════ */
+[data-theme="light"] {
+  --bg-base:        #F8FAFC;
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #F1F5F9;
+  --bg-overlay:     #E2E8F0;
+
+  --glass-bg:       rgba(255,255,255,0.8);
+  --glass-border:   rgba(59,130,246,0.12);
+  --glass-blur:     16px;
+  --glass-bg-hover: rgba(255,255,255,0.9);
+
+  --border-subtle:  rgba(0,0,0,0.06);
+  --border-default: rgba(0,0,0,0.10);
+  --border-strong:  rgba(0,0,0,0.16);
+  --border-glow:    rgba(59,130,246,0.25);
+
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary:  #94A3B8;
+  --text-disabled:  #CBD5E1;
+
+  --brand-blue:      #2563EB;
+  --brand-blue-h:    #1D4ED8;
+  --brand-blue-glow: rgba(37,99,235,0.2);
+  --brand-cyan:      #0891B2;
+  --brand-cyan-glow: rgba(8,145,178,0.2);
+  --brand-purple:    #7C3AED;
+  --brand-purple-glow: rgba(124,58,237,0.2);
+
+  --success:      #059669;
+  --success-glow: rgba(5,150,105,0.15);
+  --warning:      #D97706;
+  --warning-glow: rgba(217,119,6,0.15);
+  --error:        #DC2626;
+  --error-glow:   rgba(220,38,38,0.15);
+  --info:         #2563EB;
+}
+
 /* ═══════ Reset / Base ═══════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -322,6 +361,35 @@ button {
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ═══════ Light Mode Overrides ═══════ */
+[data-theme="light"] body {
+  background-image:
+    linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+}
+/* Light: card shimmer uses subtle blue */
+[data-theme="light"] .card::before,
+[data-theme="light"] .glass-card::before {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(37,99,235,0.15) 30%,
+    rgba(8,145,178,0.15) 70%,
+    transparent 100%);
+}
+/* Light: neon glow → subtle shadow */
+[data-theme="light"] .btn-primary {
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+[data-theme="light"] .btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+}
+[data-theme="light"] .summary-value {
+  text-shadow: none;
+}
 
 /* ═══════ 저사양 기기 폴백 ═══════ */
 @media (prefers-reduced-motion: reduce) {

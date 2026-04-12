@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import SoulChatPanel from "../chat/SoulChatPanel";
 import Dashboard from "../dashboard/Dashboard";
+import ThemeToggle from "../ui/ThemeToggle";
 import "./app-shell.css";
 
 interface Soul {
@@ -200,10 +201,14 @@ export default function AppShell({ onNavigate }: Props) {
             <span className="sidebar-nav-icon">🏪</span>
             {!sidebarCollapsed && <span>마켓</span>}
           </button>
-          <button className="sidebar-nav-item">
+          <button
+            className="sidebar-nav-item"
+            onClick={() => onNavigate?.("/settings")}
+          >
             <span className="sidebar-nav-icon">⚙️</span>
             {!sidebarCollapsed && <span>설정</span>}
           </button>
+          <ThemeToggle collapsed={sidebarCollapsed} />
         </div>
       </aside>
 
