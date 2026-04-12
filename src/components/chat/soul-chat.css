@@ -273,3 +273,38 @@
     border-radius: 0;
   }
 }
+
+/* ─── SSE Streaming Cursor ───────────── */
+.streaming-cursor {
+  color: #06B6D4;
+  animation: cursor-blink 0.8s step-end infinite;
+  font-weight: 400;
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── Quick Start Pills ──────────────── */
+.soul-chat-quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: center;
+}
+.soul-chat-quick-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  font: 500 13px "Space Grotesk", sans-serif;
+  color: var(--th-text-muted, #94A3B8);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.soul-chat-quick-pill:hover {
+  border-color: #2563EB;
+  background: rgba(37,99,235,0.1);
+  color: #93BBFC;
+}

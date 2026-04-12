@@ -54,6 +54,9 @@ export default function SoulChatPanel({
 
   const deptColor = DEPT_COLORS[department] || "#2563EB";
 
+  const [streamingContent, setStreamingContent] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+
   // Check LLM status on mount
   useEffect(() => {
     fetch("/api/llm/status")
@@ -107,47 +110,79 @@ export default function SoulChatPanel({
     setLoading(true);
 
     try {
+      // Use SSE streaming
+      setIsStreaming(true);
+      setStreamingContent("");
+
       const res = await fetch(`/api/souls/${soulId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
           conversation_id: conversationId,
-          stream: false, // Use standard for now; SSE later
+          stream: true,
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        const errorMsg: ChatMessage = {
-          id: `err-${Date.now()}`,
-          role: "assistant",
+        const data = await res.json();
+        setMessages((prev) => [...prev, {
+          id: `err-${Date.now()}`, role: "assistant",
           content: data.message || data.error || "응답을 받지 못했습니다.",
           timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-      } else {
-        if (data.conversation_id) setConversationId(data.conversation_id);
-        const assistantMsg: ChatMessage = {
-          id: `asst-${Date.now()}`,
-          role: "assistant",
-          content: data.response,
-          timestamp: new Date(),
-          model: data.model,
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
+        }]);
+        setIsStreaming(false);
+        return;
+      }
+
+      // Read SSE stream
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      let buffer = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const payload = JSON.parse(line.slice(6));
+              if (payload.done) {
+                // Stream complete
+                if (payload.conversation_id) setConversationId(payload.conversation_id);
+              } else if (payload.content) {
+                fullContent += payload.content;
+                setStreamingContent(fullContent);
+              } else if (payload.error) {
+                fullContent = payload.error;
+              }
+            } catch { /* skip */ }
+          }
+        }
+      }
+
+      // Finalize: move streaming content to messages
+      setIsStreaming(false);
+      setStreamingContent("");
+      if (fullContent) {
+        setMessages((prev) => [...prev, {
+          id: `asst-${Date.now()}`, role: "assistant",
+          content: fullContent, timestamp: new Date(),
+        }]);
       }
     } catch (err: any) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `err-${Date.now()}`,
-          role: "assistant",
-          content: "네트워크 오류가 발생했습니다.",
-          timestamp: new Date(),
-        },
-      ]);
+      setIsStreaming(false);
+      setStreamingContent("");
+      setMessages((prev) => [...prev, {
+        id: `err-${Date.now()}`, role: "assistant",
+        content: "네트워크 오류가 발생했습니다.",
+        timestamp: new Date(),
+      }]);
     } finally {
       setLoading(false);
       inputRef.current?.focus();
@@ -185,12 +220,23 @@ export default function SoulChatPanel({
 
       {/* Messages */}
       <div className="soul-chat-messages">
-        {messages.length === 0 && (
+        {messages.length === 0 && !loading && (
           <div className="soul-chat-empty">
             <img src={soulAvatar} alt="" className="soul-chat-empty-avatar" />
             <p className="soul-chat-empty-name">{soulNameKo}</p>
             <p className="soul-chat-empty-role">{soulRole}</p>
             <p className="soul-chat-empty-hint">메시지를 보내 대화를 시작하세요</p>
+            <div className="soul-chat-quick-pills">
+              {["자기소개 해줘", "오늘 할 일 정리해줘", "능력 알려줘"].map((pill) => (
+                <button
+                  key={pill}
+                  className="soul-chat-quick-pill"
+                  onClick={() => { setInput(pill); }}
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map((msg) => (
@@ -207,12 +253,24 @@ export default function SoulChatPanel({
             </div>
           </div>
         ))}
-        {loading && (
+        {/* Typing indicator (before first chunk) */}
+        {loading && !isStreaming && (
           <div className="soul-chat-msg assistant">
             <img src={soulAvatar} alt="" className="soul-chat-msg-avatar" />
             <div className="soul-chat-msg-bubble">
               <div className="soul-chat-typing">
                 <span /><span /><span />
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Streaming message (with cursor) */}
+        {isStreaming && streamingContent && (
+          <div className="soul-chat-msg assistant">
+            <img src={soulAvatar} alt="" className="soul-chat-msg-avatar" />
+            <div className="soul-chat-msg-bubble">
+              <div className="soul-chat-msg-content">
+                {streamingContent}<span className="streaming-cursor">▋</span>
               </div>
             </div>
           </div>

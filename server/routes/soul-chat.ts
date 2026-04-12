@@ -84,10 +84,21 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       }
     }
 
-    // 5. Build LLM messages
+    // 5. Build LLM messages with context truncation
+    // Rough estimate: 1 token ≈ 4 chars. Keep under ~6000 tokens for context.
+    const MAX_CONTEXT_CHARS = 24000;
+    let contextChars = systemPrompt.length + message.length;
+    const truncatedHistory: LLMMessage[] = [];
+    for (let i = history.length - 1; i >= 0; i--) {
+      const msgLen = history[i].content.length;
+      if (contextChars + msgLen > MAX_CONTEXT_CHARS) break;
+      contextChars += msgLen;
+      truncatedHistory.unshift(history[i]);
+    }
+
     const llmMessages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
-      ...history,
+      ...truncatedHistory,
       { role: "user", content: message },
     ];
 
@@ -106,6 +117,8 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no"); // Railway/Nginx SSE buffering prevention
+      req.setTimeout(60000); // 60s timeout for LLM streaming
 
       let fullContent = "";
       try {
