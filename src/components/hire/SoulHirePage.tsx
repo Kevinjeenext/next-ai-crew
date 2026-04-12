@@ -6,8 +6,11 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import SoulHireCard from "./SoulHireCard";
+import OfficeMinimap, { createDefaultSections, placeSoul } from "../office/OfficeMinimap";
+import type { OfficeSection } from "../office/OfficeMinimap";
 import * as api from "../../api";
 import "./soul-hire.css";
+import "../office/office-minimap.css";
 
 // ========== TYPES ==========
 export interface SoulPersonality {
@@ -754,6 +757,8 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
   const [hireTarget, setHireTarget] = useState<SoulTemplate | null>(null);
   const [welcomeSoul, setWelcomeSoul] = useState<SoulTemplate | null>(null);
   const [onboardingSoul, setOnboardingSoul] = useState<SoulTemplate | null>(null);
+  const [placementSoul, setPlacementSoul] = useState<SoulTemplate | null>(null);
+  const [officeSections, setOfficeSections] = useState<OfficeSection[]>(createDefaultSections);
   const [hiring, setHiring] = useState(false);
 
   const filtered = soulCatalog.filter((s) => {
@@ -920,10 +925,53 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
           soul={onboardingSoul}
           onComplete={(_tasks, _desc, _role) => {
             // TODO: Save task assignments to backend
+            // Transition to Step 6: Office Placement
+            setOfficeSections((prev) =>
+              placeSoul(prev, {
+                id: onboardingSoul.id,
+                name: onboardingSoul.name,
+                name_ko: onboardingSoul.name_ko,
+                avatar: onboardingSoul.avatar,
+                role: onboardingSoul.role_title_ko,
+              }, onboardingSoul.department)
+            );
+            setPlacementSoul(onboardingSoul);
             setOnboardingSoul(null);
           }}
           language={language}
         />
+      )}
+
+      {/* Office placement (Step 6) */}
+      {placementSoul && (
+        <div className="soul-hire-modal-overlay" onClick={() => setPlacementSoul(null)}>
+          <div
+            className="office-placement-screen"
+            style={{ background: "var(--th-card-bg, #1e293b)", borderRadius: 20, border: "1px solid var(--th-card-border, rgba(255,255,255,0.08))", maxWidth: 520, width: "92%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="office-placement-title">
+              \ud83c\udfe2 {language === "ko" ? placementSoul.name_ko : placementSoul.name}\uac00 \uc624\ud53c\uc2a4\uc5d0 \ubc30\uce58\ub418\uc5c8\uc2b5\ub2c8\ub2e4!
+            </div>
+            <div className="office-placement-soul-quote">
+              "\ubc14\ub85c \uc5c5\ubb34 \uc2dc\uc791\ud560\uac8c\uc694! \u26a1"
+            </div>
+            <OfficeMinimap
+              sections={officeSections}
+              newSoulId={placementSoul.id}
+              size="medium"
+              interactive={false}
+            />
+            <div className="office-placement-actions">
+              <button className="office-placement-skip" onClick={() => setPlacementSoul(null)}>
+                \ub098\uc911\uc5d0
+              </button>
+              <button className="office-placement-go" onClick={() => { setPlacementSoul(null); /* TODO: navigate to /office */ }}>
+                \ud83c\udfe2 \uc624\ud53c\uc2a4 \ubc14\ub85c\uac00\uae30 \u2192
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

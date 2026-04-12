@@ -1,0 +1,186 @@
+/**
+ * OfficeMinimap CSS — Ivy 05-office-placement spec
+ * 오피스 미니맵 / 부서 섹션 / Soul 자리 / 배치 완료 화면
+ */
+
+/* ─── 미니맵 컨테이너 ────────────────────────── */
+.office-minimap {
+  background: var(--th-card-bg, #1e293b);
+  border: 1px solid var(--th-card-border, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+.office-minimap.size-small  { max-width: 320px; }
+.office-minimap.size-medium { max-width: 480px; margin: 0 auto; }
+.office-minimap.size-large  { max-width: 100%; }
+
+/* ─── 부서 섹션 ──────────────────────────────── */
+.office-section { margin-bottom: 12px; }
+.office-section:last-child { margin-bottom: 0; }
+.office-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--th-text-muted, rgba(255,255,255,0.5));
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.office-section-dot {
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* ─── 자리 그리드 ────────────────────────────── */
+.office-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Soul 자리 (공통) */
+.office-seat {
+  position: relative;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--th-card-border, rgba(255,255,255,0.08));
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.office-seat:hover {
+  border-color: rgba(6,182,212,0.4);
+  background: rgba(6,182,212,0.06);
+}
+.office-seat img {
+  width: 28px; height: 28px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* 빈 자리 */
+.office-seat.empty {
+  border: 1px dashed rgba(255,255,255,0.12);
+  cursor: default;
+}
+.office-seat.empty::before {
+  content: "?";
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.15);
+}
+.office-seat.empty:hover {
+  border-color: rgba(6,182,212,0.2);
+  background: rgba(6,182,212,0.03);
+}
+
+/* 신규 배치 Soul */
+.office-seat.is-new {
+  border: 2px solid #FBBF24;
+  box-shadow: 0 0 12px rgba(251,191,36,0.3);
+  animation: new-seat-pulse 2s ease-out 3;
+}
+@keyframes new-seat-pulse {
+  0%   { box-shadow: 0 0 0 4px rgba(251,191,36,0.4); }
+  50%  { box-shadow: 0 0 0 10px rgba(251,191,36,0.15); }
+  100% { box-shadow: 0 0 0 4px rgba(251,191,36,0.0); }
+}
+
+/* ★ NEW 뱃지 */
+.office-seat .new-badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: #FBBF24;
+  color: #0B1120;
+  font-family: "Press Start 2P", monospace;
+  font-size: 5px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* 정원 초과 */
+.office-seat.overflow {
+  background: rgba(37,99,235,0.1);
+  border-color: rgba(37,99,235,0.3);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #93BBFC;
+}
+
+/* 툴팁 */
+.office-seat-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--th-card-bg, #1e293b);
+  border: 1px solid var(--th-card-border, rgba(255,255,255,0.08));
+  border-radius: 8px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 11px;
+  color: var(--th-text-body, #fff);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.office-seat:hover .office-seat-tooltip { opacity: 1; }
+
+/* ─── 배치 완료 화면 ─────────────────────────── */
+.office-placement-screen { text-align: center; padding: 32px 24px 24px; }
+.office-placement-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--th-text-heading, #fff);
+  margin-bottom: 6px;
+}
+.office-placement-soul-quote {
+  font-family: "Pretendard", sans-serif;
+  font-size: 14px;
+  font-style: italic;
+  color: #06B6D4;
+  margin-bottom: 24px;
+}
+.office-placement-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+.office-placement-skip {
+  flex: 1; padding: 11px 0;
+  background: transparent;
+  border: 1px solid var(--th-card-border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  color: var(--th-text-muted, rgba(255,255,255,0.5));
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px; cursor: pointer;
+  transition: all 0.2s;
+}
+.office-placement-go {
+  flex: 2; padding: 11px 0;
+  background: linear-gradient(135deg, #2563EB, #06B6D4);
+  color: white; border: none;
+  border-radius: 12px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700; font-size: 14px;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(6,182,212,0.25);
+}
+.office-placement-go:hover {
+  box-shadow: 0 6px 24px rgba(6,182,212,0.4);
+  transform: translateY(-1px);
+}
