@@ -476,29 +476,30 @@ app.get("/api/workflow-packs", async (req, res) => {
 // ⚠️ 데모 후 generated.photos / 자체 AI 생성 이미지로 교체
 const AVATAR_FALLBACKS: Record<string, string> = {
   // Full preset names (actual DB values)
-  "alex-developer":   "https://randomuser.me/api/portraits/men/32.jpg",
-  "maya-designer":    "https://randomuser.me/api/portraits/women/44.jpg",
+  // AI-generated (Ivy/Hanbin) — local WebP
+  "alex-developer":   "/avatars/souls/soul_01_alex.webp",
+  "maya-designer":    "/avatars/souls/soul_02_sophia.webp",  // Maya=Sophia preset
   "ryan-marketer":    "https://randomuser.me/api/portraits/men/77.jpg",
   "sarah-cs":         "https://randomuser.me/api/portraits/women/14.jpg",
   "daniel-analyst":   "https://randomuser.me/api/portraits/men/56.jpg",
-  "yuna-writer":      "https://randomuser.me/api/portraits/women/65.jpg",
+  "yuna-writer":      "/avatars/souls/soul_04_yuna.webp",
   "james-pm":         "https://randomuser.me/api/portraits/men/35.jpg",
   "hana-hr":          "https://randomuser.me/api/portraits/women/57.jpg",
   "leo-finance":      "https://randomuser.me/api/portraits/men/46.jpg",
   "miso-researcher":  "https://randomuser.me/api/portraits/women/79.jpg",
   // First-name fallbacks (for agents table with short names)
-  alex:    "https://randomuser.me/api/portraits/men/32.jpg",
-  maya:    "https://randomuser.me/api/portraits/women/44.jpg",
+  alex:    "/avatars/souls/soul_01_alex.webp",
+  maya:    "/avatars/souls/soul_02_sophia.webp",
   ryan:    "https://randomuser.me/api/portraits/men/77.jpg",
   sarah:   "https://randomuser.me/api/portraits/women/14.jpg",
   daniel:  "https://randomuser.me/api/portraits/men/56.jpg",
-  yuna:    "https://randomuser.me/api/portraits/women/65.jpg",
+  yuna:    "/avatars/souls/soul_04_yuna.webp",
   james:   "https://randomuser.me/api/portraits/men/35.jpg",
   hana:    "https://randomuser.me/api/portraits/women/57.jpg",
   leo:     "https://randomuser.me/api/portraits/men/46.jpg",
   miso:    "https://randomuser.me/api/portraits/women/79.jpg",
-  sophia:  "https://randomuser.me/api/portraits/women/44.jpg",
-  marcus:  "https://randomuser.me/api/portraits/men/83.jpg",
+  sophia:  "/avatars/souls/soul_02_sophia.webp",
+  marcus:  "/avatars/souls/soul_03_marcus.webp",
   liam:    "https://randomuser.me/api/portraits/men/11.jpg",
   priya:   "https://randomuser.me/api/portraits/women/79.jpg",
   carlos:  "https://randomuser.me/api/portraits/men/46.jpg",
