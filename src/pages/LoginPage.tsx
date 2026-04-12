@@ -7,7 +7,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useTheme } from "../ThemeContext";
-import { Shield } from "lucide-react";
+import { Shield, Eye, EyeOff } from "lucide-react";
 import "./auth.css";
 
 type Mode = "login" | "signup";
@@ -193,7 +193,7 @@ export function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
               >
-                {showPassword ? "🙈" : "👁"}
+                {showPassword ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
               </button>
             </div>
           </div>

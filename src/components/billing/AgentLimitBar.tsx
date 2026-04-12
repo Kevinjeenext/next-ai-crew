@@ -20,7 +20,7 @@ export default function AgentLimitBar({ current, limit, plan, onUpgrade }: Agent
       <div className="flex items-center gap-3 px-4 py-2 rounded-xl text-xs"
         style={{ background: "var(--th-card-bg)", border: "1px solid var(--th-card-border)" }}>
         <span style={{ color: "var(--th-text-muted)" }}>
-          🤖 <strong style={{ color: "var(--th-text-heading)" }}>{current}</strong> agents
+          <strong style={{ color: "var(--th-text-heading)" }}>{current}</strong> agents
         </span>
         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
           style={{ background: "rgba(99,102,241,0.15)", color: "#6366F1" }}>
@@ -46,7 +46,7 @@ export default function AgentLimitBar({ current, limit, plan, onUpgrade }: Agent
       style={{ background: "var(--th-card-bg)", border: "1px solid var(--th-card-border)" }}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs" style={{ color: "var(--th-text-muted)" }}>
-          🤖 Agent usage
+          Agent usage
         </span>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold tabular-nums"

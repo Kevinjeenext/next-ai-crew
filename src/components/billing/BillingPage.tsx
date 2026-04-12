@@ -154,7 +154,7 @@ export default function BillingPage() {
 
       {/* Soul별 토큰 소비 내역 */}
       <div className="billing-card">
-        <h2>🤖 Soul별 사용량</h2>
+        <h2>Soul별 사용량</h2>
         {soulUsage.map((soul) => (
           <div className="soul-usage-row" key={soul.name}>
             <img
