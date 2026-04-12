@@ -632,14 +632,14 @@ app.get("/api/souls", async (req, res) => {
     if (!orgId) return;
     const { data, error } = await supabaseAdmin
       .from("agents")
-      .select("id, name, display_name, role, department, status, avatar_url, avatar_style, persona_prompt, personality_traits, skill_tags, tools, llm_model, llm_temperature, memory_enabled, preset_id, created_at, updated_at")
+      .select("id, name, display_name, role, department, status, avatar_style, persona_prompt, personality_traits, skill_tags, tools, llm_model, llm_temperature, memory_enabled, preset_id, created_at, updated_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     // Inject fallback avatar URLs
     const souls = (data || []).map((s: any) => ({
       ...s,
-      avatar_url: s.avatar_url || AVATAR_FALLBACKS[s.name?.toLowerCase()] || null,
+      avatar_url: AVATAR_FALLBACKS[s.name?.toLowerCase()] || AVATAR_FALLBACKS[s.preset_id?.toLowerCase()] || null,
     }));
     res.json({ souls });
   } catch (err: any) {
@@ -708,7 +708,6 @@ app.post("/api/souls", express.json(), async (req, res) => {
       boundaries: boundaries || [],
       greeting_message: greeting_message || null,
       memory_enabled: true,
-      avatar_url: avatar_url || null,
       avatar_style: avatar_style || "pixel",
       preset_id: preset_id || null,
     };
@@ -736,7 +735,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
           llm_temperature: llm_temperature ?? preset.default_temperature ?? 0.7,
           boundaries: boundaries || preset.boundaries,
           greeting_message: greeting_message || preset.greeting_message,
-          avatar_url: avatar_url || preset.thumbnail_url,
+          // avatar_url injected via AVATAR_FALLBACKS at read time
         };
       }
     }
@@ -760,7 +759,7 @@ app.put("/api/souls/:id", express.json(), async (req, res) => {
     const orgId = await requireOrg(req, res);
     if (!orgId) return;
     const updates: Record<string, any> = {};
-    const allowed = ["name", "display_name", "role", "department", "persona_prompt", "personality_traits", "communication_style", "skill_tags", "tools", "llm_model", "llm_temperature", "boundaries", "greeting_message", "memory_enabled", "long_term_memory", "heartbeat_enabled", "heartbeat_interval_min", "heartbeat_tasks", "avatar_url", "avatar_style", "status"];
+    const allowed = ["name", "display_name", "role", "department", "persona_prompt", "personality_traits", "communication_style", "skill_tags", "tools", "llm_model", "llm_temperature", "boundaries", "greeting_message", "memory_enabled", "long_term_memory", "heartbeat_enabled", "heartbeat_interval_min", "heartbeat_tasks", "avatar_style", "status"];
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
