@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import SoulChatPanel from "../chat/SoulChatPanel";
+import Dashboard from "../dashboard/Dashboard";
 import "./app-shell.css";
 
 interface Soul {
@@ -220,19 +221,13 @@ export default function AppShell({ onNavigate }: Props) {
             embedded
           />
         ) : (
-          <div className="app-main-empty">
-            <div className="app-main-empty-icon">◆</div>
-            <h2>Next AI Crew</h2>
-            <p>Soul을 선택하여 대화를 시작하세요</p>
-            {souls.length === 0 && !loading && (
-              <button
-                className="app-main-hire-btn"
-                onClick={() => onNavigate?.("/hire")}
-              >
-                첫 번째 Soul 채용하기 →
-              </button>
-            )}
-          </div>
+          <Dashboard
+            onChatWithSoul={(id) => {
+              const soul = souls.find((s) => s.id === id);
+              if (soul) setSelectedSoulId(soul.id);
+            }}
+            onNavigate={onNavigate}
+          />
         )}
       </main>
     </div>
