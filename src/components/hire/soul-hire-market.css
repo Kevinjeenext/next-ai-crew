@@ -89,6 +89,13 @@
   border-radius: 12px; padding: 20px;
   display: flex; flex-direction: column;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  position: relative; overflow: hidden;
+}
+.hire-market-card::after {
+  content: ""; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--brand-blue);
+  border-radius: 0 0 12px 12px;
 }
 .hire-market-card:hover {
   border-color: var(--border-default);

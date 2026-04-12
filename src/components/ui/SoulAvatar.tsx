@@ -61,7 +61,7 @@ export default function SoulAvatar({ name, size = "md", status, department, imag
       className={`soul-avatar ${className || ""}`}
       style={{
         width: px, height: px,
-        borderRadius: size === "sm" ? 8 : 10,
+        borderRadius: "50%",
         background: imageUrl ? `url(${imageUrl}) center/cover` : dept?.bg || hashColor(name),
         color: dept?.fg || "#fff",
         fontSize: fs,
