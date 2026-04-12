@@ -29,25 +29,25 @@
   font: 700 20px var(--font-ui); color: var(--text-primary);
   text-decoration: none;
 }
-.landing-nav-logo img { height: 32px; width: 32px; }
+.landing-nav-logo img { height: 32px; width: auto; }
 .landing-nav-links {
   display: flex; align-items: center; gap: 24px;
 }
 .landing-nav-link {
-  font: 400 14px var(--font-ui); color: var(--text-tertiary);
+  font: 400 14px var(--font-ui); color: rgba(255,255,255,0.7);
   text-decoration: none; transition: color 0.2s;
 }
-.landing-nav-link:hover { color: var(--text-primary); }
+.landing-nav-link:hover { color: #fff; }
 .landing-nav-actions {
   display: flex; align-items: center; gap: 12px;
 }
 .btn-ghost {
-  font: 500 14px var(--font-ui); color: var(--text-secondary);
-  background: transparent; border: 1px solid var(--border-subtle);
+  font: 500 14px var(--font-ui); color: rgba(255,255,255,0.85);
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
   padding: 8px 20px; border-radius: 10px; cursor: pointer;
   transition: all 0.2s;
 }
-.btn-ghost:hover { color: var(--text-primary); border-color: var(--brand-blue); }
+.btn-ghost:hover { color: #fff; border-color: var(--brand-blue); }
 .btn-primary {
   font: 600 14px var(--font-ui); color: #fff;
   background: var(--brand-blue);
