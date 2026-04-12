@@ -100,8 +100,10 @@ export default function AppShell({ onNavigate }: Props) {
         {/* Sidebar Header */}
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <span className="sidebar-logo-icon">◆</span>
-            {!sidebarCollapsed && <span className="sidebar-logo-text">Next AI Crew</span>}
+            {sidebarCollapsed
+              ? <img src="/logo-symbol.svg" alt="" style={{ width: 32, height: 32 }} />
+              : <img src="/logo-full.svg" alt="Next AI Crew" style={{ height: 32 }} />
+            }
           </div>
           <button
             className="sidebar-collapse-btn"

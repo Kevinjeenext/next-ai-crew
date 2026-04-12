@@ -93,8 +93,7 @@ export function LoginPage() {
       <div className="auth-hero">
         <div className="auth-hero-content">
           <div className="auth-hero-logo">
-            <div className="auth-hero-logo-icon">🤖</div>
-            <span className="auth-hero-logo-text">Next AI Crew</span>
+            <img src="/logo-full.svg" alt="Next AI Crew" style={{ height: 40 }} />
           </div>
           <span className="auth-hero-badge">AI Agent Platform</span>
           <h1 className="auth-hero-title">

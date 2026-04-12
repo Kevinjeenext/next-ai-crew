@@ -45,8 +45,7 @@ export default function LandingPage() {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <a href="/" className="landing-nav-logo">
-            <img src="/logo.svg" alt="" />
-            <span>Next AI Crew</span>
+            <img src="/logo-full.svg" alt="Next AI Crew" style={{ height: 36 }} />
           </a>
           <div className="landing-nav-links">
             <a href="#features" className="landing-nav-link">Features</a>
