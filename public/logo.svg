@@ -6,6 +6,8 @@
  <stop offset="100%" stop-color="#00D4FF"/>
  </linearGradient>
  </defs>
- <text x="0" y="26" font-family="Inter,-apple-system,BlinkMacSystemFont,sans-serif" font-weight="700" font-size="24" letter-spacing="-1.5" fill="url(#g)">NEXT AI</text>
- <text x="105" y="26" font-family="Inter,-apple-system,BlinkMacSystemFont,sans-serif" font-weight="300" font-size="24" letter-spacing="-1.5" fill="white"> Crew</text>
+ <text x="0" y="26" font-family="Inter,-apple-system,BlinkMacSystemFont,sans-serif" font-size="24" letter-spacing="-1.5">
+  <tspan font-weight="700" fill="url(#g)">NEXT AI</tspan>
+  <tspan font-weight="300" fill="white"> Crew</tspan>
+ </text>
 </svg>
