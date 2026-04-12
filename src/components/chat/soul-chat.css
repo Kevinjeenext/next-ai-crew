@@ -21,6 +21,18 @@
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+/* Overlay behind panel */
+.soul-chat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+  animation: chat-overlay-in 0.2s ease-out;
+}
+@keyframes chat-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 /* ─── Header ─────────────────────────── */
 .soul-chat-header {
@@ -219,6 +231,7 @@
   align-items: flex-end;
   gap: 8px;
   padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--th-card-border, rgba(255,255,255,0.08));
   flex-shrink: 0;
 }
@@ -266,7 +279,7 @@
 }
 
 /* ─── Responsive ─────────────────────── */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .soul-chat-panel {
     width: 100vw;
     border-left: none;
