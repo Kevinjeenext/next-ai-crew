@@ -10,6 +10,7 @@ import { LandingPage } from "./pages/LandingPage";
 import PricingPage from "./pages/PricingPage";
 import SoulChatPanel from "./components/chat/SoulChatPanel";
 import AppShell from "./components/layout/AppShell";
+import SoulHireProPage from "./components/hire/SoulHireProPage";
 import SoulHirePage from "./components/hire/SoulHirePage";
 import BillingPage from "./components/billing/BillingPage";
 import "./styles/design-system.css";
@@ -106,7 +107,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/hire" element={<ProtectedApp><SoulHirePage /></ProtectedApp>} />
+            <Route path="/hire" element={<ProtectedApp><SoulHireProPage /></ProtectedApp>} />
             <Route path="/dashboard/billing" element={<ProtectedApp><BillingPage /></ProtectedApp>} />
             <Route path="/*" element={<ProtectedApp />} />
           </Routes>

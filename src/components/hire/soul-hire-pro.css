@@ -1,0 +1,147 @@
+/**
+ * Soul Hire Pro CSS — Ivy 02-soul-hire-pro.md
+ */
+.hire-pro-page {
+  flex: 1; display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  background: var(--bg-base);
+}
+
+/* Header */
+.hire-pro-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 32px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.hire-pro-title {
+  font: 700 24px var(--font-ui); color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.hire-pro-subtitle {
+  font: 400 14px var(--font-ui); color: var(--text-tertiary);
+}
+.hire-pro-search { width: 280px; }
+
+/* Body */
+.hire-pro-body {
+  flex: 1; display: flex; overflow: hidden;
+}
+
+/* Filter sidebar */
+.hire-filter-sidebar {
+  width: 220px; flex-shrink: 0;
+  padding: 20px 16px;
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+}
+.filter-section-title {
+  font: 600 11px var(--font-ui);
+  color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+.filter-checkbox-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0; cursor: pointer;
+}
+.filter-checkbox-row input[type="checkbox"] { accent-color: var(--brand-blue); }
+.filter-checkbox-label {
+  font: 400 13px var(--font-ui); color: var(--text-secondary);
+  flex: 1;
+}
+.filter-count {
+  font: 400 11px var(--font-ui); color: var(--text-tertiary);
+}
+
+/* Card grid */
+.hire-card-grid {
+  flex: 1; overflow-y: auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  align-content: start;
+}
+
+/* Card */
+.hire-card-pro {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px; padding: 20px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.hire-card-pro:hover {
+  border-color: var(--border-default);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+
+.hire-card-head {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+}
+.hire-card-meta { flex: 1; min-width: 0; }
+.hire-card-name {
+  font: 600 15px var(--font-ui); color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.hire-card-role {
+  font: 400 12px var(--font-ui); color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+.hire-card-dept {
+  font: 400 11px var(--font-ui); color: var(--text-tertiary);
+}
+
+/* Skills */
+.hire-skills { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
+.hire-skill {
+  padding: 2px 7px; border-radius: 4px;
+  font: 500 11px var(--font-mono);
+  background: var(--bg-overlay);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Quote */
+.hire-quote {
+  font: 400 12px/1.6 var(--font-body); color: var(--text-tertiary);
+  font-style: italic; padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 14px;
+}
+
+/* Actions */
+.hire-actions { display: flex; gap: 8px; }
+.hire-btn-primary {
+  flex: 1; padding: 8px 0;
+  background: var(--brand-blue); color: white;
+  border-radius: 7px;
+  font: 600 13px var(--font-ui);
+  transition: background 0.15s;
+}
+.hire-btn-primary:hover { background: var(--brand-blue-h); }
+.hire-btn-primary:disabled { background: var(--bg-overlay); color: var(--text-tertiary); cursor: not-allowed; }
+.hire-btn-ghost {
+  padding: 8px 12px;
+  background: transparent; border: 1px solid var(--border-default);
+  border-radius: 7px; font: 500 12px var(--font-ui);
+  color: var(--text-secondary); white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.hire-btn-ghost:hover { border-color: var(--border-strong); background: var(--bg-overlay); }
+
+/* Empty */
+.hire-empty {
+  grid-column: 1 / -1;
+  text-align: center; padding: 40px;
+  font: 400 14px var(--font-ui); color: var(--text-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hire-filter-sidebar { display: none; }
+  .hire-pro-header { flex-direction: column; gap: 12px; }
+  .hire-pro-search { width: 100%; }
+}
