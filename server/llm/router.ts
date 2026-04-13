@@ -160,25 +160,50 @@ export class ModelRouter {
     );
   }
 
-  /** Stream a completion (OpenAI only for now) */
+  /** Stream a completion — routes to correct provider */
   async *stream(
     soulModel: string,
     messages: LLMMessage[],
     options?: { temperature?: number; max_tokens?: number }
   ): AsyncGenerator<string> {
-    const openai = this.adapters.get("openai") as OpenAIAdapter | undefined;
-    if (!openai?.streamComplete) {
-      throw new Error("[ModelRouter] Streaming requires OpenAI provider");
+    const model = soulModel !== "auto" ? soulModel : "gpt-4o-mini";
+
+    // Determine provider from model name
+    let providerName: string;
+    if (model.startsWith("gpt") || model.startsWith("o1") || model.startsWith("o3")) {
+      providerName = "openai";
+    } else if (model.startsWith("claude")) {
+      providerName = "anthropic";
+    } else if (model.startsWith("gemini")) {
+      providerName = "google";
+    } else {
+      providerName = "openai";
     }
 
-    const model = soulModel !== "auto" ? soulModel : "gpt-4o-mini";
-    yield* openai.streamComplete({
-      model,
-      messages,
-      temperature: options?.temperature,
-      max_tokens: options?.max_tokens,
-      stream: true,
-    });
+    const adapter = this.adapters.get(providerName);
+    if (!adapter) {
+      throw new Error(`[ModelRouter] Provider ${providerName} not configured for model ${model}`);
+    }
+
+    // Use streaming if adapter supports it, otherwise fallback to non-streaming
+    if (adapter.streamComplete) {
+      yield* adapter.streamComplete({
+        model,
+        messages,
+        temperature: options?.temperature,
+        max_tokens: options?.max_tokens,
+        stream: true,
+      });
+    } else {
+      // Fallback: non-streaming → yield full content
+      const result = await adapter.complete({
+        model,
+        messages,
+        temperature: options?.temperature,
+        max_tokens: options?.max_tokens,
+      });
+      yield result.content;
+    }
   }
 
   private async completeWithExplicitModel(
