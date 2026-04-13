@@ -728,11 +728,15 @@ app.get("/api/souls/:id", async (req, res) => {
 app.post("/api/souls", express.json(), async (req, res) => {
   try {
     const orgId = await requireOrg(req, res).catch(() => null);
+    if (!orgId) {
+      return res.status(401).json({ error: "Organization required to hire a Soul" });
+    }
     const { preset_id, name, role, persona_prompt, skill_tags, tools, llm_model, llm_temperature, greeting_message, avatar_style } = req.body;
 
     // Only use columns that exist in the DB schema
     let soulData: Record<string, any> = {
       id: crypto.randomUUID(),
+      org_id: orgId,
       name: name || "New Soul",
       role: role || "AI Agent",
       domain: req.body.department || req.body.domain || "general",
@@ -747,8 +751,6 @@ app.post("/api/souls", express.json(), async (req, res) => {
       avatar_style: avatar_style || "pixel",
       preset_id: null, // Will be set to actual UUID if preset found
     };
-    // Only add org_id if column exists (try/catch on insert)
-    if (orgId) soulData.org_id = orgId;
 
     // If creating from preset, merge preset data
     if (preset_id) {
@@ -787,13 +789,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
       }
     }
 
-    // Try insert, if org_id fails remove it and retry
-    let data: any, error: any;
-    ({ data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single());
-    if (error?.message?.includes("org_id") || error?.message?.includes("column")) {
-      delete soulData.org_id;
-      ({ data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single());
-    }
+    const { data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single();
     if (error) throw error;
     res.status(201).json({ ok: true, soul: data });
   } catch (err: any) {
