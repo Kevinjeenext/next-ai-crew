@@ -72,6 +72,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     // 4. Load conversation history (last 20 messages for context)
     let history: LLMMessage[] = [];
     if (conversation_id) {
+      // Try per-row schema first
       const { data: msgs } = await supabaseAdmin
         .from("soul_conversations")
         .select("role, content")
@@ -80,8 +81,21 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
         .eq("org_id", orgId)
         .order("created_at", { ascending: true })
         .limit(20);
-      if (msgs) {
+      if (msgs && msgs.length > 0 && msgs[0].role) {
         history = msgs.map((m: any) => ({ role: m.role, content: m.content }));
+      }
+    }
+    // Fallback: JSONB messages from latest conversation
+    if (history.length === 0) {
+      const { data: convs } = await supabaseAdmin
+        .from("soul_conversations")
+        .select("messages")
+        .eq("agent_id", soulId).eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const jsonMsgs = convs?.[0]?.messages;
+      if (Array.isArray(jsonMsgs)) {
+        history = jsonMsgs.slice(-20).map((m: any) => ({ role: m.role, content: m.content }));
       }
     }
 
@@ -214,6 +228,7 @@ router.get("/:id/messages", async (req: Request, res: Response) => {
     const limit = Math.min(Number(req.query.limit) || 50, 100);
     const conversationId = String(req.query.conversation_id || "") || undefined;
 
+    // Try per-row schema first (009 DDL)
     let query = supabaseAdmin
       .from("soul_conversations")
       .select("id, role, content, model_used, total_tokens, created_at")
@@ -227,9 +242,26 @@ router.get("/:id/messages", async (req: Request, res: Response) => {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
 
-    res.json({ messages: (data || []).reverse() });
+    if (!error && data && data.length > 0 && data[0].role) {
+      // Per-row schema
+      res.json({ messages: (data || []).reverse() });
+    } else {
+      // Fallback: JSONB messages column (005 DDL)
+      const { data: convs } = await supabaseAdmin
+        .from("soul_conversations")
+        .select("id, messages, created_at")
+        .eq("agent_id", soulId).eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const msgs = convs?.[0]?.messages;
+      if (Array.isArray(msgs)) {
+        res.json({ messages: msgs.slice(-limit) });
+      } else {
+        res.json({ messages: [] });
+      }
+    }
   } catch (err: any) {
     console.error("[API] GET /api/souls/:id/messages error:", err.message);
     res.status(500).json({ error: err.message });
@@ -246,8 +278,8 @@ async function saveMessages(
 ): Promise<string> {
   const convId = conversationId || crypto.randomUUID();
 
-  // Save user message
-  await supabaseAdmin.from("soul_conversations").insert({
+  // Try per-row insert (009 DDL schema)
+  const { error } = await supabaseAdmin.from("soul_conversations").insert({
     agent_id: soulId,
     org_id: orgId,
     conversation_id: convId,
@@ -255,14 +287,41 @@ async function saveMessages(
     content: userMessage,
   });
 
-  // Save assistant response
-  await supabaseAdmin.from("soul_conversations").insert({
-    agent_id: soulId,
-    org_id: orgId,
-    conversation_id: convId,
-    role: "assistant",
-    content: assistantResponse,
-  });
+  if (!error) {
+    // Per-row schema works — save assistant too
+    await supabaseAdmin.from("soul_conversations").insert({
+      agent_id: soulId,
+      org_id: orgId,
+      conversation_id: convId,
+      role: "assistant",
+      content: assistantResponse,
+    });
+  } else {
+    // Fallback: JSONB messages column (original 005 DDL schema)
+    console.log("[saveMessages] Per-row failed, JSONB fallback:", error.message);
+    const now = new Date().toISOString();
+    const newMsgs = [
+      { role: "user", content: userMessage, timestamp: now },
+      { role: "assistant", content: assistantResponse, timestamp: now },
+    ];
+    const { data: existing } = await supabaseAdmin
+      .from("soul_conversations")
+      .select("id, messages")
+      .eq("agent_id", soulId).eq("org_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(1).single();
+
+    if (existing) {
+      const msgs = Array.isArray(existing.messages) ? existing.messages : [];
+      await supabaseAdmin.from("soul_conversations")
+        .update({ messages: [...msgs, ...newMsgs] })
+        .eq("id", existing.id);
+    } else {
+      await supabaseAdmin.from("soul_conversations").insert({
+        agent_id: soulId, org_id: orgId, title: "Chat", messages: newMsgs,
+      });
+    }
+  }
 
   return convId;
 }
