@@ -112,6 +112,16 @@ export default function SoulChatPanel({
       .catch(() => setLlmReady(false));
   }, []);
 
+  // Reset state on Soul change
+  useEffect(() => {
+    setMessages([]);
+    setConversationId(null);
+    setInput("");
+    setStreamingContent("");
+    setIsStreaming(false);
+    setLoading(false);
+  }, [soulId]);
+
   // Load history
   useEffect(() => {
     apiFetch(`/api/souls/${soulId}/messages?limit=50`)
