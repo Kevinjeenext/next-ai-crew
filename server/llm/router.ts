@@ -13,6 +13,10 @@ import {
   AnthropicAdapter,
   GeminiAdapter,
   type ProviderAdapter,
+  type LLMRequest,
+  type LLMResponse,
+  type LLMMessage,
+} from "./providers.ts";
 
 // ── Model alias → exact API model name ──
 const MODEL_ALIASES: Record<string, string> = {
@@ -24,10 +28,6 @@ const MODEL_ALIASES: Record<string, string> = {
   "auto": "gpt-4o-mini",
 };
 function resolveModel(m: string): string { return MODEL_ALIASES[m] || m; }
-  type LLMRequest,
-  type LLMResponse,
-  type LLMMessage,
-} from "./providers.ts";
 
 export type Complexity = "simple" | "normal" | "complex";
 
