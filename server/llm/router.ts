@@ -13,6 +13,17 @@ import {
   AnthropicAdapter,
   GeminiAdapter,
   type ProviderAdapter,
+
+// ── Model alias → exact API model name ──
+const MODEL_ALIASES: Record<string, string> = {
+  "claude-sonnet": "claude-sonnet-4-20250514",
+  "claude-opus": "claude-opus-4-20250514",
+  "claude-haiku": "claude-haiku-3-20250514",
+  "gemini-flash": "gemini-2.0-flash",
+  "gemini-pro": "gemini-2.5-pro-preview-06-05",
+  "auto": "gpt-4o-mini",
+};
+function resolveModel(m: string): string { return MODEL_ALIASES[m] || m; }
   type LLMRequest,
   type LLMResponse,
   type LLMMessage,
@@ -166,7 +177,7 @@ export class ModelRouter {
     messages: LLMMessage[],
     options?: { temperature?: number; max_tokens?: number }
   ): AsyncGenerator<string> {
-    const model = soulModel !== "auto" ? soulModel : "gpt-4o-mini";
+    const model = resolveModel(soulModel !== "auto" ? soulModel : "gpt-4o-mini");
 
     // Determine provider from model name
     let providerName: string;
@@ -207,10 +218,11 @@ export class ModelRouter {
   }
 
   private async completeWithExplicitModel(
-    model: string,
+    rawModel: string,
     messages: LLMMessage[],
     options?: { temperature?: number; max_tokens?: number }
   ): Promise<LLMResponse> {
+    const model = resolveModel(rawModel);
     // Determine provider from model name
     let providerName: string;
     if (model.startsWith("gpt") || model.startsWith("o1") || model.startsWith("o3")) {
