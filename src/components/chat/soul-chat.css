@@ -115,11 +115,11 @@
 .msg-header {
   display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px;
 }
-.msg-sender-name { font: 600 14px var(--font-ui); color: var(--text-primary); }
+.msg-sender-name { font: 600 15px var(--font-ui); color: var(--text-primary); }
 .msg-timestamp   { font: 400 11px var(--font-ui); color: var(--text-tertiary); }
 
 .msg-text {
-  font: 400 14px/1.65 var(--font-body);
+  font: 450 15.5px/1.7 var(--font-body);
   color: var(--text-secondary);
   white-space: pre-wrap; word-break: break-word;
 }
@@ -250,7 +250,7 @@
 .soul-chat-input {
   flex: 1; background: transparent; border: none; outline: none;
   resize: none; max-height: 200px; min-height: 24px;
-  font: 400 14px/1.55 var(--font-body);
+  font: 450 15.5px/1.6 var(--font-body);
   color: var(--text-primary); overflow-y: auto;
 }
 .soul-chat-input::placeholder { color: var(--text-tertiary); }
