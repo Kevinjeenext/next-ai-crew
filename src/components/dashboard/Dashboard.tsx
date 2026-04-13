@@ -5,6 +5,7 @@
 import { Bot, CheckCircle, Activity, CreditCard, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import SoulAvatar from "../ui/SoulAvatar";
+import { apiFetch } from "../../lib/api-fetch";
 import "./dashboard.css";
 
 interface Soul {
@@ -28,7 +29,7 @@ export default function Dashboard({ onChatWithSoul, onNavigate }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/souls")
+    apiFetch("/api/souls")
       .then((r) => r.json())
       .then((d) => { setSouls(d.agents || d.souls || []); setLoading(false); })
       .catch(() => setLoading(false));

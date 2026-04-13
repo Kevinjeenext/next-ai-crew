@@ -105,7 +105,8 @@ export default function SoulChatPanel({
 
   // Check LLM status on mount
   useEffect(() => {
-    fetch("/api/llm/status")
+    const API = import.meta.env.VITE_API_URL || "";
+    fetch(`${API}/api/llm/status`)
       .then((r) => r.json())
       .then((d) => setLlmReady(d.ready))
       .catch(() => setLlmReady(false));
