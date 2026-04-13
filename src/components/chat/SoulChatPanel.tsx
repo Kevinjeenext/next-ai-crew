@@ -247,7 +247,13 @@ export default function SoulChatPanel({
     <div className="soul-chat-panel">
       {/* Header */}
       <div className="soul-chat-header" style={{ borderColor: deptColor }}>
-        <img src={soulAvatar} alt={soulName} className="soul-chat-avatar" />
+        {soulAvatar ? (
+          <img src={soulAvatar} alt={soulName} className="soul-chat-avatar" />
+        ) : (
+          <div className="soul-chat-avatar soul-chat-avatar-fallback" style={{ background: deptColor }}>
+            {soulName?.charAt(0) || "?"}
+          </div>
+        )}
         <div className="soul-chat-header-info">
           <div className="soul-chat-name">{soulNameKo}</div>
           <div className="soul-chat-role">{soulRole}</div>
@@ -269,7 +275,13 @@ export default function SoulChatPanel({
       <div className="soul-chat-messages">
         {messages.length === 0 && !loading && (
           <div className="soul-chat-empty">
-            <img src={soulAvatar} alt="" className="soul-chat-empty-avatar" />
+            {soulAvatar ? (
+              <img src={soulAvatar} alt="" className="soul-chat-empty-avatar" />
+            ) : (
+              <div className="soul-chat-empty-avatar soul-chat-avatar-fallback" style={{ background: deptColor }}>
+                {soulName?.charAt(0) || "?"}
+              </div>
+            )}
             <p className="soul-chat-empty-name">{soulNameKo}</p>
             <p className="soul-chat-empty-role">{soulRole}</p>
             <p className="soul-chat-empty-hint">메시지를 보내 대화를 시작하세요</p>

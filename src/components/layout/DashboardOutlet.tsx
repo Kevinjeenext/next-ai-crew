@@ -15,7 +15,7 @@ export default function DashboardOutlet() {
         soulName={selectedSoul.name}
         soulNameKo={selectedSoul.name_ko || selectedSoul.name}
         soulRole={selectedSoul.role}
-        soulAvatar=""
+        soulAvatar={selectedSoul.avatar_url || ""}
         department={selectedSoul.department || "general"}
         onClose={() => navigate("/")}
         embedded

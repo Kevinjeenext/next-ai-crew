@@ -323,3 +323,9 @@
   content: ""; flex: 1; height: 1px;
   background: var(--border-subtle, #1E293B);
 }
+
+/* Avatar fallback (initials) */
+.soul-chat-avatar-fallback {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; color: #fff; font-weight: 600; font-size: 16px;
+}
