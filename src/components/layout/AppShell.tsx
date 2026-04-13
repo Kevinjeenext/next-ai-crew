@@ -10,6 +10,7 @@ import Dashboard from "../dashboard/Dashboard";
 import SoulAvatar from "../ui/SoulAvatar";
 import { useTheme } from "../../ThemeContext";
 import { useAuth } from "../../components/auth/AuthProvider";
+import { apiFetch } from "../../lib/api-fetch";
 import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck } from "lucide-react";
 import "./app-shell.css";
 
@@ -65,13 +66,13 @@ export default function AppShell() {
   const currentPath = location.pathname;
   const isSubPage = currentPath !== "/" && currentPath !== "";
 
-  useEffect(() => {
-    const API = import.meta.env.VITE_API_URL || "";
-    fetch(`${API}/api/souls`)
+  const refreshSouls = useCallback(() => {
+    apiFetch("/api/souls")
       .then((r) => r.json())
       .then((d) => { setSouls(d.agents || d.souls || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+  useEffect(() => { refreshSouls(); }, [refreshSouls]);
 
   const filteredSouls = souls.filter(
     (s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -195,7 +196,7 @@ export default function AppShell() {
         )}
 
         {/* Outlet renders child route content; dashboard is the index */}
-        <Outlet context={{ souls, selectedSoul, selectedSoulId, setSelectedSoulId: handleSoulSelect, navigate }} />
+        <Outlet context={{ souls, selectedSoul, selectedSoulId, setSelectedSoulId: handleSoulSelect, navigate, refreshSouls }} />
       </main>
     </div>
   );

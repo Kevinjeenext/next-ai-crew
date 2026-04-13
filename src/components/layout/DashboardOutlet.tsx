@@ -6,7 +6,7 @@ import SoulChatPanel from "../chat/SoulChatPanel";
 import Dashboard from "../dashboard/Dashboard";
 
 export default function DashboardOutlet() {
-  const { souls, selectedSoul, selectedSoulId, setSelectedSoulId, navigate } = useOutletContext<any>();
+  const { souls, selectedSoul, selectedSoulId, setSelectedSoulId, navigate, refreshSouls } = useOutletContext<any>();
 
   if (selectedSoul) {
     return (
@@ -30,6 +30,7 @@ export default function DashboardOutlet() {
         if (soul) setSelectedSoulId(soul);
       }}
       onNavigate={(path: string) => navigate(path)}
+      onRefresh={refreshSouls}
     />
   );
 }
