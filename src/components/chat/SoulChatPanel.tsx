@@ -5,6 +5,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X, Copy, Check, Send } from "lucide-react";
+import { apiFetch } from "../../lib/api-fetch";
 import "./soul-chat.css";
 
 /** Render message content with code blocks (``` ... ```) */
@@ -105,8 +106,7 @@ export default function SoulChatPanel({
 
   // Check LLM status on mount
   useEffect(() => {
-    const API = import.meta.env.VITE_API_URL || "";
-    fetch(`${API}/api/llm/status`)
+    apiFetch("/api/llm/status")
       .then((r) => r.json())
       .then((d) => setLlmReady(d.ready))
       .catch(() => setLlmReady(false));
@@ -114,7 +114,7 @@ export default function SoulChatPanel({
 
   // Load history
   useEffect(() => {
-    fetch(`/api/souls/${soulId}/messages?limit=50`)
+    apiFetch(`/api/souls/${soulId}/messages?limit=50`)
       .then((r) => r.json())
       .then((d) => {
         if (d.messages?.length) {
@@ -161,7 +161,7 @@ export default function SoulChatPanel({
       setIsStreaming(true);
       setStreamingContent("");
 
-      const res = await fetch(`/api/souls/${soulId}/chat`, {
+      const res = await apiFetch(`/api/souls/${soulId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
