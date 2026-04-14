@@ -69,6 +69,57 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       greeting_message: soul.greeting_message,
     });
 
+    // 3.5 Inject org chart context — Soul knows its position/reports/org structure
+    let orgContext = "";
+    try {
+      const { data: orgNode } = await supabaseAdmin
+        .from("soul_org_chart")
+        .select("*")
+        .eq("agent_id", soulId)
+        .eq("org_id", orgId)
+        .single();
+
+      if (orgNode) {
+        const { data: orgChart } = await supabaseAdmin
+          .from("soul_org_chart")
+          .select("agent_id, title, department, rank, parent_agent_id")
+          .eq("org_id", orgId)
+          .eq("is_active", true);
+
+        const agentIds = (orgChart || []).map((n: any) => n.agent_id).filter(Boolean);
+        let nameMap: Record<string, string> = {};
+        if (agentIds.length > 0) {
+          const { data: agents } = await supabaseAdmin
+            .from("agents")
+            .select("id, name, role")
+            .in("id", agentIds);
+          if (agents) nameMap = Object.fromEntries(agents.map((a: any) => [a.id, a.name]));
+        }
+
+        orgContext = `\n\n## 조직 정보`;
+        orgContext += `\n- 직책: ${orgNode.title}`;
+        orgContext += `\n- 직급: ${orgNode.rank}`;
+        orgContext += `\n- 부서: ${orgNode.department}`;
+        if (orgNode.parent_agent_id && nameMap[orgNode.parent_agent_id]) {
+          orgContext += `\n- 상사: ${nameMap[orgNode.parent_agent_id]}`;
+        }
+        const reports = (orgChart || []).filter((n: any) => n.parent_agent_id === soulId);
+        if (reports.length > 0) {
+          orgContext += `\n- 부하: ${reports.map((r: any) => nameMap[r.agent_id] || r.title).join(", ")}`;
+        }
+        orgContext += `\n\n## 전체 조직도`;
+        (orgChart || []).forEach((n: any) => {
+          const parent = n.parent_agent_id ? (nameMap[n.parent_agent_id] || "(알 수 없음)") : "(최상위)";
+          orgContext += `\n- ${nameMap[n.agent_id] || "?"} (${n.title}, ${n.rank}) → 보고: ${parent}`;
+        });
+      }
+    } catch (orgErr: any) {
+      // org chart not available (DDL not run) — skip
+      console.log("[SoulChat] Org context skipped:", orgErr.message);
+    }
+
+    const fullSystemPrompt = systemPrompt + orgContext;
+
     // 4. Load conversation history (last 20 messages for context)
     let history: LLMMessage[] = [];
     if (conversation_id) {
@@ -102,7 +153,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     // 5. Build LLM messages with context truncation
     // Rough estimate: 1 token ≈ 4 chars. Keep under ~6000 tokens for context.
     const MAX_CONTEXT_CHARS = 24000;
-    let contextChars = systemPrompt.length + message.length;
+    let contextChars = fullSystemPrompt.length + message.length;
     const truncatedHistory: LLMMessage[] = [];
     for (let i = history.length - 1; i >= 0; i--) {
       const msgLen = history[i].content.length;
@@ -112,7 +163,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     }
 
     const llmMessages: LLMMessage[] = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: fullSystemPrompt },
       ...truncatedHistory,
       { role: "user", content: message },
     ];
