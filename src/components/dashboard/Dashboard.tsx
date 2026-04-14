@@ -2,8 +2,9 @@
  * Dashboard — Pro UI (Ivy 01-main-dashboard.md)
  * Summary cards + Soul team cards + Activity timeline
  */
-import { Sparkles, UserMinus, MessageSquare, X, Send, ArrowRight } from "lucide-react";
+import { Sparkles, UserMinus, MessageSquare, X, Send, ArrowRight, Settings } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import SoulAvatar from "../ui/SoulAvatar";
 import { apiFetch } from "../../lib/api-fetch";
 import "./dashboard.css";
@@ -32,6 +33,7 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
   const [dismissReason, setDismissReason] = useState("");
   const [dismissing, setDismissing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [triggerSoul, setTriggerSoul] = useState<Soul | null>(null);
   const [triggerTarget, setTriggerTarget] = useState("");
   const [triggerMsg, setTriggerMsg] = useState("");
@@ -154,6 +156,9 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
                   </button>
                   <button className="soul-a2a-btn" onClick={() => setTriggerSoul(soul)} title="대화 지시">
                     <ArrowRight size={14} strokeWidth={1.5} />
+                  </button>
+                  <button className="soul-settings-btn" onClick={() => navigate(`/souls/${soul.id}/settings`)} title="설정">
+                    <Settings size={14} />
                   </button>
                   <button className="soul-dismiss-btn" onClick={() => setDismissTarget(soul)} title="해고">
                     <UserMinus size={14} strokeWidth={1.5} />

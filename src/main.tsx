@@ -24,6 +24,7 @@ const GoalsPage = lazy(() => import("./components/goals/GoalsPage"));
 const BudgetPage = lazy(() => import("./components/budget/BudgetPage"));
 const TasksPage = lazy(() => import("./components/tasks/TasksPage"));
 const ConversationsPage = lazy(() => import("./components/conversations/ConversationsPage"));
+const SoulSettingsPage = lazy(() => import("./components/soul-settings/SoulSettingsPage"));
 
 import "./styles/design-system.css";
 import "./index.css";
@@ -97,6 +98,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="budget" element={<AdminSuspense><BudgetPage /></AdminSuspense>} />
               <Route path="tasks" element={<AdminSuspense><TasksPage /></AdminSuspense>} />
               <Route path="conversations" element={<AdminSuspense><ConversationsPage /></AdminSuspense>} />
+              <Route path="souls/:id/settings" element={<AdminSuspense><SoulSettingsPage /></AdminSuspense>} />
               <Route path="dashboard/billing" element={<SettingsPage />} />
             </Route>
 

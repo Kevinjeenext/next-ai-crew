@@ -176,6 +176,13 @@
 }
 .soul-a2a-btn:hover { opacity: 1; background: rgba(0, 204, 255, 0.1); }
 
+.soul-settings-btn {
+  background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.15);
+  border-radius: 6px; padding: 4px 6px; cursor: pointer;
+  color: #3b82f6; display: flex; align-items: center; transition: all 0.12s;
+}
+.soul-settings-btn:hover { background: rgba(59,130,246,0.15); }
+
 .soul-dismiss-btn {
   width: 32px; height: 32px; border-radius: 8px;
   background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15);

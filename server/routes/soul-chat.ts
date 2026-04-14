@@ -377,4 +377,49 @@ async function saveMessages(
   return convId;
 }
 
+// ─── GET /:soulId/conversations — list conversations for a soul ───
+router.get("/:soulId/conversations", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+    const { soulId } = req.params;
+
+    // Try per-row schema
+    const { data: convs, error } = await supabaseAdmin
+      .from("soul_conversations")
+      .select("conversation_id, created_at")
+      .eq("soul_id", soulId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (!error && convs && convs.length > 0) {
+      // Deduplicate by conversation_id
+      const seen = new Set<string>();
+      const unique = convs.filter((c: any) => {
+        if (seen.has(c.conversation_id)) return false;
+        seen.add(c.conversation_id);
+        return true;
+      });
+      return res.json({ conversations: unique });
+    }
+
+    // Fallback: try JSONB messages in agents table
+    const { data: agent } = await supabaseAdmin
+      .from("agents")
+      .select("messages")
+      .eq("id", soulId)
+      .eq("org_id", orgId)
+      .single();
+
+    if (agent?.messages && Array.isArray(agent.messages) && agent.messages.length > 0) {
+      return res.json({ conversations: [{ conversation_id: "default", created_at: new Date().toISOString() }] });
+    }
+
+    res.json({ conversations: [] });
+  } catch (err: any) {
+    console.error("[API] GET /:soulId/conversations error:", err.message);
+    res.json({ conversations: [] });
+  }
+});
+
 const soulChatRoutes = router;
