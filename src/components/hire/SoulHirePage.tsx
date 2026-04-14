@@ -10,6 +10,7 @@ import SoulHireCard from "./SoulHireCard";
 import OfficeMinimap, { createDefaultSections, placeSoul } from "../office/OfficeMinimap";
 import type { OfficeSection } from "../office/OfficeMinimap";
 import * as api from "../../api";
+import { apiFetch } from "../../lib/api-fetch";
 import "./soul-hire.css";
 import "../office/office-minimap.css";
 
@@ -713,7 +714,7 @@ function useSoulPresets(): SoulTemplate[] {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/soul-presets");
+        const res = await apiFetch("/api/soul-presets");
         if (!res.ok) throw new Error("API unavailable");
         const { presets: apiPresets } = await res.json();
         if (!cancelled && apiPresets?.length > 0) {

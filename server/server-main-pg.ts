@@ -804,6 +804,15 @@ app.delete("/api/souls/:id", async (req, res) => {
       .eq("id", req.params.id)
       .eq("org_id", orgId);
     if (error) throw error;
+
+    // Auto-remove from org chart
+    try {
+      await supabaseAdmin.from("soul_org_chart")
+        .delete()
+        .eq("agent_id", req.params.id)
+        .eq("org_id", orgId);
+    } catch {}
+
     res.json({ ok: true });
   } catch (err: any) {
     console.error("[API] DELETE /api/souls/:id error:", err.message);

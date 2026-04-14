@@ -7,6 +7,7 @@
 import { useState, useRef } from "react";
 import * as api from "../../api";
 import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import type { Agent } from "../../types";
 
 interface Props {
@@ -149,7 +150,7 @@ export function WelcomeOnboarding({ departments, onComplete, language }: Props) 
       const token = sessionResult.data.session?.access_token;
       if (token) {
         await withTimeout(
-          fetch("/api/auth/setup", {
+          apiFetch("/api/auth/setup", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           }),

@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SoulAvatar from "../ui/SoulAvatar";
+import { apiFetch } from "../../lib/api-fetch";
 import "./soul-hire-pro.css";
 
 interface Preset {
@@ -42,7 +43,7 @@ export default function SoulHireProPage() {
   const [hiringId, setHiringId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/soul-presets")
+    apiFetch("/api/soul-presets")
       .then((r) => r.json())
       .then((d) => { setPresets(d.presets || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -82,7 +83,7 @@ export default function SoulHireProPage() {
   const handleHire = async (preset: Preset) => {
     setHiringId(preset.id);
     try {
-      const res = await fetch("/api/souls", {
+      const res = await apiFetch("/api/souls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preset_id: preset.id }),
