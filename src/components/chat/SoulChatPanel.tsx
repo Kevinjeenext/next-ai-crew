@@ -388,9 +388,15 @@ export default function SoulChatPanel({
             className="soul-chat-input"
             placeholder={`${soulNameKo}에게 메시지 보내기...`}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              // Auto-resize
+              const el = e.target;
+              el.style.height = "auto";
+              el.style.height = Math.min(el.scrollHeight, 200) + "px";
+            }}
             onKeyDown={handleKeyDown}
-            rows={1}
+            rows={3}
             disabled={loading}
           />
           <button
