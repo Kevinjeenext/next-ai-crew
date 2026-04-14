@@ -214,7 +214,7 @@ export default function ConversationsPage() {
 
             <div className="conv-messages">
               {messages.map((msg) => (
-                <div key={msg.id} className={`conv-message ${msg.message_type === "system" ? "system" : ""}`}>
+                <div key={msg.id} className={`conv-message ${msg.message_type === "system" ? "system" : ""} ${msg.message_type === "trigger" ? "trigger-type" : ""} ${msg.message_type === "response" ? "response-type" : ""}`}>
                   {msg.message_type === "system" ? (
                     <div className="conv-system-msg">{msg.content}</div>
                   ) : (
