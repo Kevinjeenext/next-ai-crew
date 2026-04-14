@@ -5,7 +5,7 @@
 import { useState, useCallback } from "react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Search, MessageCircle, UserPlus, UserCheck as UserCheckIcon, Check, X } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import "./soul-hire-v2.css";
 
 // ─── Types ───
@@ -113,12 +113,9 @@ export default function SoulHireV2() {
     if (!soul || hiredIds.has(soul.id)) return;
     setHiring(true);
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/souls`, {
+      const res = await apiFetch("/api/souls", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preset_id: soul.id }),
       });
       if (!res.ok) throw new Error(await res.text());

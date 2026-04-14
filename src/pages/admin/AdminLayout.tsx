@@ -5,7 +5,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, Building2, ScrollText, Settings, Shield, ArrowLeft } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import "./admin.css";
 
 interface AdminUser {
@@ -30,14 +30,7 @@ export default function AdminLayout() {
 
   async function checkAccess() {
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      if (!token) { navigate("/login"); return; }
-
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiFetch("/api/auth/me");
       if (!res.ok) throw new Error("Auth failed");
 
       const data = await res.json();

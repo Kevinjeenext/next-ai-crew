@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from "react";
 import { Settings, ToggleLeft, ToggleRight, Save, Check } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import { useAdmin } from "./AdminLayout";
 
 interface SettingItem {
@@ -24,12 +24,7 @@ export default function AdminSettings() {
   useEffect(() => { fetchSettings(); }, []);
 
   async function fetchSettings() {
-    try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/admin/settings`, {
-        headers: { Authorization: `Bearer ${token}` },
+    try {      const res = await apiFetch("/api/admin/settings", {
       });
       if (res.ok) {
         const data = await res.json();
@@ -40,13 +35,9 @@ export default function AdminSettings() {
 
   async function updateSetting(key: string, value: any) {
     setSaving(key);
-    try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/admin/settings/${key}`, {
+    try {      const res = await apiFetch("/api/admin/settings/${key}", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value }),
       });
       if (res.ok) {

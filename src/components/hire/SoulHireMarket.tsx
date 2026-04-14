@@ -3,7 +3,7 @@
  * Top filter bar + 3-col grid + personality bars + hire modal
  */
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./soul-hire-market.css";
 
@@ -134,8 +134,8 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/soul-presets").then((r) => r.json()).catch(() => ({ presets: [] })),
-      fetch("/api/souls").then((r) => r.json()).catch(() => ({ agents: [] })),
+      apiFetch("/api/soul-presets").then((r) => r.json()).catch(() => ({ presets: [] })),
+      apiFetch("/api/souls").then((r) => r.json()).catch(() => ({ agents: [] })),
     ]).then(([presetData, soulData]) => {
       setPresets(presetData.presets || []);
       const souls = soulData.agents || soulData.souls || [];
@@ -176,19 +176,12 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
     setTimeout(() => setToastMsg(null), 4000);
   };
 
-  const getAuthHeaders = async (): Promise<Record<string, string>> => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    return token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
-  };
-
   const handleHire = async (presetId: string, _tasks: string[], _instruction: string) => {
     setHiring(true);
     try {
-      const headers = await getAuthHeaders();
-      const res = await fetch("/api/souls", {
+      const res = await apiFetch("/api/souls", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preset_id: presetId }),
       });
       if (res.ok) {

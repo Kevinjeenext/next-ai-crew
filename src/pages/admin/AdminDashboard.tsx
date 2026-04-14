@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from "react";
 import { Users, Building2, Bot, DollarSign } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import { useAdmin } from "./AdminLayout";
 
 interface Stats { total_users: number; total_tenants: number; total_souls: number; mrr: number; }
@@ -17,12 +17,7 @@ export default function AdminDashboard() {
 
   async function fetchStats() {
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiFetch("/api/admin/stats");
       if (res.ok) setStats(await res.json());
     } catch {} finally { setLoading(false); }
   }

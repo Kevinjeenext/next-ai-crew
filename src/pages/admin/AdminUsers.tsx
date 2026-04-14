@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 import { useAdmin } from "./AdminLayout";
 
 interface User {
@@ -23,13 +23,8 @@ export default function AdminUsers() {
 
   async function fetchUsers() {
     setLoading(true);
-    try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const params = new URLSearchParams({ page: String(page), limit: "20", ...(search ? { search } : {}) });
-      const res = await fetch(`${API}/api/admin/users?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
+    try {      const params = new URLSearchParams({ page: String(page), limit: "20", ...(search ? { search } : {}) });
+      const res = await apiFetch("/api/admin/users?${params}", {
       });
       if (res.ok) {
         const data = await res.json();
@@ -38,13 +33,9 @@ export default function AdminUsers() {
     } catch {} finally { setLoading(false); }
   }
 
-  async function changeRole(userId: string, newRole: string) {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session?.access_token;
-    const API = import.meta.env.VITE_API_URL || "";
-    const res = await fetch(`${API}/api/admin/users/${userId}/role`, {
+  async function changeRole(userId: string, newRole: string) {    const res = await apiFetch("/api/admin/users/${userId}/role", {
       method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_role: newRole }),
     });
     if (res.ok) fetchUsers();

@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from "react";
 import { Building2, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { apiFetch } from "../../lib/api-fetch";
 
 interface Tenant {
   id: string; name: string; slug: string; status: string;
@@ -20,24 +20,15 @@ export default function AdminTenants() {
 
   async function fetchTenants() {
     setLoading(true);
-    try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/admin/tenants?page=${page}&limit=20`, {
-        headers: { Authorization: `Bearer ${token}` },
+    try {      const res = await apiFetch("/api/admin/tenants?page=${page}&limit=20", {
       });
       if (res.ok) { const data = await res.json(); setTenants(data.tenants); setTotal(data.total); }
     } catch {} finally { setLoading(false); }
   }
 
-  async function updateStatus(id: string, status: string) {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session?.access_token;
-    const API = import.meta.env.VITE_API_URL || "";
-    await fetch(`${API}/api/admin/tenants/${id}`, {
+  async function updateStatus(id: string, status: string) {    await apiFetch("/api/admin/tenants/${id}", {
       method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
     fetchTenants();

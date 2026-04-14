@@ -34,6 +34,7 @@ import { orgChartRoutes } from "./routes/org-chart.ts";
 import { goalsRoutes } from "./routes/goals.ts";
 import { budgetRoutes } from "./routes/budgets.ts";
 import { taskRoutes } from "./routes/tasks.ts";
+import { requireOrgMiddleware } from "./middleware/require-org.ts";
 import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
@@ -657,45 +658,12 @@ app.use("/api/souls", async (req: any, _res, next) => {
   next();
 }, soulChatRoutes);
 
-// --- Org Chart ---
-app.use("/api/org-chart", async (req, res, next) => {
-  try {
-    const orgId = await requireOrg(req, res).catch(() => null);
-    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
-    (req as any).orgId = orgId;
-  } catch { /* handled in route */ }
-  next();
-}, orgChartRoutes);
-
-// --- Goals ---
-app.use("/api/goals", async (req, res, next) => {
-  try {
-    const orgId = await requireOrg(req, res).catch(() => null);
-    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
-    (req as any).orgId = orgId;
-  } catch { /* handled in route */ }
-  next();
-}, goalsRoutes);
-
-// --- Budgets ---
-app.use("/api/budgets", async (req, res, next) => {
-  try {
-    const orgId = await requireOrg(req, res).catch(() => null);
-    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
-    (req as any).orgId = orgId;
-  } catch { /* handled in route */ }
-  next();
-}, budgetRoutes);
-
-// --- Tasks ---
-app.use("/api/tasks", async (req, res, next) => {
-  try {
-    const orgId = await requireOrg(req, res).catch(() => null);
-    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
-    (req as any).orgId = orgId;
-  } catch { /* handled in route */ }
-  next();
-}, taskRoutes);
+// --- Feature Routes (shared org middleware) ---
+const orgAuth = requireOrgMiddleware(requireOrg);
+app.use("/api/org-chart", orgAuth, orgChartRoutes);
+app.use("/api/goals", orgAuth, goalsRoutes);
+app.use("/api/budgets", orgAuth, budgetRoutes);
+app.use("/api/tasks", orgAuth, taskRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {
