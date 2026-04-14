@@ -11,7 +11,7 @@ import SoulAvatar from "../ui/SoulAvatar";
 import { useTheme } from "../../ThemeContext";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { apiFetch } from "../../lib/api-fetch";
-import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck, Building2 } from "lucide-react";
+import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck, Building2, Target } from "lucide-react";
 import "./app-shell.css";
 
 interface Soul {
@@ -166,6 +166,10 @@ export default function AppShell() {
           <NavLink to="/org-chart" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "조직도" : undefined}>
             <Building2 size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>조직도</span>}
+          </NavLink>
+          <NavLink to="/goals" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "목표" : undefined}>
+            <Target size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
+            {!sidebarCollapsed && <span>목표</span>}
           </NavLink>
           <NavLink to="/settings" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "설정" : undefined}>
             <Settings size={18} strokeWidth={1.5} className="sidebar-nav-icon" />

@@ -31,6 +31,7 @@ import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
 import { soulChatRoutes } from "./routes/soul-chat.ts";
 import { orgChartRoutes } from "./routes/org-chart.ts";
+import { goalsRoutes } from "./routes/goals.ts";
 import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
@@ -663,6 +664,16 @@ app.use("/api/org-chart", async (req, res, next) => {
   } catch { /* handled in route */ }
   next();
 }, orgChartRoutes);
+
+// --- Goals ---
+app.use("/api/goals", async (req, res, next) => {
+  try {
+    const orgId = await requireOrg(req, res).catch(() => null);
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+    (req as any).orgId = orgId;
+  } catch { /* handled in route */ }
+  next();
+}, goalsRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {
