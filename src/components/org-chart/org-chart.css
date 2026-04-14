@@ -260,3 +260,22 @@
   border-radius: 10px; padding: 10px 24px; font: 500 13px var(--font-ui);
   color: var(--text-primary); box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 1001;
 }
+
+/* ─── Rank Dropdown ─── */
+.org-rank-wrapper { position: relative; }
+.org-rank-badge { cursor: pointer; border: none; font: 600 9px var(--font-ui); padding: 2px 8px; border-radius: 4px; color: white; transition: opacity 0.15s; }
+.org-rank-badge:hover { opacity: 0.8; }
+.org-rank-menu {
+  position: absolute; top: 100%; right: 0; margin-top: 4px;
+  background: var(--bg-secondary); border: 1px solid var(--border-primary);
+  border-radius: 10px; padding: 4px; min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100;
+}
+.org-rank-option {
+  display: block; width: 100%; text-align: left;
+  font: 400 12px var(--font-ui); color: var(--text-primary);
+  background: none; border: none; padding: 6px 10px; border-radius: 6px;
+  cursor: pointer; transition: background 0.12s;
+}
+.org-rank-option:hover { background: var(--bg-tertiary); }
+.org-rank-option.active { color: var(--brand-primary); font-weight: 600; }

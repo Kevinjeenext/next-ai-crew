@@ -741,6 +741,22 @@ app.post("/api/souls", express.json(), async (req, res) => {
 
     const { data, error } = await supabaseAdmin.from("agents").insert(soulData).select().single();
     if (error) throw error;
+
+    // Auto-register in org chart
+    try {
+      await supabaseAdmin.from("soul_org_chart").insert({
+        org_id: orgId,
+        agent_id: data.id,
+        title: data.role || data.name || "AI Agent",
+        department: data.domain || "general",
+        level: 4,
+        rank: "ic",
+        is_active: true,
+      });
+    } catch (orgErr: any) {
+      console.log("[OrgChart] Auto-register skipped:", orgErr.message);
+    }
+
     res.status(201).json({ ok: true, soul: data });
   } catch (err: any) {
     console.error("[API] POST /api/souls error:", err.message);

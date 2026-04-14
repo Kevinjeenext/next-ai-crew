@@ -32,6 +32,50 @@ router.get("/", async (req: Request, res: Response) => {
       return await buildFromAgents(orgId, res);
     }
 
+    // Backfill: if org chart is empty but agents exist, auto-populate
+    if (data && data.length === 0) {
+      try {
+        const { data: agents } = await supabaseAdmin
+          .from("agents")
+          .select("id, name, role, domain, preset_id")
+          .eq("org_id", orgId);
+        if (agents && agents.length > 0) {
+          const entries = agents.map((a: any) => {
+            const isCLevel = (a.preset_id || "").match(/^c[a-z]o$/) || (a.role || "").toLowerCase().includes("chief");
+            return {
+              org_id: orgId,
+              agent_id: a.id,
+              title: a.role || a.name || "AI Agent",
+              department: a.domain || "general",
+              level: isCLevel ? 1 : 4,
+              rank: isCLevel ? "c_level" : "ic",
+              is_active: true,
+            };
+          });
+          await supabaseAdmin.from("soul_org_chart").insert(entries);
+          // Re-fetch after backfill
+          const { data: backfilled } = await supabaseAdmin
+            .from("soul_org_chart")
+            .select("id, agent_id, parent_agent_id, title, department, level, rank, can_delegate, can_approve, can_hire, max_direct_reports, is_active, metadata, created_at")
+            .eq("org_id", orgId)
+            .eq("is_active", true)
+            .order("level", { ascending: true });
+          if (backfilled && backfilled.length > 0) {
+            // Enrich backfilled data
+            const bAgentIds = backfilled.map((d: any) => d.agent_id).filter(Boolean);
+            let bAgentMap: Record<string, any> = {};
+            if (bAgentIds.length > 0) {
+              const { data: bAgents } = await supabaseAdmin.from("agents").select("id, name, role, avatar_url, status, preset_id").in("id", bAgentIds);
+              if (bAgents) bAgentMap = Object.fromEntries(bAgents.map((a: any) => [a.id, a]));
+            }
+            return res.json({ positions: backfilled.map((n: any) => ({ ...n, agent: bAgentMap[n.agent_id] || null })), backfilled: true });
+          }
+        }
+      } catch (backfillErr: any) {
+        console.log("[OrgChart] Backfill failed:", backfillErr.message);
+      }
+    }
+
     // Enrich with agent info (name, avatar, role)
     const agentIds = (data || []).map((d: any) => d.agent_id).filter(Boolean);
     let agentMap: Record<string, any> = {};

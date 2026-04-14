@@ -89,14 +89,27 @@ const RANK_LABELS: Record<string, string> = {
   intern: "Intern",
 };
 
-function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger }: {
+const RANK_LEVELS: Record<string, { label: string; level: number }> = {
+  c_level: { label: "C-Level", level: 0 },
+  vp: { label: "VP", level: 1 },
+  director: { label: "Director", level: 2 },
+  manager: { label: "Manager", level: 3 },
+  lead: { label: "Lead", level: 3 },
+  senior: { label: "Senior", level: 4 },
+  ic: { label: "Team Member", level: 4 },
+  intern: { label: "Intern", level: 5 },
+};
+
+function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, onRankChange }: {
   node: TreeNode;
   onToggle: (id: string) => void;
   onDragStart: (e: React.DragEvent, agentId: string) => void;
   onDrop: (e: React.DragEvent, targetAgentId: string) => void;
   depth: number;
   onTrigger?: (agentId: string, name: string) => void;
+  onRankChange?: (nodeId: string, rank: string, level: number) => void;
 }) {
+  const [showRankMenu, setShowRankMenu] = useState(false);
   const hasChildren = node.children.length > 0;
   const deptColor = DEPT_COLORS[node.department] || DEPT_COLORS.general;
   const agent = node.agent;
@@ -135,9 +148,21 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger }: 
           </div>
           <div className="org-node-badges">
             <span className={`org-status-dot org-status-${status}`} />
-            <span className="org-rank-badge" style={{ background: deptColor }}>
-              {RANK_LABELS[node.rank] || node.rank}
-            </span>
+            <div className="org-rank-wrapper">
+              <button className="org-rank-badge" style={{ background: deptColor }} onClick={(e) => { e.stopPropagation(); setShowRankMenu(!showRankMenu); }}>
+                {RANK_LABELS[node.rank] || node.rank}
+              </button>
+              {showRankMenu && onRankChange && (
+                <div className="org-rank-menu">
+                  {Object.entries(RANK_LEVELS).map(([rank, { label, level }]) => (
+                    <button key={rank} className={`org-rank-option ${node.rank === rank ? "active" : ""}`}
+                      onClick={(e) => { e.stopPropagation(); onRankChange(node.id, rank, level); setShowRankMenu(false); }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="org-node-footer">
@@ -169,6 +194,7 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger }: 
               onDragStart={onDragStart}
               onDrop={onDrop}
               onTrigger={onTrigger}
+              onRankChange={onRankChange}
               depth={depth + 1}
             />
           ))}
@@ -253,6 +279,21 @@ export default function OrgChart() {
     setDraggedId(null);
   };
 
+  const handleRankChange = async (nodeId: string, rank: string, level: number) => {
+    try {
+      await apiFetch(`/api/org-chart/${nodeId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rank, level }),
+      });
+      await loadOrgChart();
+      setToast(`직급 변경 완료!`);
+      setTimeout(() => setToast(null), 2000);
+    } catch (err) {
+      console.error("Failed to change rank:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="org-chart-loading">
@@ -307,6 +348,7 @@ export default function OrgChart() {
               onDragStart={handleDragStart}
               onDrop={handleDrop}
               onTrigger={(agentId, name) => setTriggerSoul({ id: agentId, name })}
+              onRankChange={handleRankChange}
               depth={0}
             />
           ))
