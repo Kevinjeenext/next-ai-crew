@@ -293,82 +293,7 @@ app.patch("/api/departments/:id", express.json(), async (req, res) => {
   }
 });
 
-// --- Tasks CRUD ---
-app.get("/api/tasks", async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const filters: Record<string, unknown> = {};
-    if (req.query.status) filters.status = req.query.status;
-    if (req.query.assigned_agent_id) filters.assigned_agent_id = req.query.assigned_agent_id;
-    if (req.query.department_id) filters.department_id = req.query.department_id;
-
-    const tasks = await pgAdapter.queryAll("tasks", orgId, Object.keys(filters).length ? filters : undefined, {
-      orderBy: "updated_at",
-      ascending: false,
-      limit: req.query.limit ? Number(req.query.limit) : 100,
-    });
-    res.json({ tasks });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get("/api/tasks/:id", async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const task = await pgAdapter.queryOne("tasks", orgId, req.params.id);
-    if (!task) return res.status(404).json({ error: "Task not found" });
-    res.json({ task });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post("/api/tasks", express.json(), async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const task = await pgAdapter.insertRow("tasks", {
-      org_id: orgId,
-      id: req.body.id ?? crypto.randomUUID(),
-      title: req.body.title ?? "New Task",
-      status: req.body.status ?? "inbox",
-      ...req.body,
-    });
-    broadcast("task_update", task);
-    res.status(201).json({ ok: true, task });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.patch("/api/tasks/:id", express.json(), async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const updated = await pgAdapter.updateRow("tasks", orgId, req.params.id, req.body);
-    if (!updated) return res.status(404).json({ error: "Task not found" });
-    broadcast("task_update", updated);
-    res.json(updated);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.delete("/api/tasks/:id", async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const deleted = await pgAdapter.deleteRow("tasks", orgId, req.params.id);
-    if (!deleted) return res.status(404).json({ error: "Task not found" });
-    broadcast("task_removed", { id: req.params.id });
-    res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// --- Tasks CRUD --- (moved to server/routes/tasks.ts → tickets table)
 
 // --- Messages ---
 app.get("/api/messages", async (req, res) => {
@@ -451,19 +376,7 @@ app.get("/api/projects", async (req, res) => {
 });
 
 // --- Subtasks ---
-app.get("/api/tasks/:taskId/subtasks", async (req, res) => {
-  try {
-    const orgId = await requireOrg(req, res);
-    if (!orgId) return;
-    const subtasks = await pgAdapter.queryAll("subtasks", orgId, { task_id: req.params.taskId }, {
-      orderBy: "created_at",
-      ascending: true,
-    });
-    res.json(subtasks);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// --- Subtasks --- (legacy, will move to tasks routes)
 
 // --- Workflow Packs ---
 app.get("/api/workflow-packs", async (req, res) => {
