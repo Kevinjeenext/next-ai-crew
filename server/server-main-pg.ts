@@ -760,7 +760,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
     if (!orgId) {
       return res.status(401).json({ error: "Organization required to hire a Soul" });
     }
-    const { preset_id, name, role, persona_prompt, skill_tags, tools, llm_model, llm_temperature, greeting_message, avatar_style } = req.body;
+    const { preset_id, name, role, persona_prompt, skill_tags, tools, llm_model, llm_temperature, greeting_message, avatar_style, avatar_url, department } = req.body;
 
     // Only use columns that exist in the DB schema
     let soulData: Record<string, any> = {
@@ -768,7 +768,7 @@ app.post("/api/souls", express.json(), async (req, res) => {
       org_id: orgId,
       name: name || "New Soul",
       role: role || "AI Agent",
-      domain: req.body.department || req.body.domain || "general",
+      domain: department || req.body.domain || "general",
       status: "idle",
       persona_prompt: persona_prompt || null,
       skill_tags: skill_tags || [],
@@ -778,8 +778,10 @@ app.post("/api/souls", express.json(), async (req, res) => {
       greeting_message: greeting_message || null,
       memory_enabled: true,
       avatar_style: avatar_style || "pixel",
-      preset_id: null, // Will be set to actual UUID if preset found
+      preset_id: preset_id || null,
     };
+    // avatar_url — try column, fallback to AVATAR_FALLBACKS
+    try { (soulData as any).avatar_url = avatar_url || null; } catch {}
 
     // If creating from preset, merge preset data
     if (preset_id) {

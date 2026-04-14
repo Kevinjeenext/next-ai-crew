@@ -182,7 +182,16 @@ export default function SoulHireMarket({ onNavigate }: { onNavigate?: (p: string
       const res = await apiFetch("/api/souls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preset_id: presetId }),
+        body: JSON.stringify({
+          preset_id: presetId,
+          name: modalPreset?.name,
+          role: modalPreset?.description || modalPreset?.category,
+          persona_prompt: modalPreset?.greeting_message,
+          skill_tags: modalPreset?.skill_tags,
+          department: modalPreset?.category,
+          avatar_url: modalPreset?.thumbnail_url,
+          llm_model: "auto",
+        }),
       });
       if (res.ok) {
         setHiredIds((p) => new Set(p).add(presetId));

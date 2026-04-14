@@ -116,7 +116,17 @@ export default function SoulHireV2() {
       const res = await apiFetch("/api/souls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preset_id: soul.id }),
+        body: JSON.stringify({
+          preset_id: soul.id,
+          name: soul.display_name || soul.name,
+          role: `${soul.category} — ${soul.experience}`,
+          persona_prompt: soul.greeting_message,
+          skill_tags: soul.skill_tags,
+          llm_model: "auto",
+          greeting_message: soul.greeting_message,
+          department: soul.category,
+          avatar_url: soul.thumbnail_url,
+        }),
       });
       if (!res.ok) throw new Error(await res.text());
       setHiredIds((prev) => new Set(prev).add(soul.id));
