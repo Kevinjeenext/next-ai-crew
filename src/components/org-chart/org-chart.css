@@ -279,3 +279,16 @@
 }
 .org-rank-option:hover { background: var(--bg-tertiary); }
 .org-rank-option.active { color: var(--brand-primary); font-weight: 600; }
+
+/* ─── Delegate Button ─── */
+.org-node-delegate {
+  display: flex; align-items: center; gap: 3px;
+  font: 500 10px var(--font-ui); color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 5px; padding: 2px 8px; cursor: pointer; transition: all 0.15s;
+}
+.org-node-delegate:hover { background: rgba(245, 158, 11, 0.15); }
+
+.org-delegate-desc {
+  font: 400 12px/1.5 var(--font-ui); color: var(--text-tertiary); margin: 0 0 8px;
+}

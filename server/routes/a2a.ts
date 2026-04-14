@@ -317,4 +317,152 @@ router.post("/trigger", async (req: Request, res: Response) => {
   }
 });
 
+// ─── POST /api/a2a/delegate ───
+// 리더가 하위 Soul에게 업무 위임 → 자율 대화 체인 (최대 N턴)
+router.post("/delegate", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { leader_soul_id, worker_soul_ids, task, max_turns } = req.body;
+    if (!leader_soul_id || !worker_soul_ids?.length || !task)
+      return res.status(400).json({ error: "leader_soul_id, worker_soul_ids, task required" });
+
+    const turns = Math.min(max_turns || 4, 8);
+
+    // Get all souls
+    const allIds = [leader_soul_id, ...worker_soul_ids];
+    const { data: souls } = await supabaseAdmin
+      .from("agents")
+      .select("id, name, role, persona_prompt, avatar_url, preset_id")
+      .in("id", allIds);
+    if (!souls || souls.length < 2)
+      return res.status(404).json({ error: "Souls not found" });
+
+    const soulMap = Object.fromEntries(souls.map((s: any) => [s.id, s]));
+    const leader = soulMap[leader_soul_id];
+    if (!leader) return res.status(404).json({ error: "Leader soul not found" });
+
+    // Create group room
+    const roomName = `${leader.name} 팀 회의`;
+    const { data: room } = await supabaseAdmin
+      .from("soul_rooms")
+      .insert({ org_id: orgId, name: roomName, room_type: "group" })
+      .select().single();
+    if (!room) return res.status(500).json({ error: "Failed to create room" });
+
+    // Add all members
+    await supabaseAdmin.from("soul_room_members").insert(
+      allIds.map((id: string) => ({ room_id: room.id, soul_id: id }))
+    );
+
+    // System message
+    await supabaseAdmin.from("soul_messages").insert({
+      org_id: orgId, room_id: room.id, sender_soul_id: leader_soul_id,
+      content: `팀 회의가 시작되었습니다. \n업무: ${task}`,
+      message_type: "system",
+    });
+
+    // Leader gives initial instruction
+    const leaderPrompt = leader.persona_prompt || `You are ${leader.name}, a ${leader.role}. Speak in Korean.`;
+    const router = getModelRouter();
+
+    let leaderInstruction = "";
+    try {
+      const r = await router.complete("auto", [
+        { role: "system", content: leaderPrompt },
+        { role: "user", content: `다음 업무를 팀원들에게 위임하세요. 각 팀원의 역할에 맞게 구체적 지시를 내리세요:\n\n업무: ${task}\n\n팀원: ${worker_soul_ids.map((id: string) => soulMap[id]?.name + " (" + soulMap[id]?.role + ")").join(", ")}` },
+      ], { complexity: "normal" });
+      leaderInstruction = r.content;
+    } catch {
+      leaderInstruction = `팀원 여러분, 다음 업무를 진행해주세요: ${task}`;
+    }
+
+    await supabaseAdmin.from("soul_messages").insert({
+      org_id: orgId, room_id: room.id, sender_soul_id: leader_soul_id,
+      content: leaderInstruction, message_type: "trigger",
+    });
+
+    const messages: any[] = [{ role: "leader", name: leader.name, content: leaderInstruction }];
+
+    // Workers respond in round-robin
+    for (let turn = 0; turn < turns; turn++) {
+      for (const workerId of worker_soul_ids) {
+        const worker = soulMap[workerId];
+        if (!worker) continue;
+
+        const workerPrompt = worker.persona_prompt || `You are ${worker.name}, a ${worker.role}. Respond professionally in Korean.`;
+        const history = messages.map(m => `[${m.name}]: ${m.content}`).join("\n\n");
+
+        let response = "";
+        try {
+          const r = await router.complete("auto", [
+            { role: "system", content: workerPrompt },
+            { role: "user", content: `팀 회의 대화:\n\n${history}\n\n당신의 역할(${worker.role})에 맞게 응답하세요. 간결하게 (3-4문장).` },
+          ], { complexity: "normal" });
+          response = r.content;
+        } catch {
+          response = `[시스템] ${worker.name} 응답 생성 실패`;
+        }
+
+        await supabaseAdmin.from("soul_messages").insert({
+          org_id: orgId, room_id: room.id, sender_soul_id: workerId,
+          content: response, message_type: "response",
+        });
+
+        messages.push({ role: "worker", name: worker.name, content: response });
+      }
+
+      // Leader follow-up (if not last turn)
+      if (turn < turns - 1) {
+        const followUpHistory = messages.map(m => `[${m.name}]: ${m.content}`).join("\n\n");
+        let followUp = "";
+        try {
+          const r = await router.complete("auto", [
+            { role: "system", content: leaderPrompt },
+            { role: "user", content: `팀 회의 대화:\n\n${followUpHistory}\n\n리더로서 후속 지시나 피드백을 주세요. 간결하게 (2-3문장).` },
+          ], { complexity: "normal" });
+          followUp = r.content;
+        } catch {
+          followUp = "각자 역할에 맞게 계속 진행해주세요.";
+        }
+
+        await supabaseAdmin.from("soul_messages").insert({
+          org_id: orgId, room_id: room.id, sender_soul_id: leader_soul_id,
+          content: followUp, message_type: "trigger",
+        });
+        messages.push({ role: "leader", name: leader.name, content: followUp });
+      }
+    }
+
+    // Final summary from leader
+    const finalHistory = messages.map(m => `[${m.name}]: ${m.content}`).join("\n\n");
+    let summary = "";
+    try {
+      const r = await router.complete("auto", [
+        { role: "system", content: leaderPrompt },
+        { role: "user", content: `팀 회의 대화:\n\n${finalHistory}\n\n회의를 마무리하고 핵심 결론과 다음 단계를 정리해주세요.` },
+      ], { complexity: "normal" });
+      summary = r.content;
+    } catch {
+      summary = "회의를 마무리합니다. 각자 역할에 맞게 진행해주세요.";
+    }
+
+    await supabaseAdmin.from("soul_messages").insert({
+      org_id: orgId, room_id: room.id, sender_soul_id: leader_soul_id,
+      content: summary, message_type: "system",
+    });
+
+    res.json({
+      room_id: room.id,
+      room_name: roomName,
+      total_messages: messages.length + 2,
+      summary,
+    });
+  } catch (err: any) {
+    console.error("[API] POST /api/a2a/delegate error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const a2aRoutes = router;

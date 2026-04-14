@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ChevronDown, ChevronRight, Plus, GripVertical, Users, Send } from "lucide-react";
+import { Building2, ChevronDown, ChevronRight, Plus, GripVertical, Users, Send, UserCog } from "lucide-react";
 import { apiFetch } from "../../lib/api-fetch";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./org-chart.css";
@@ -100,7 +100,7 @@ const RANK_LEVELS: Record<string, { label: string; level: number }> = {
   intern: { label: "Intern", level: 5 },
 };
 
-function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, onRankChange }: {
+function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, onRankChange, onDelegate }: {
   node: TreeNode;
   onToggle: (id: string) => void;
   onDragStart: (e: React.DragEvent, agentId: string) => void;
@@ -108,6 +108,7 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, on
   depth: number;
   onTrigger?: (agentId: string, name: string) => void;
   onRankChange?: (nodeId: string, rank: string, level: number) => void;
+  onDelegate?: (agentId: string, name: string) => void;
 }) {
   const [showRankMenu, setShowRankMenu] = useState(false);
   const hasChildren = node.children.length > 0;
@@ -181,6 +182,11 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, on
               <Send size={12} /> 지시
             </button>
           )}
+          {onDelegate && hasChildren && (
+            <button className="org-node-delegate" onClick={(e) => { e.stopPropagation(); onDelegate(node.agent_id, name); }} title="업무 위임">
+              <UserCog size={12} /> 위임
+            </button>
+          )}
         </div>
       </div>
 
@@ -195,6 +201,7 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger, on
               onDrop={onDrop}
               onTrigger={onTrigger}
               onRankChange={onRankChange}
+              onDelegate={onDelegate}
               depth={depth + 1}
             />
           ))}
@@ -212,6 +219,9 @@ export default function OrgChart() {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [triggerSoul, setTriggerSoul] = useState<{ id: string; name: string } | null>(null);
+  const [delegateSoul, setDelegateSoul] = useState<{ id: string; name: string } | null>(null);
+  const [delegateTask, setDelegateTask] = useState("");
+  const [delegating, setDelegating] = useState(false);
   const [triggerTarget, setTriggerTarget] = useState("");
   const [triggerMsg, setTriggerMsg] = useState("");
   const [triggering, setTriggering] = useState(false);
@@ -349,6 +359,7 @@ export default function OrgChart() {
               onDrop={handleDrop}
               onTrigger={(agentId, name) => setTriggerSoul({ id: agentId, name })}
               onRankChange={handleRankChange}
+              onDelegate={(agentId, name) => setDelegateSoul({ id: agentId, name })}
               depth={0}
             />
           ))
@@ -389,6 +400,45 @@ export default function OrgChart() {
                 finally { setTriggering(false); }
               }}>
                 {triggering ? "처리 중..." : "대화 시작"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delegate Modal */}
+      {delegateSoul && (
+        <div className="org-trigger-overlay" onClick={() => { setDelegateSoul(null); setDelegateTask(""); }}>
+          <div className="org-trigger-modal" onClick={(e) => e.stopPropagation()}>
+            <h3><UserCog size={16} /> {delegateSoul.name} — 업무 위임</h3>
+            <p className="org-delegate-desc">리더가 하위 Soul들에게 업무를 위임하고, Soul들이 자율적으로 회의합니다.</p>
+            <label>업무 내용</label>
+            <textarea value={delegateTask} onChange={(e) => setDelegateTask(e.target.value)} placeholder="예: Q2 마케팅 전략 수립..." rows={3} />
+            <div className="org-trigger-actions">
+              <button className="org-trigger-cancel" onClick={() => { setDelegateSoul(null); setDelegateTask(""); }}>취소</button>
+              <button className="org-trigger-confirm" disabled={!delegateTask.trim() || delegating} onClick={async () => {
+                setDelegating(true);
+                try {
+                  // Find children of this leader
+                  const children = positions.filter(p => p.parent_agent_id === delegateSoul.id);
+                  const workerIds = children.map(c => c.agent_id);
+                  if (workerIds.length === 0) { setToast("하위 Soul이 없습니다"); setTimeout(() => setToast(null), 2000); return; }
+
+                  const res = await apiFetch("/api/a2a/delegate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ leader_soul_id: delegateSoul.id, worker_soul_ids: workerIds, task: delegateTask, max_turns: 3 }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setToast(`팀 회의 완료! 💬 ${data.total_messages}건 메시지`);
+                    setTimeout(() => { setToast(null); navigate("/conversations"); }, 2000);
+                    setDelegateSoul(null); setDelegateTask("");
+                  } else { setToast("위임 실패"); setTimeout(() => setToast(null), 3000); }
+                } catch { setToast("위임 오류"); setTimeout(() => setToast(null), 3000); }
+                finally { setDelegating(false); }
+              }}>
+                {delegating ? "회의 진행 중..." : "업무 위임 시작"}
               </button>
             </div>
           </div>
