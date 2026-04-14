@@ -553,6 +553,7 @@ const AVATAR_FALLBACKS: Record<string, string> = {
   "cpo":  "/avatars/souls/soul_36_cpo.webp",
   "chro": "/avatars/souls/soul_37_chro.webp",
   "clo":  "/avatars/souls/soul_38_clo.webp",
+  "ceo":  "/avatars/souls/soul_39_ceo.webp",
   "chief financial officer (cfo)": "/avatars/souls/soul_32_cfo.webp",
   "chief operating officer (coo)": "/avatars/souls/soul_33_coo.webp",
   "chief marketing officer (cmo)": "/avatars/souls/soul_34_cmo.webp",
@@ -560,6 +561,7 @@ const AVATAR_FALLBACKS: Record<string, string> = {
   "chief product officer (cpo)": "/avatars/souls/soul_36_cpo.webp",
   "chief human resources officer (chro)": "/avatars/souls/soul_37_chro.webp",
   "chief legal officer (clo)": "/avatars/souls/soul_38_clo.webp",
+  "chief executive officer (ceo)": "/avatars/souls/soul_39_ceo.webp",
 };
 
 app.get("/api/soul-presets", async (_req, res) => {
