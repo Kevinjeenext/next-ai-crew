@@ -213,3 +213,50 @@
   .org-tree-children { margin-left: 16px; padding-left: 12px; }
   .org-node-dept, .org-node-count { padding-left: 46px; }
 }
+
+/* ─── Org Node Trigger Button ─── */
+.org-node-footer { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.org-node-trigger {
+  display: flex; align-items: center; gap: 3px;
+  font: 500 10px var(--font-ui); color: var(--brand-primary, #00ccff);
+  background: rgba(0, 204, 255, 0.08); border: 1px solid rgba(0, 204, 255, 0.2);
+  border-radius: 5px; padding: 2px 8px; cursor: pointer; transition: all 0.15s;
+  margin-left: auto;
+}
+.org-node-trigger:hover { background: rgba(0, 204, 255, 0.15); }
+
+/* ─── Trigger Modal ─── */
+.org-trigger-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.org-trigger-modal {
+  background: var(--bg-secondary); border: 1px solid var(--border-primary);
+  border-radius: 16px; padding: 28px; width: 480px; max-width: 90vw;
+}
+.org-trigger-modal h3 { display: flex; align-items: center; gap: 8px; font: 600 18px var(--font-ui); color: var(--text-primary); margin: 0 0 16px; }
+.org-trigger-modal label { display: block; font: 500 12px var(--font-ui); color: var(--text-secondary); margin: 12px 0 4px; }
+.org-trigger-modal select,
+.org-trigger-modal textarea {
+  width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-primary);
+  border-radius: 8px; padding: 10px 12px; font: 400 14px var(--font-ui); color: var(--text-primary); outline: none;
+}
+.org-trigger-modal select:focus,
+.org-trigger-modal textarea:focus { border-color: var(--brand-primary); }
+.org-trigger-modal textarea { resize: vertical; }
+.org-trigger-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.org-trigger-cancel {
+  font: 500 13px var(--font-ui); color: var(--text-secondary); background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary); border-radius: 8px; padding: 8px 20px; cursor: pointer;
+}
+.org-trigger-confirm {
+  font: 500 13px var(--font-ui); color: white; background: var(--brand-primary);
+  border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer;
+}
+.org-trigger-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+.org-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-secondary); border: 1px solid var(--brand-primary);
+  border-radius: 10px; padding: 10px 24px; font: 500 13px var(--font-ui);
+  color: var(--text-primary); box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 1001;
+}

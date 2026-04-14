@@ -3,7 +3,8 @@
  * Pure CSS tree layout (no external dependency)
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { Building2, ChevronDown, ChevronRight, Plus, GripVertical, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Building2, ChevronDown, ChevronRight, Plus, GripVertical, Users, Send } from "lucide-react";
 import { apiFetch } from "../../lib/api-fetch";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./org-chart.css";
@@ -88,12 +89,13 @@ const RANK_LABELS: Record<string, string> = {
   intern: "Intern",
 };
 
-function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth }: {
+function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth, onTrigger }: {
   node: TreeNode;
   onToggle: (id: string) => void;
   onDragStart: (e: React.DragEvent, agentId: string) => void;
   onDrop: (e: React.DragEvent, targetAgentId: string) => void;
   depth: number;
+  onTrigger?: (agentId: string, name: string) => void;
 }) {
   const hasChildren = node.children.length > 0;
   const deptColor = DEPT_COLORS[node.department] || DEPT_COLORS.general;
@@ -138,16 +140,23 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth }: {
             </span>
           </div>
         </div>
-        {node.department && (
-          <div className="org-node-dept" style={{ color: deptColor }}>
-            {node.department}
-          </div>
-        )}
-        {hasChildren && (
-          <div className="org-node-count">
-            <Users size={12} /> {node.children.length}명
-          </div>
-        )}
+        <div className="org-node-footer">
+          {node.department && (
+            <div className="org-node-dept" style={{ color: deptColor }}>
+              {node.department}
+            </div>
+          )}
+          {hasChildren && (
+            <div className="org-node-count">
+              <Users size={12} /> {node.children.length}명
+            </div>
+          )}
+          {onTrigger && (
+            <button className="org-node-trigger" onClick={(e) => { e.stopPropagation(); onTrigger(node.agent_id, name); }} title="지시하기">
+              <Send size={12} /> 지시
+            </button>
+          )}
+        </div>
       </div>
 
       {hasChildren && !node.collapsed && (
@@ -159,6 +168,7 @@ function OrgNodeCard({ node, onToggle, onDragStart, onDrop, depth }: {
               onToggle={onToggle}
               onDragStart={onDragStart}
               onDrop={onDrop}
+              onTrigger={onTrigger}
               depth={depth + 1}
             />
           ))}
@@ -175,6 +185,12 @@ export default function OrgChart() {
   const [fallback, setFallback] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [triggerSoul, setTriggerSoul] = useState<{ id: string; name: string } | null>(null);
+  const [triggerTarget, setTriggerTarget] = useState("");
+  const [triggerMsg, setTriggerMsg] = useState("");
+  const [triggering, setTriggering] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const loadOrgChart = useCallback(async () => {
     try {
@@ -290,11 +306,54 @@ export default function OrgChart() {
               onToggle={handleToggle}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
+              onTrigger={(agentId, name) => setTriggerSoul({ id: agentId, name })}
               depth={0}
             />
           ))
         )}
       </div>
+
+      {/* A2A Trigger Modal */}
+      {triggerSoul && (
+        <div className="org-trigger-overlay" onClick={() => { setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg(""); }}>
+          <div className="org-trigger-modal" onClick={(e) => e.stopPropagation()}>
+            <h3><Send size={16} /> {triggerSoul.name}에게 지시</h3>
+            <label>대화 상대 Soul</label>
+            <select value={triggerTarget} onChange={(e) => setTriggerTarget(e.target.value)}>
+              <option value="">— 선택 —</option>
+              {positions.filter(p => p.agent_id !== triggerSoul.id).map(p => (
+                <option key={p.agent_id} value={p.agent_id}>{p.agent?.name || p.title} ({p.department})</option>
+              ))}
+            </select>
+            <label>지시 내용</label>
+            <textarea value={triggerMsg} onChange={(e) => setTriggerMsg(e.target.value)} placeholder="이 Soul에게 전달할 메시지..." rows={3} />
+            <div className="org-trigger-actions">
+              <button className="org-trigger-cancel" onClick={() => { setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg(""); }}>취소</button>
+              <button className="org-trigger-confirm" disabled={!triggerTarget || !triggerMsg.trim() || triggering} onClick={async () => {
+                setTriggering(true);
+                try {
+                  const res = await apiFetch("/api/a2a/trigger", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ from_soul_id: triggerSoul.id, to_soul_id: triggerTarget, message: triggerMsg }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setToast("대화 트리거 완료! 💬");
+                    setTimeout(() => { setToast(null); navigate("/conversations"); }, 1500);
+                    setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg("");
+                  } else { setToast("트리거 실패"); setTimeout(() => setToast(null), 3000); }
+                } catch { setToast("트리거 오류"); setTimeout(() => setToast(null), 3000); }
+                finally { setTriggering(false); }
+              }}>
+                {triggering ? "처리 중..." : "대화 시작"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="org-toast">{toast}</div>}
     </div>
   );
 }
