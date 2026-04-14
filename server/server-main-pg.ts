@@ -34,6 +34,7 @@ import { orgChartRoutes } from "./routes/org-chart.ts";
 import { goalsRoutes } from "./routes/goals.ts";
 import { budgetRoutes } from "./routes/budgets.ts";
 import { taskRoutes } from "./routes/tasks.ts";
+import { a2aRoutes } from "./routes/a2a.ts";
 import { requireOrgMiddleware } from "./middleware/require-org.ts";
 import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
@@ -664,6 +665,7 @@ app.use("/api/org-chart", orgAuth, orgChartRoutes);
 app.use("/api/goals", orgAuth, goalsRoutes);
 app.use("/api/budgets", orgAuth, budgetRoutes);
 app.use("/api/tasks", orgAuth, taskRoutes);
+app.use("/api/a2a", orgAuth, a2aRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {

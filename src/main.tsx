@@ -23,6 +23,7 @@ const OrgChart = lazy(() => import("./components/org-chart/OrgChart"));
 const GoalsPage = lazy(() => import("./components/goals/GoalsPage"));
 const BudgetPage = lazy(() => import("./components/budget/BudgetPage"));
 const TasksPage = lazy(() => import("./components/tasks/TasksPage"));
+const ConversationsPage = lazy(() => import("./components/conversations/ConversationsPage"));
 
 import "./styles/design-system.css";
 import "./index.css";
@@ -95,6 +96,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="goals" element={<AdminSuspense><GoalsPage /></AdminSuspense>} />
               <Route path="budget" element={<AdminSuspense><BudgetPage /></AdminSuspense>} />
               <Route path="tasks" element={<AdminSuspense><TasksPage /></AdminSuspense>} />
+              <Route path="conversations" element={<AdminSuspense><ConversationsPage /></AdminSuspense>} />
               <Route path="dashboard/billing" element={<SettingsPage />} />
             </Route>
 
