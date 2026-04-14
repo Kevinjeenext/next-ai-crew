@@ -539,6 +539,21 @@ const AVATAR_FALLBACKS: Record<string, string> = {
   "에마": "/avatars/souls/soul_29_english_tutor.webp",
   "지우": "/avatars/souls/soul_30_admissions_consultant.webp",
   "미영": "/avatars/souls/soul_31_parent_counselor.webp",
+  // C-Level Soul 7종
+  "cfo":  "/avatars/souls/soul_32_cfo.webp",
+  "coo":  "/avatars/souls/soul_33_coo.webp",
+  "cmo":  "/avatars/souls/soul_34_cmo.webp",
+  "cso":  "/avatars/souls/soul_35_cso.webp",
+  "cpo":  "/avatars/souls/soul_36_cpo.webp",
+  "chro": "/avatars/souls/soul_37_chro.webp",
+  "clo":  "/avatars/souls/soul_38_clo.webp",
+  "chief financial officer (cfo)": "/avatars/souls/soul_32_cfo.webp",
+  "chief operating officer (coo)": "/avatars/souls/soul_33_coo.webp",
+  "chief marketing officer (cmo)": "/avatars/souls/soul_34_cmo.webp",
+  "chief strategy officer (cso)": "/avatars/souls/soul_35_cso.webp",
+  "chief product officer (cpo)": "/avatars/souls/soul_36_cpo.webp",
+  "chief human resources officer (chro)": "/avatars/souls/soul_37_chro.webp",
+  "chief legal officer (clo)": "/avatars/souls/soul_38_clo.webp",
 };
 
 app.get("/api/soul-presets", async (_req, res) => {
