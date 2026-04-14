@@ -1,0 +1,215 @@
+/* ─── Org Chart ─── */
+
+.org-chart-page {
+  padding: 24px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.org-chart-header {
+  margin-bottom: 28px;
+}
+
+.org-chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.org-chart-title-row h1 {
+  font: 600 22px var(--font-ui);
+  color: var(--text-primary);
+  margin: 0;
+}
+.org-chart-title-row svg { color: var(--brand-primary); }
+.org-chart-count {
+  font: 500 13px var(--font-ui);
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.org-chart-fallback-notice {
+  font: 400 13px var(--font-ui);
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+}
+
+.org-chart-dept-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.org-dept-chip {
+  font: 500 11px var(--font-ui);
+  padding: 3px 10px;
+  border-radius: 6px;
+  text-transform: capitalize;
+}
+
+/* ─── Tree layout ─── */
+.org-chart-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.org-tree-branch {
+  position: relative;
+}
+
+.org-tree-children {
+  margin-left: 32px;
+  padding-left: 16px;
+  border-left: 2px solid var(--border-secondary, rgba(255,255,255,0.06));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+/* ─── Node card ─── */
+.org-node-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary, rgba(255,255,255,0.06));
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: grab;
+  transition: all 0.15s ease;
+  border-left: 3px solid var(--dept-color, var(--brand-primary));
+}
+.org-node-card:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--dept-color, var(--brand-primary));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+.org-node-card:active { cursor: grabbing; }
+
+.org-node-card.org-rank-c_level {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--bg-secondary), rgba(99, 102, 241, 0.06));
+}
+
+.org-node-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.org-node-toggle {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+.org-node-toggle:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+
+.org-node-grip {
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.org-node-card:hover .org-node-grip { opacity: 0.6; }
+
+.org-node-info {
+  flex: 1;
+  min-width: 0;
+}
+.org-node-name {
+  font: 600 14px var(--font-ui);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.org-rank-c_level .org-node-name {
+  font-size: 16px;
+}
+.org-node-role {
+  font: 400 12px var(--font-ui);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-node-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.org-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+}
+.org-status-idle    { background: #10b981; }
+.org-status-working { background: #f59e0b; }
+.org-status-break   { background: #8b5cf6; }
+.org-status-offline { background: #6b7280; }
+
+.org-rank-badge {
+  font: 600 10px var(--font-ui);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.org-node-dept {
+  font: 500 11px var(--font-ui);
+  margin-top: 4px;
+  padding-left: 58px; /* align with name */
+  text-transform: capitalize;
+}
+
+.org-node-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 400 11px var(--font-ui);
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  padding-left: 58px;
+}
+
+/* ─── Empty / Loading ─── */
+.org-chart-loading,
+.org-chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--text-tertiary);
+  gap: 12px;
+}
+.org-chart-empty h2 {
+  font: 600 18px var(--font-ui);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.org-chart-empty p {
+  font: 400 14px var(--font-ui);
+  margin: 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .org-chart-page { padding: 16px; }
+  .org-tree-children { margin-left: 16px; padding-left: 12px; }
+  .org-node-dept, .org-node-count { padding-left: 46px; }
+}

@@ -30,6 +30,7 @@ import * as pgAdapter from "./db/pg-adapter.ts";
 import { createWsHub } from "./ws/hub.ts";
 import authRoutes from "./modules/routes/auth/signup.ts";
 import { soulChatRoutes } from "./routes/soul-chat.ts";
+import { orgChartRoutes } from "./routes/org-chart.ts";
 import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
@@ -652,6 +653,16 @@ app.use("/api/souls", async (req: any, _res, next) => {
   } catch { /* handled in route */ }
   next();
 }, soulChatRoutes);
+
+// --- Org Chart ---
+app.use("/api/org-chart", async (req, res, next) => {
+  try {
+    const orgId = await requireOrg(req, res).catch(() => null);
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+    (req as any).orgId = orgId;
+  } catch { /* handled in route */ }
+  next();
+}, orgChartRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {

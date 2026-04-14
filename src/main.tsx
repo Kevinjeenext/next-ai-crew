@@ -19,6 +19,7 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminTenants = lazy(() => import("./pages/admin/AdminTenants"));
 const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const OrgChart = lazy(() => import("./components/org-chart/OrgChart"));
 
 import "./styles/design-system.css";
 import "./index.css";
@@ -87,6 +88,7 @@ createRoot(document.getElementById("root")!).render(
               <Route index element={<DashboardOutlet />} />
               <Route path="hire" element={<SoulHireV2 />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="org-chart" element={<AdminSuspense><OrgChart /></AdminSuspense>} />
               <Route path="dashboard/billing" element={<SettingsPage />} />
             </Route>
 
