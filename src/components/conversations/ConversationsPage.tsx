@@ -3,7 +3,7 @@
  * 좌: 방 목록 | 우: 채팅 뷰어
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { MessageSquare, Plus, Send, Users, RefreshCw } from "lucide-react";
+import { MessageSquare, Plus, Send, Users, RefreshCw, Radio } from "lucide-react";
 import { apiFetch } from "../../lib/api-fetch";
 import SoulAvatar from "../ui/SoulAvatar";
 import "./conversations.css";
@@ -79,7 +79,7 @@ export default function ConversationsPage() {
     if (pollRef.current) clearInterval(pollRef.current);
     if (selectedRoom) {
       loadMessages(selectedRoom);
-      pollRef.current = setInterval(() => loadMessages(selectedRoom), 5000);
+      pollRef.current = setInterval(() => { loadMessages(selectedRoom); loadRooms(); }, 2000);
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [selectedRoom, loadMessages]);
@@ -202,6 +202,11 @@ export default function ConversationsPage() {
                   </div>
                 ))}
               </div>
+              <div className="conv-live-indicator">
+                <Radio size={12} className="conv-live-pulse" />
+                <span>실시간</span>
+              </div>
+              <span className="conv-msg-count">{messages.length}건</span>
               <button className="conv-refresh-btn" onClick={() => loadMessages(selectedRoom!)}>
                 <RefreshCw size={14} />
               </button>

@@ -199,3 +199,18 @@
   .conv-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-primary); max-height: 40vh; }
   .conv-page { flex-direction: column; }
 }
+
+/* ─── Live Indicator ─── */
+.conv-live-indicator {
+  display: flex; align-items: center; gap: 4px;
+  font: 500 11px var(--font-ui); color: #10b981;
+}
+.conv-live-pulse { animation: pulse-live 1.5s ease-in-out infinite; }
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.conv-msg-count {
+  font: 400 11px var(--font-ui); color: var(--text-tertiary);
+  background: var(--bg-tertiary); padding: 2px 8px; border-radius: 6px;
+}
