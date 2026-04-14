@@ -169,6 +169,13 @@
 }
 
 /* ── Dismiss Button ── */
+.soul-a2a-btn {
+  background: none; border: 1px solid var(--brand-primary, #00ccff); border-radius: 6px;
+  padding: 4px 6px; cursor: pointer; color: var(--brand-primary, #00ccff);
+  opacity: 0.6; transition: all 0.15s;
+}
+.soul-a2a-btn:hover { opacity: 1; background: rgba(0, 204, 255, 0.1); }
+
 .soul-dismiss-btn {
   width: 32px; height: 32px; border-radius: 8px;
   background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15);
@@ -230,3 +237,15 @@
   animation: toast-in 0.2s ease-out;
 }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── A2A Trigger Modal ─── */
+.a2a-trigger-modal h3 { display: flex; align-items: center; gap: 8px; }
+.a2a-trigger-modal label { display: block; font: 500 12px var(--font-ui); color: var(--text-secondary); margin: 12px 0 4px; }
+.a2a-trigger-modal select,
+.a2a-trigger-modal textarea {
+  width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-primary);
+  border-radius: 8px; padding: 10px 12px; font: 400 14px var(--font-ui); color: var(--text-primary); outline: none;
+}
+.a2a-trigger-modal select:focus,
+.a2a-trigger-modal textarea:focus { border-color: var(--brand-primary); }
+.a2a-trigger-modal textarea { resize: vertical; }

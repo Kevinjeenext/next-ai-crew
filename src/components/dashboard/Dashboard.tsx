@@ -2,7 +2,7 @@
  * Dashboard — Pro UI (Ivy 01-main-dashboard.md)
  * Summary cards + Soul team cards + Activity timeline
  */
-import { Sparkles, UserMinus, MessageSquare, X } from "lucide-react";
+import { Sparkles, UserMinus, MessageSquare, X, Send, ArrowRight } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import SoulAvatar from "../ui/SoulAvatar";
 import { apiFetch } from "../../lib/api-fetch";
@@ -32,6 +32,10 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
   const [dismissReason, setDismissReason] = useState("");
   const [dismissing, setDismissing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [triggerSoul, setTriggerSoul] = useState<Soul | null>(null);
+  const [triggerTarget, setTriggerTarget] = useState("");
+  const [triggerMsg, setTriggerMsg] = useState("");
+  const [triggering, setTriggering] = useState(false);
 
   const fetchSouls = useCallback(() => {
     apiFetch("/api/souls")
@@ -148,6 +152,9 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
                   <button className="soul-chat-btn" onClick={() => onChatWithSoul?.(soul.id)}>
                     <MessageSquare size={14} strokeWidth={1.5} /> 대화하기
                   </button>
+                  <button className="soul-a2a-btn" onClick={() => setTriggerSoul(soul)} title="대화 지시">
+                    <ArrowRight size={14} strokeWidth={1.5} />
+                  </button>
                   <button className="soul-dismiss-btn" onClick={() => setDismissTarget(soul)} title="해고">
                     <UserMinus size={14} strokeWidth={1.5} />
                   </button>
@@ -184,6 +191,46 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
               <button className="dismiss-cancel" onClick={() => { setDismissTarget(null); setDismissReason(""); }}>취소</button>
               <button className="dismiss-confirm" onClick={handleDismiss} disabled={!dismissReason.trim() || dismissing}>
                 {dismissing ? "처리 중..." : "해고 확인"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* A2A Trigger Modal */}
+      {triggerSoul && (
+        <div className="dismiss-overlay" onClick={() => { setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg(""); }}>
+          <div className="dismiss-modal a2a-trigger-modal" onClick={e => e.stopPropagation()}>
+            <button className="dismiss-close" onClick={() => { setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg(""); }}><X size={16} /></button>
+            <h3><Send size={16} /> {triggerSoul.name_ko || triggerSoul.name}에게 지시</h3>
+            <label>대화 상대 Soul</label>
+            <select value={triggerTarget} onChange={(e) => setTriggerTarget(e.target.value)}>
+              <option value="">— 선택 —</option>
+              {souls.filter(s => s.id !== triggerSoul.id).map(s => (
+                <option key={s.id} value={s.id}>{s.name_ko || s.name} ({s.role})</option>
+              ))}
+            </select>
+            <label>지시 내용</label>
+            <textarea value={triggerMsg} onChange={(e) => setTriggerMsg(e.target.value)} placeholder="이 Soul에게 전달할 메시지..." rows={3} />
+            <div className="dismiss-actions">
+              <button className="dismiss-cancel" onClick={() => { setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg(""); }}>취소</button>
+              <button className="dismiss-confirm" disabled={!triggerTarget || !triggerMsg.trim() || triggering} onClick={async () => {
+                setTriggering(true);
+                try {
+                  const res = await apiFetch("/api/a2a/trigger", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ from_soul_id: triggerSoul.id, to_soul_id: triggerTarget, message: triggerMsg }),
+                  });
+                  if (res.ok) {
+                    setToast(`대화 트리거 완료! 💬`);
+                    setTimeout(() => setToast(null), 3000);
+                    setTriggerSoul(null); setTriggerTarget(""); setTriggerMsg("");
+                  } else { setToast("트리거 실패"); setTimeout(() => setToast(null), 3000); }
+                } catch { setToast("트리거 오류"); setTimeout(() => setToast(null), 3000); }
+                finally { setTriggering(false); }
+              }}>
+                {triggering ? "처리 중..." : "대화 시작"}
               </button>
             </div>
           </div>
