@@ -40,6 +40,7 @@ import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
 import { checkAgentLimit } from "./middleware/plan-limit.ts";
+import { tokenUsageRoutes } from "./routes/token-usage.ts";
 
 // ---------------------------------------------------------------------------
 // Initialize
@@ -581,6 +582,7 @@ app.use("/api/goals", orgAuth, goalsRoutes);
 app.use("/api/budgets", orgAuth, budgetRoutes);
 app.use("/api/tasks", orgAuth, taskRoutes);
 app.use("/api/a2a", orgAuth, a2aRoutes);
+app.use("/api/usage", orgAuth, tokenUsageRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {
@@ -771,7 +773,14 @@ app.put("/api/souls/:id", express.json(), async (req, res) => {
     if (!orgId) return;
     const updates: Record<string, any> = {};
     // Only columns that exist in the DB
-    const allowed = ["name", "role", "domain", "persona_prompt", "skill_tags", "tools", "llm_model", "llm_temperature", "greeting_message", "memory_enabled", "avatar_style", "status"];
+    const allowed = [
+      "name", "display_name", "role", "domain", "department",
+      "persona_prompt", "personality_traits", "communication_style",
+      "skill_tags", "tools", "boundaries",
+      "llm_model", "llm_temperature", "llm_max_tokens",
+      "greeting_message", "memory_enabled", "long_term_memory",
+      "avatar_style", "avatar_emoji", "is_active", "status",
+    ];
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
