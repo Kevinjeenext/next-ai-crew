@@ -101,6 +101,20 @@
   font: 400 10px var(--font-ui); color: var(--text-tertiary);
 }
 
+/* ─── Section Save Button ─── */
+.ss-section-save {
+  display: flex; align-items: center; gap: 6px;
+  font: 600 12px var(--font-ui); color: white;
+  background: var(--brand-primary); border: none; border-radius: 8px;
+  padding: 8px 18px; cursor: pointer; margin-top: 12px;
+  transition: all 0.15s; align-self: flex-start;
+}
+.ss-section-save:hover { opacity: 0.9; }
+.ss-section-save.disabled, .ss-section-save:disabled {
+  background: var(--bg-tertiary); color: var(--text-tertiary);
+  cursor: not-allowed; opacity: 0.6;
+}
+
 /* ─── Status Row ─── */
 .ss-status-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .ss-status-btn {

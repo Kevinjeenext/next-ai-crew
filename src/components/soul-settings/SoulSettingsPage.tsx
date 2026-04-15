@@ -97,30 +97,38 @@ export default function SoulSettingsPage() {
     setOpenSections(next);
   };
 
-  const handleSave = async () => {
+  const saveFields = async (fields: Record<string, any>, label: string) => {
     if (!id) return;
     setSaving(true);
     try {
       const res = await apiFetch(`/api/souls/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: editName,
-          role: editRole,
-          persona_prompt: editPersona,
-          greeting_message: editGreeting,
-          skill_tags: editSkills.split(",").map(s => s.trim()).filter(Boolean),
-          llm_model: editModel,
-          llm_temperature: editTemp,
-        }),
+        body: JSON.stringify(fields),
       });
       if (res.ok) {
-        showToast("저장 완료! ✅");
+        showToast(`✅ ${label} 저장 완료`);
         loadSoul();
-      } else { showToast("저장 실패"); }
-    } catch { showToast("오류 발생"); }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(`❌ 저장 실패: ${(err as any).error || res.status}`);
+      }
+    } catch { showToast("❌ 오류 발생"); }
     finally { setSaving(false); }
   };
+
+  const handleSave = () => saveFields({
+    name: editName, role: editRole,
+    persona_prompt: editPersona, greeting_message: editGreeting,
+    skill_tags: editSkills.split(",").map(s => s.trim()).filter(Boolean),
+    llm_model: editModel, llm_temperature: editTemp,
+  }, "전체 설정");
+
+  // Change detection
+  const profileChanged = soul ? (editName !== (soul.name || "") || editRole !== (soul.role || "")) : false;
+  const aiChanged = soul ? (editModel !== (soul.llm_model || "auto") || editTemp !== (soul.llm_temperature ?? 0.7)) : false;
+  const personaChanged = soul ? (editPersona !== (soul.persona_prompt || "") || editGreeting !== (soul.greeting_message || "") || editSkills !== (soul.skill_tags || []).join(", ")) : false;
+  const anyChanged = profileChanged || aiChanged || personaChanged;
 
   const handleStatusChange = async (status: string) => {
     if (!id) return;
@@ -177,6 +185,11 @@ export default function SoulSettingsPage() {
               ))}
             </div>
           </div>
+          <button className={`ss-section-save ${profileChanged ? "" : "disabled"}`}
+            disabled={!profileChanged || saving}
+            onClick={() => saveFields({ name: editName, role: editRole }, "프로필")}>
+            <Save size={12} /> {saving ? "저장 중..." : "프로필 저장"}
+          </button>
         </div>
       ),
     },
@@ -226,6 +239,11 @@ export default function SoulSettingsPage() {
               onChange={e => setEditTemp(parseFloat(e.target.value))} />
             <div className="ss-temp-labels"><span>정확</span><span>균형</span><span>창의</span></div>
           </div>
+          <button className={`ss-section-save ${aiChanged ? "" : "disabled"}`}
+            disabled={!aiChanged || saving}
+            onClick={() => saveFields({ llm_model: editModel, llm_temperature: editTemp }, "AI 리소스")}>
+            <Save size={12} /> {saving ? "저장 중..." : "AI 설정 저장"}
+          </button>
         </div>
       ),
     },
@@ -246,6 +264,14 @@ export default function SoulSettingsPage() {
             <label>스킬 태그 (쉼표 구분)</label>
             <input value={editSkills} onChange={e => setEditSkills(e.target.value)} placeholder="전략, 분석, 마케팅..." />
           </div>
+          <button className={`ss-section-save ${personaChanged ? "" : "disabled"}`}
+            disabled={!personaChanged || saving}
+            onClick={() => saveFields({
+              persona_prompt: editPersona, greeting_message: editGreeting,
+              skill_tags: editSkills.split(",").map(s => s.trim()).filter(Boolean),
+            }, "Soul 설정")}>
+            <Save size={12} /> {saving ? "저장 중..." : "Soul 설정 저장"}
+          </button>
         </div>
       ),
     },
@@ -307,8 +333,8 @@ export default function SoulSettingsPage() {
 
       {/* Action Bar */}
       <div className="ss-action-bar">
-        <button className="ss-save-btn" onClick={handleSave} disabled={saving}>
-          <Save size={14} /> {saving ? "저장 중..." : "저장"}
+        <button className="ss-save-btn" onClick={handleSave} disabled={saving || !anyChanged}>
+          <Save size={14} /> {saving ? "저장 중..." : anyChanged ? "전체 저장" : "변경 없음"}
         </button>
         <div className="ss-action-right">
           {soul.status === "working" ? (
