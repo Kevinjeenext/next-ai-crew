@@ -388,4 +388,245 @@ router.post("/budget", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/usage/breakdown
+ * Soul별·모델별·시간대별 집계 (CTO 수진 요청).
+ * Query: ?period=YYYY-MM&group_by=soul|model|hour
+ */
+router.get("/breakdown", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const period = (req.query.period as string) || currentPeriod();
+    const groupBy = (req.query.group_by as string) || "soul";
+
+    if (!SUPABASE_CONFIGURED) {
+      return res.json({ period, group_by: groupBy, breakdown: [] });
+    }
+
+    if (groupBy === "soul") {
+      // Same as /souls but lighter
+      const { data, error } = await supabaseAdmin
+        .from("soul_usage")
+        .select("agent_id, total_tokens, prompt_tokens_sum, completion_tokens_sum, message_count, last_model_used")
+        .eq("org_id", orgId)
+        .eq("period", period)
+        .order("total_tokens", { ascending: false });
+
+      if (error) throw error;
+
+      // Enrich with names
+      const agentIds = (data || []).map((r) => r.agent_id).filter(Boolean);
+      let nameMap: Record<string, string> = {};
+      if (agentIds.length > 0) {
+        const { data: agents } = await supabaseAdmin
+          .from("agents")
+          .select("id, name")
+          .in("id", agentIds);
+        if (agents) nameMap = Object.fromEntries(agents.map((a: any) => [a.id, a.name]));
+      }
+
+      const breakdown = (data || []).map((r) => ({
+        key: r.agent_id,
+        label: nameMap[r.agent_id] || r.agent_id,
+        total_tokens: r.total_tokens || 0,
+        prompt_tokens: r.prompt_tokens_sum || 0,
+        completion_tokens: r.completion_tokens_sum || 0,
+        message_count: r.message_count || 0,
+        last_model: r.last_model_used,
+      }));
+
+      return res.json({ period, group_by: groupBy, breakdown });
+    }
+
+    if (groupBy === "model") {
+      // Group by model from budget_transactions
+      const sinceDate = new Date();
+      sinceDate.setDate(1); // first of current month
+      // Parse period into date range
+      const [year, month] = period.split("-").map(Number);
+      const periodStart = new Date(year, month - 1, 1);
+      const periodEnd = new Date(year, month, 0, 23, 59, 59);
+
+      const { data: txns, error } = await supabaseAdmin
+        .from("budget_transactions")
+        .select("model, provider, input_tokens, output_tokens, cost_cents")
+        .eq("org_id", orgId)
+        .gte("created_at", periodStart.toISOString())
+        .lte("created_at", periodEnd.toISOString());
+
+      if (error) {
+        // budget_transactions may not exist — fallback to soul_usage
+        const { data: usageData } = await supabaseAdmin
+          .from("soul_usage")
+          .select("last_model_used, total_tokens, message_count")
+          .eq("org_id", orgId)
+          .eq("period", period);
+
+        const modelMap = new Map<string, { tokens: number; messages: number }>();
+        for (const r of (usageData || [])) {
+          const model = r.last_model_used || "unknown";
+          const entry = modelMap.get(model) || { tokens: 0, messages: 0 };
+          entry.tokens += r.total_tokens || 0;
+          entry.messages += r.message_count || 0;
+          modelMap.set(model, entry);
+        }
+
+        const breakdown = [...modelMap.entries()]
+          .sort(([, a], [, b]) => b.tokens - a.tokens)
+          .map(([model, data]) => ({
+            key: model,
+            label: model,
+            total_tokens: data.tokens,
+            message_count: data.messages,
+          }));
+
+        return res.json({ period, group_by: groupBy, breakdown, fallback: true });
+      }
+
+      // Group transactions by model
+      const modelMap = new Map<string, { input: number; output: number; total: number; cost: number; count: number; provider: string }>();
+      for (const tx of (txns || [])) {
+        const model = tx.model || "unknown";
+        const entry = modelMap.get(model) || { input: 0, output: 0, total: 0, cost: 0, count: 0, provider: tx.provider || "unknown" };
+        entry.input += tx.input_tokens || 0;
+        entry.output += tx.output_tokens || 0;
+        entry.total += (tx.input_tokens || 0) + (tx.output_tokens || 0);
+        entry.cost += tx.cost_cents || 0;
+        entry.count += 1;
+        modelMap.set(model, entry);
+      }
+
+      const breakdown = [...modelMap.entries()]
+        .sort(([, a], [, b]) => b.total - a.total)
+        .map(([model, data]) => ({
+          key: model,
+          label: model,
+          provider: data.provider,
+          prompt_tokens: data.input,
+          completion_tokens: data.output,
+          total_tokens: data.total,
+          cost_cents: data.cost,
+          request_count: data.count,
+        }));
+
+      return res.json({ period, group_by: groupBy, breakdown });
+    }
+
+    if (groupBy === "hour") {
+      // Hourly breakdown from budget_transactions
+      const [year, month] = period.split("-").map(Number);
+      const periodStart = new Date(year, month - 1, 1);
+      const periodEnd = new Date(year, month, 0, 23, 59, 59);
+
+      const { data: txns, error } = await supabaseAdmin
+        .from("budget_transactions")
+        .select("input_tokens, output_tokens, created_at")
+        .eq("org_id", orgId)
+        .gte("created_at", periodStart.toISOString())
+        .lte("created_at", periodEnd.toISOString());
+
+      if (error) {
+        return res.json({ period, group_by: groupBy, breakdown: [], error: "budget_transactions not available" });
+      }
+
+      // Group by hour (0-23)
+      const hourMap = new Map<number, { tokens: number; count: number }>();
+      for (let h = 0; h < 24; h++) hourMap.set(h, { tokens: 0, count: 0 });
+
+      for (const tx of (txns || [])) {
+        const hour = new Date(tx.created_at).getHours();
+        const entry = hourMap.get(hour)!;
+        entry.tokens += (tx.input_tokens || 0) + (tx.output_tokens || 0);
+        entry.count += 1;
+      }
+
+      const breakdown = [...hourMap.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([hour, data]) => ({
+          key: String(hour).padStart(2, "0"),
+          label: `${String(hour).padStart(2, "0")}:00`,
+          total_tokens: data.tokens,
+          request_count: data.count,
+        }));
+
+      return res.json({ period, group_by: groupBy, breakdown });
+    }
+
+    return res.status(400).json({ error: "Invalid group_by. Use: soul, model, hour" });
+  } catch (err: any) {
+    console.error("[usage] breakdown error:", err.message);
+    res.status(500).json({ error: "Failed to fetch usage breakdown" });
+  }
+});
+
+/**
+ * GET /api/usage/soul/:soulId/budget
+ * Per-Soul budget status (soul_budgets 테이블).
+ */
+router.get("/soul/:soulId/budget", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { soulId } = req.params;
+    const today = new Date().toISOString().substring(0, 10);
+
+    if (!SUPABASE_CONFIGURED) {
+      return res.json({ soul_id: soulId, budget: null });
+    }
+
+    const { data: budget, error } = await supabaseAdmin
+      .from("soul_budgets")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("agent_id", soulId)
+      .lte("period_start", today)
+      .gte("period_end", today)
+      .order("period_start", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      // soul_budgets may not exist (008 DDL)
+      return res.json({ soul_id: soulId, budget: null, note: "soul_budgets table not available" });
+    }
+
+    if (!budget) {
+      return res.json({ soul_id: soulId, budget: null });
+    }
+
+    const usagePct = budget.token_limit > 0
+      ? Math.round(((budget.tokens_used || 0) / budget.token_limit) * 100)
+      : 0;
+
+    let alertLevel: string = "normal";
+    if (usagePct >= 100) alertLevel = "exceeded";
+    else if (usagePct >= 90) alertLevel = "critical";
+    else if (usagePct >= (budget.warning_threshold || 80)) alertLevel = "warning";
+
+    res.json({
+      soul_id: soulId,
+      budget: {
+        id: budget.id,
+        period_type: budget.period_type,
+        period_start: budget.period_start,
+        period_end: budget.period_end,
+        token_limit: budget.token_limit,
+        tokens_used: budget.tokens_used || 0,
+        tokens_remaining: Math.max(0, (budget.token_limit || 0) - (budget.tokens_used || 0)),
+        usage_pct: usagePct,
+        alert_level: alertLevel,
+        status: budget.status,
+        auto_pause: budget.auto_pause_at_limit,
+        warning_threshold: budget.warning_threshold,
+      },
+    });
+  } catch (err: any) {
+    console.error("[usage] soul budget error:", err.message);
+    res.status(500).json({ error: "Failed to fetch soul budget" });
+  }
+});
+
 export { router as tokenUsageRoutes };

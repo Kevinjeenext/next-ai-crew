@@ -52,6 +52,17 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       });
     }
 
+    // 2.5 Check per-Soul budget (soul_budgets, 008 DDL)
+    const soulBudget = await tracker.checkSoulBudget(soulId, orgId);
+    if (!soulBudget.allowed) {
+      return res.status(429).json({
+        error: "Soul budget exceeded",
+        usagePct: soulBudget.usagePct,
+        alertLevel: soulBudget.alertLevel,
+        message: `이 Soul의 토큰 예산이 초과되었습니다 (${soulBudget.usagePct}%). 관리자에게 문의하세요.`,
+      });
+    }
+
     // 3. Generate system prompt (SOUL.md pattern)
     const systemPrompt = generateSoulPrompt({
       name: soul.name,
