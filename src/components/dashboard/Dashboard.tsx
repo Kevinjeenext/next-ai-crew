@@ -9,6 +9,10 @@ import SoulAvatar from "../ui/SoulAvatar";
 import { apiFetch } from "../../lib/api-fetch";
 import "./dashboard.css";
 
+const STATUS_LABEL: Record<string, string> = {
+  idle: "대기 중", working: "업무 중", break: "휴식", offline: "오프라인", active: "활성",
+};
+
 interface Soul {
   id: string;
   name: string;
@@ -134,34 +138,20 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
                     <div className="soul-card-name">{soul.name_ko || soul.name}</div>
                     <div className="soul-card-role">{soul.role}</div>
                   </div>
-                  <span className={`status-dot ${soul.status === "active" ? "online" : "offline"}`} />
-                </div>
-
-                {soul.skill_tags && soul.skill_tags.length > 0 && (
-                  <div className="soul-skill-list">
-                    {soul.skill_tags.slice(0, 4).map((tag) => (
-                      <span key={tag} className="soul-skill-chip">{tag}</span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="soul-card-stats">
-                  <span>오늘 <strong>—</strong> tasks</span>
-                  <span>이번 달 <strong>—</strong> tokens</span>
+                  <span className={`soul-status-badge ${soul.status || "idle"}`}>
+                    {STATUS_LABEL[soul.status] || "대기 중"}
+                  </span>
                 </div>
 
                 <div className="soul-card-actions">
-                  <button className="soul-chat-btn" onClick={() => onChatWithSoul?.(soul.id)}>
-                    <MessageSquare size={14} strokeWidth={1.5} /> 대화하기
+                  <button className="btn-primary" onClick={() => onChatWithSoul?.(soul.id)}>
+                    <MessageSquare size={14} /> 대화
                   </button>
-                  <button className="soul-a2a-btn" onClick={() => setTriggerSoul(soul)} title="대화 지시">
-                    <ArrowRight size={14} strokeWidth={1.5} />
-                  </button>
-                  <button className="soul-settings-btn" onClick={() => navigate(`/souls/${soul.id}/settings`)} title="설정">
+                  <button className="btn-ghost" onClick={() => navigate(`/souls/${soul.id}/settings`)} title="설정">
                     <Settings size={14} />
                   </button>
-                  <button className="soul-dismiss-btn" onClick={() => setDismissTarget(soul)} title="해고">
-                    <UserMinus size={14} strokeWidth={1.5} />
+                  <button className="btn-destructive-ghost" onClick={() => setDismissTarget(soul)} title="해고">
+                    <UserMinus size={14} />
                   </button>
                 </div>
               </div>
