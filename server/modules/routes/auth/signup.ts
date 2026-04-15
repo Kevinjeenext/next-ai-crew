@@ -14,6 +14,30 @@ import * as pgAdapter from "../../../db/pg-adapter.ts";
 
 const router = Router();
 
+// ── Simple rate limiter for auth endpoints (abuse prevention) ──
+const authAttempts = new Map<string, { count: number; resetAt: number }>();
+const AUTH_RATE_LIMIT = 30; // max attempts per window
+const AUTH_RATE_WINDOW_MS = 60_000; // 1 minute
+
+function checkAuthRate(ip: string): boolean {
+  const now = Date.now();
+  const entry = authAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    authAttempts.set(ip, { count: 1, resetAt: now + AUTH_RATE_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= AUTH_RATE_LIMIT;
+}
+
+// Cleanup stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of authAttempts) {
+    if (now > val.resetAt) authAttempts.delete(key);
+  }
+}, 300_000);
+
 const DEFAULT_DEPARTMENTS = [
   { id: "engineering", name: "Engineering", name_ko: "엔지니어링", icon: "⚙️", color: "#3b82f6", sort_order: 1 },
   { id: "design", name: "Design", name_ko: "디자인", icon: "🎨", color: "#8b5cf6", sort_order: 2 },
@@ -50,11 +74,17 @@ async function ensureDepartments(orgId: string): Promise<void> {
  * Idempotent: if org already exists, returns existing org_id.
  */
 router.post("/api/auth/setup", async (req, res) => {
+  // Rate limit
+  const clientIp = req.get("x-forwarded-for")?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+  if (!checkAuthRate(clientIp)) {
+    return res.status(429).json({ error: "Too many requests", message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." });
+  }
+
   try {
     const authHeader = req.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
     if (!token) {
-      return res.status(401).json({ error: "No authorization token" });
+      return res.status(401).json({ error: "No authorization token", message: "인증 토큰이 필요합니다." });
     }
 
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
@@ -124,11 +154,17 @@ router.post("/api/auth/setup", async (req, res) => {
  * Returns current user info + org context.
  */
 router.get("/api/auth/me", async (req, res) => {
+  // Rate limit
+  const clientIp = req.get("x-forwarded-for")?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+  if (!checkAuthRate(clientIp)) {
+    return res.status(429).json({ error: "Too many requests", message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." });
+  }
+
   try {
     const authHeader = req.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
     if (!token) {
-      return res.status(401).json({ error: "No authorization token" });
+      return res.status(401).json({ error: "No authorization token", message: "인증 토큰이 필요합니다." });
     }
 
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
