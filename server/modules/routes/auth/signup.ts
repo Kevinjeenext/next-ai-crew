@@ -112,7 +112,10 @@ router.post("/api/auth/setup", async (req, res) => {
     });
   } catch (err: any) {
     console.error("[Auth Setup] Error:", err.message);
-    return res.status(500).json({ error: "Failed to setup organization" });
+    return res.status(500).json({
+      error: "Failed to setup organization",
+      message: "조직 설정 중 오류가 발생했습니다. 다시 시도해주세요.",
+    });
   }
 });
 
@@ -145,7 +148,18 @@ router.get("/api/auth/me", async (req, res) => {
         .single();
       orgRole = member?.role ?? null;
     } catch {
-      // No org yet
+      // No org yet — auto-setup (resilience for first-time login)
+      try {
+        const displayName = user.user_metadata?.full_name
+          ?? user.user_metadata?.name
+          ?? user.email?.split("@")[0]
+          ?? "My Team";
+        orgId = await createOrgForUser(user.id, `${displayName}'s Team`);
+        orgRole = "owner";
+        console.log(`[Auth /me] Auto-created org for user ${user.id}: ${orgId}`);
+      } catch (autoErr: any) {
+        console.error("[Auth /me] Auto-org creation failed:", autoErr.message);
+      }
     }
 
     // Try to get profile + system_role (006 DDL)
@@ -158,8 +172,24 @@ router.get("/api/auth/me", async (req, res) => {
         .eq("id", user.id)
         .single();
       profile = p;
+
+      // Auto-create profile if table exists but row is missing
+      // (handles users who signed up before 006 DDL trigger was applied)
+      if (!p) {
+        const userName = user.user_metadata?.full_name
+          ?? user.user_metadata?.name
+          ?? user.email?.split("@")[0];
+        await supabaseAdmin.from("profiles").upsert({
+          id: user.id,
+          email: user.email,
+          full_name: userName,
+          system_role: "user",
+        }, { onConflict: "id" });
+        profile = { id: user.id, email: user.email, full_name: userName, system_role: "user" };
+        console.log(`[Auth /me] Auto-created profile for user ${user.id}`);
+      }
     } catch {
-      // profiles table may not exist yet
+      // profiles table may not exist yet (006 DDL not run)
     }
 
     // Get all org memberships
@@ -195,7 +225,11 @@ router.get("/api/auth/me", async (req, res) => {
       orgs: orgs.length > 0 ? orgs : undefined,
     });
   } catch (err: any) {
-    return res.status(500).json({ error: "Failed to get user info" });
+    console.error("[Auth /me] Error:", err.message);
+    return res.status(500).json({
+      error: "Failed to get user info",
+      message: "사용자 정보를 불러오는 중 오류가 발생했습니다.",
+    });
   }
 });
 
