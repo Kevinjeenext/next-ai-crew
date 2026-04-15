@@ -45,8 +45,9 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     const tracker = getUsageTracker();
     const { allowed, usagePct } = await tracker.checkBudget(orgId);
     if (!allowed) {
+      res.set("Retry-After", "3600"); // 1 hour
       return res.status(429).json({
-        error: "Token budget exceeded",
+        error: "budget_exceeded",
         usagePct,
         message: "토큰 한도를 초과했습니다. 충전이 필요합니다.",
       });
@@ -55,8 +56,9 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     // 2.5 Check per-Soul budget (soul_budgets, 008 DDL)
     const soulBudget = await tracker.checkSoulBudget(soulId, orgId);
     if (!soulBudget.allowed) {
+      res.set("Retry-After", "3600");
       return res.status(429).json({
-        error: "Soul budget exceeded",
+        error: "soul_budget_exceeded",
         usagePct: soulBudget.usagePct,
         alertLevel: soulBudget.alertLevel,
         message: `이 Soul의 토큰 예산이 초과되었습니다 (${soulBudget.usagePct}%). 관리자에게 문의하세요.`,

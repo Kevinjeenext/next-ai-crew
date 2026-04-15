@@ -20,6 +20,31 @@ export interface BudgetStatus {
   budgetId?: string;
 }
 
+// ── In-memory budget cache (1min TTL, avoids DB hit per chat) ──
+const budgetCache = new Map<string, { status: BudgetStatus; expiresAt: number }>();
+const BUDGET_CACHE_TTL_MS = 60_000; // 1 minute
+
+function getCachedBudget(key: string): BudgetStatus | null {
+  const entry = budgetCache.get(key);
+  if (!entry || Date.now() > entry.expiresAt) {
+    budgetCache.delete(key);
+    return null;
+  }
+  return entry.status;
+}
+
+function setCachedBudget(key: string, status: BudgetStatus): void {
+  budgetCache.set(key, { status, expiresAt: Date.now() + BUDGET_CACHE_TTL_MS });
+}
+
+// Cleanup stale cache entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of budgetCache) {
+    if (now > val.expiresAt) budgetCache.delete(key);
+  }
+}, 300_000);
+
 export class UsageTracker {
   /**
    * Record token usage after an LLM call.
@@ -91,6 +116,9 @@ export class UsageTracker {
 
       // 3. Update soul_budgets + record budget_transaction (008 DDL)
       await this.updateSoulBudget(soulId, orgId, response, metadata?.ticketId);
+
+      // Invalidate soul budget cache after recording
+      budgetCache.delete(`soul:${orgId}:${soulId}`);
 
       // 4. Update soul_conversations if conversation_id provided
       if (metadata?.conversation_id) {
@@ -235,6 +263,11 @@ export class UsageTracker {
       return { allowed: true, usagePct: 0, alertLevel: "normal" };
     }
 
+    // Check cache first (1min TTL)
+    const cacheKey = `soul:${orgId}:${soulId}`;
+    const cached = getCachedBudget(cacheKey);
+    if (cached) return cached;
+
     try {
       const today = new Date().toISOString().substring(0, 10);
 
@@ -250,7 +283,9 @@ export class UsageTracker {
         .maybeSingle();
 
       if (!budget) {
-        return { allowed: true, usagePct: 0, alertLevel: "normal" };
+        const result: BudgetStatus = { allowed: true, usagePct: 0, alertLevel: "normal" };
+        setCachedBudget(cacheKey, result);
+        return result;
       }
 
       // limit_reached = auto-paused
@@ -258,12 +293,14 @@ export class UsageTracker {
         const pct = budget.token_limit > 0
           ? Math.round(((budget.tokens_used || 0) / budget.token_limit) * 100)
           : 100;
-        return {
+        const result: BudgetStatus = {
           allowed: false,
           usagePct: pct,
           alertLevel: "exceeded",
           budgetId: budget.id,
         };
+        setCachedBudget(cacheKey, result);
+        return result;
       }
 
       const usagePct = budget.token_limit > 0
@@ -275,12 +312,14 @@ export class UsageTracker {
       else if (usagePct >= 90) alertLevel = "critical";
       else if (usagePct >= (budget.warning_threshold || 80)) alertLevel = "warning";
 
-      return {
+      const result: BudgetStatus = {
         allowed: budget.status !== "limit_reached",
         usagePct,
         alertLevel,
         budgetId: budget.id,
       };
+      setCachedBudget(cacheKey, result);
+      return result;
     } catch {
       // soul_budgets may not exist — fail-open
       return { allowed: true, usagePct: 0, alertLevel: "normal" };

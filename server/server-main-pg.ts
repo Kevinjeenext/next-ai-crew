@@ -784,6 +784,10 @@ app.put("/api/souls/:id", express.json(), async (req, res) => {
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
+    // Server-side cap: llm_max_tokens max 32768 (abuse prevention)
+    if (updates.llm_max_tokens !== undefined) {
+      updates.llm_max_tokens = Math.min(Math.max(1, Number(updates.llm_max_tokens) || 2048), 32768);
+    }
     updates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabaseAdmin

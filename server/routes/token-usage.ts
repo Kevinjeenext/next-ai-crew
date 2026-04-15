@@ -4,7 +4,7 @@
  * GET  /api/usage/souls         — Per-Soul usage breakdown
  * GET  /api/usage/history       — Daily usage history (last 30 days)
  * GET  /api/usage/budget        — Budget status + plan limits
- * POST /api/usage/budget        — Update budget settings (owner/admin only)
+ * POST /api/usage/budget        — Update budget settings (tenant_admin+ only)
  *
  * Tables: soul_usage, org_token_budgets, organizations
  * Author: Mingu (Backend Developer) | 2026-04-15
@@ -12,6 +12,22 @@
 
 import { Router, type Request, type Response } from "express";
 import { supabaseAdmin, SUPABASE_CONFIGURED } from "../lib/supabase.ts";
+
+// ── Helper: check if user is org admin/owner ──
+async function isOrgAdmin(userId: string, orgId: string): Promise<boolean> {
+  if (!SUPABASE_CONFIGURED || !userId) return false;
+  try {
+    const { data } = await supabaseAdmin
+      .from("org_members")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("org_id", orgId)
+      .single();
+    return data?.role === "owner" || data?.role === "admin";
+  } catch {
+    return false;
+  }
+}
 
 const router = Router();
 
@@ -34,7 +50,8 @@ const PLAN_TOKEN_LIMITS: Record<string, number> = {
   demo: -1,
 };
 
-const OVERAGE_RATE_PER_1K = 15; // ₩15 per 1K tokens
+// Config: 나중에 system_settings or plan_limits 테이블로 이동 예정
+const OVERAGE_RATE_PER_1K = Number(process.env.OVERAGE_RATE_PER_1K) || 15; // ₩15 per 1K tokens
 
 /**
  * GET /api/usage/summary
@@ -342,10 +359,16 @@ router.get("/budget", async (req: Request, res: Response) => {
 router.post("/budget", async (req: Request, res: Response) => {
   try {
     const orgId = (req as any).orgId;
+    const userId = (req as any).userId;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
 
     if (!SUPABASE_CONFIGURED) {
       return res.status(503).json({ error: "Database not configured" });
+    }
+
+    // Permission: tenant_admin (owner/admin) only
+    if (!(await isOrgAdmin(userId, orgId))) {
+      return res.status(403).json({ error: "Forbidden", message: "예산 설정은 조직 관리자만 가능합니다." });
     }
 
     const { monthly_budget, alert_threshold_pct, auto_pause } = req.body;
