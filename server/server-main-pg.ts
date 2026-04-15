@@ -104,6 +104,15 @@ async function requireOrg(req: any, res: any): Promise<string | null> {
     return null;
   }
 
+  // Extract userId early (for permission checks downstream)
+  try {
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    if (user) {
+      req.userId = user.id;
+      req.userEmail = user.email;
+    }
+  } catch { /* best-effort */ }
+
   try {
     return await getOrgIdFromRequest(req);
   } catch (err: any) {
