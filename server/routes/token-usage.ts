@@ -87,7 +87,19 @@ router.get("/summary", async (req: Request, res: Response) => {
 
     if (usageErr) {
       console.error("[usage] summary query failed:", usageErr.message);
-      return res.status(500).json({ error: "Failed to fetch usage data" });
+      // Graceful fallback: soul_usage table may not exist or have schema mismatch
+      return res.json({
+        period,
+        total_tokens: 0,
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        message_count: 0,
+        active_souls: 0,
+        budget_limit: -1,
+        budget_used_pct: 0,
+        plan: "unknown",
+        note: "soul_usage 테이블 조회 실패 — DDL 미실행 또는 스키마 불일치",
+      });
     }
 
     const rows = usageRows || [];
@@ -166,7 +178,7 @@ router.get("/souls", async (req: Request, res: Response) => {
 
     if (error) {
       console.error("[usage] souls query failed:", error.message);
-      return res.status(500).json({ error: "Failed to fetch soul usage" });
+      return res.json({ period, souls: [], note: "soul_usage 테이블 조회 실패" });
     }
 
     // Enrich with soul names
@@ -437,7 +449,9 @@ router.get("/breakdown", async (req: Request, res: Response) => {
         .eq("period", period)
         .order("total_tokens", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        return res.json({ period, group_by: groupBy, breakdown: [], note: "soul_usage 테이블 조회 실패" });
+      }
 
       // Enrich with names
       const agentIds = (data || []).map((r) => r.agent_id).filter(Boolean);
