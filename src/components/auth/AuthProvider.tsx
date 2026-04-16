@@ -85,12 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const fetchOrgId = async (token: string) => {
+  const fetchOrgId = async (_token: string) => {
     try {
-      const API = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { apiFetch } = await import("../../lib/api-fetch");
+      const res = await apiFetch("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
         setOrgId(data.org_id);

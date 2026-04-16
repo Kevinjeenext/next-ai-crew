@@ -151,8 +151,28 @@ async function handleSubscriptionUpdated(data: Record<string, any>) {
       .update({ plan: "starter" })
       .eq("id", sub.org_id);
 
-    // TODO: Set excess agents to offline
-    console.log(`[webhook] Subscription canceled, org ${sub.org_id} → free`);
+    // Starter plan = 1 agent max. Set excess agents to offline.
+    try {
+      const STARTER_LIMIT = 1;
+      const { data: agents } = await supabaseAdmin
+        .from("agents")
+        .select("id")
+        .eq("org_id", sub.org_id)
+        .neq("status", "offline")
+        .order("created_at", { ascending: true });
+      if (agents && agents.length > STARTER_LIMIT) {
+        const excessIds = agents.slice(STARTER_LIMIT).map((a: any) => a.id);
+        await supabaseAdmin
+          .from("agents")
+          .update({ status: "offline" })
+          .eq("org_id", sub.org_id)
+          .in("id", excessIds);
+        console.log(`[webhook] ${excessIds.length} excess agents set offline for org ${sub.org_id}`);
+      }
+    } catch (e: any) {
+      console.error(`[webhook] Failed to offline excess agents:`, e.message);
+    }
+    console.log(`[webhook] Subscription canceled, org ${sub.org_id} → starter`);
   } else {
     // Update org plan
     await supabaseAdmin

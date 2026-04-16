@@ -118,12 +118,19 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
         </div>
       ) : souls.length === 0 ? (
         <div className="dashboard-empty">
-          <Sparkles size={32} strokeWidth={1.5} className="dashboard-empty-icon" />
-          <h3>아직 채용한 Soul이 없습니다</h3>
-          <p>마켓에서 첫 번째 AI Soul을 채용해보세요</p>
-          <button className="btn-primary" onClick={() => onNavigate?.("/hire")}>
-            Soul 채용하기 →
-          </button>
+          <div className="onboarding-guide-card">
+            <Sparkles size={36} strokeWidth={1.5} className="dashboard-empty-icon" />
+            <h3>아직 Soul이 없어요</h3>
+            <p>지금 첫 Soul을 채용해서 AI 팀을 만들어보세요</p>
+            <div className="onboarding-steps">
+              <div className="onboarding-step"><span className="step-num">1</span> 마켓에서 Soul 선택</div>
+              <div className="onboarding-step"><span className="step-num">2</span> 역할과 업무 배정</div>
+              <div className="onboarding-step"><span className="step-num">3</span> 대화로 업무 지시</div>
+            </div>
+            <button className="btn-primary" onClick={() => onNavigate?.("/hire")}>
+              지금 첫 Soul 채용하기 →
+            </button>
+          </div>
         </div>
       ) : (
         <>

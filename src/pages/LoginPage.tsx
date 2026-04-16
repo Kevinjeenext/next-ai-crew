@@ -54,7 +54,7 @@ export function LoginPage() {
         setDisabledProviders((prev) => new Set(prev).add(provider));
         setMessage({ text: `${provider} 로그인이 아직 설정되지 않았습니다.`, type: "error" });
       } else {
-        setMessage({ text: error.message, type: "error" });
+        setMessage({ text: "로그인 중 오류가 발생했습니다. 다시 시도해주세요.", type: "error" });
       }
     }
     setLoading(false);
@@ -84,7 +84,14 @@ export function LoginPage() {
         },
       });
       if (error) {
-        setMessage({ text: error.message, type: "error" });
+        const emsg = error.message.toLowerCase();
+        if (emsg.includes("already registered") || emsg.includes("already exists")) {
+          setMessage({ text: "이미 가입된 이메일입니다. 로그인을 시도해주세요.", type: "error" });
+        } else if (emsg.includes("password") && (emsg.includes("short") || emsg.includes("weak"))) {
+          setMessage({ text: "비밀번호가 너무 짧습니다. 6자 이상 입력해주세요.", type: "error" });
+        } else {
+          setMessage({ text: "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.", type: "error" });
+        }
       } else {
         setMessage({ text: "인증 메일이 발송되었습니다. 메일함을 확인해주세요!", type: "success" });
       }
@@ -97,7 +104,7 @@ export function LoginPage() {
         } else if (msg.includes("email not confirmed")) {
           setMessage({ text: "이메일 인증이 필요합니다. 메일함을 확인해주세요.", type: "error" });
         } else {
-          setMessage({ text: error.message, type: "error" });
+          setMessage({ text: "로그인 중 오류가 발생했습니다. 다시 시도해주세요.", type: "error" });
         }
       } else {
         // Session already active — redirect to home directly
@@ -171,15 +178,16 @@ export function LoginPage() {
                 />
               </div>
               <div className="auth-field">
-                <label className="auth-label">Workspace Name</label>
+                <label className="auth-label">팀 또는 가게 이름</label>
                 <input
                   type="text"
                   className="auth-input"
-                  placeholder="Enter your workspace name"
+                  placeholder="팀 또는 가게 이름을 입력하세요"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
+                  title="예: 우리카페, 홍길동 미용실, 마케팅팀"
                 />
-                <span className="auth-hint">This name will be automatically created as an Organization</span>
+                <span className="auth-hint">이 이름으로 조직이 자동 생성됩니다</span>
               </div>
             </>
           )}

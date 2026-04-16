@@ -73,8 +73,8 @@ export default function GitHubOAuthAppConfig({ t }: { t: TFunction }) {
               zh: "Application name: 任意名称（如 My Climpire）",
             })}
           </li>
-          <li>Homepage URL: http://localhost:8800</li>
-          <li>Callback URL: http://localhost:8800/oauth/callback</li>
+          <li>Homepage URL: https://nextaicrew.com</li>
+          <li>Callback URL: https://nextaicrew.com/oauth/callback</li>
           <li>
             {t({
               ko: "☑ Enable Device Flow 체크",

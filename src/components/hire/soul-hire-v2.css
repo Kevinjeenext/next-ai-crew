@@ -43,6 +43,10 @@
   color: var(--brand-blue); border-color: var(--brand-blue);
   background: rgba(59,130,246,0.08);
 }
+.hire-chip.more {
+  color: #6b7280; border-style: dashed;
+}
+.hire-chip.more:hover { color: var(--text-primary); }
 
 /* ===== CAROUSEL ===== */
 .soul-carousel {
@@ -315,3 +319,4 @@
   .soul-detail-panel, .radar-card { animation: none; }
   .soul-card:hover { transform: none; }
 }
+.hire-empty { text-align: center; padding: 40px 20px; color: #6b7280; font: 400 14px var(--font-ui); }

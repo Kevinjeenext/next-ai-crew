@@ -101,6 +101,8 @@ export default function SoulHireV2() {
   const [hiring, setHiring] = useState(false);
   const [hiredIds, setHiredIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  const [showAllCats, setShowAllCats] = useState(false);
+  const TOP_CATS = 8;
 
   const filtered = PRESETS.filter((s) => {
     if (filter !== "전체" && s.category !== filter) return false;
@@ -156,13 +158,20 @@ export default function SoulHireV2() {
 
       {/* Filter Chips */}
       <div className="hire-filter-chips">
-        {CATEGORIES.map((c) => (
+        {(showAllCats ? CATEGORIES : CATEGORIES.slice(0, TOP_CATS)).map((c) => (
           <button key={c} className={`hire-chip${filter === c ? " active" : ""}`} onClick={() => { setFilter(c); setSelectedIdx(0); }}>{c}</button>
         ))}
+        {CATEGORIES.length > TOP_CATS && (
+          <button className="hire-chip more" onClick={() => setShowAllCats(!showAllCats)}>
+            {showAllCats ? "접기" : `+${CATEGORIES.length - TOP_CATS}개 더`}
+          </button>
+        )}
       </div>
 
       {/* Carousel */}
-      <div className="soul-carousel">
+      {filtered.length === 0 ? (
+        <div className="hire-empty">검색 결과가 없습니다. 다른 키워드로 시도해보세요.</div>
+      ) : <div className="soul-carousel">
         {filtered.map((s, i) => (
           <div key={s.id} className={`soul-card${i === selectedIdx ? " selected" : ""}`} onClick={() => setSelectedIdx(i)}>
             <img src={s.thumbnail_url} alt={s.name} className="soul-card-avatar" />
@@ -172,7 +181,7 @@ export default function SoulHireV2() {
             <div className="soul-card-match">Match {s.match_score}%</div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Detail + Radar */}
       {soul && (
@@ -223,10 +232,10 @@ export default function SoulHireV2() {
             <div className="hire-actions">
               <button className="btn-chat-soul"><MessageCircle size={16} strokeWidth={1.5} /> 채팅하기</button>
               {hiredIds.has(soul.id) ? (
-                <button className="btn-hire-soul hired"><UserCheckIcon size={16} strokeWidth={1.5} /> 채용 완료</button>
+                <button className="btn-hire-soul hired"><UserCheckIcon size={16} strokeWidth={1.5} /> 고용됨 ✓</button>
               ) : (
                 <button className="btn-hire-soul" onClick={handleHire} disabled={hiring}>
-                  <UserPlus size={16} strokeWidth={1.5} /> {hiring ? "채용 중..." : "채용하기 →"}
+                  <UserPlus size={16} strokeWidth={1.5} /> {hiring ? "채용 중..." : "지금 고용하기"}
                 </button>
               )}
             </div>

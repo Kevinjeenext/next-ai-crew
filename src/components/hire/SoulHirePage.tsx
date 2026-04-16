@@ -926,9 +926,21 @@ export default function SoulHirePage({ language = "ko" }: { language?: "en" | "k
       {onboardingSoul && (
         <TaskOnboarding
           soul={onboardingSoul}
-          onComplete={(_tasks, _desc, _role) => {
-            // Save task assignments to backend (TODO: API call)
-            // Transition to Step 6 with 0.8s delay for Soul response
+          onComplete={(tasks, desc, role) => {
+            // Save task assignments to backend
+            apiFetch(`/api/tasks`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                soul_id: onboardingSoul.id,
+                title: desc || `${onboardingSoul.name} 초기 업무`,
+                description: role || "",
+                status: "open",
+                priority: "P2",
+                type: "task",
+                tags: tasks || [],
+              }),
+            }).catch(() => {});
             setOnboardingSoul(null);
             setTimeout(() => {
               setOfficeSections((prev) =>

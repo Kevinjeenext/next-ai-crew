@@ -121,13 +121,10 @@ export function AuthCallback() {
         log("Session OK, calling /api/auth/setup...");
         setStatus("AI 팀을 생성하고 있습니다...");
         try {
-          const API = import.meta.env.VITE_API_URL || "";
-          const res = await fetch(`${API}/api/auth/setup`, {
+          const { apiFetch } = await import("../lib/api-fetch");
+          const res = await apiFetch("/api/auth/setup", {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
           });
           const data = await res.json();
           log("Setup response:", res.status, data);
