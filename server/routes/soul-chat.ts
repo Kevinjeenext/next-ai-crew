@@ -10,6 +10,7 @@ import { supabaseAdmin } from "../lib/supabase.ts";
 import { generateSoulPrompt } from "../services/soul-generator.ts";
 import { getModelRouter } from "../llm/router.ts";
 import { getUsageTracker } from "../llm/usage-tracker.ts";
+import { detectMentions, type Colleague } from "./a2a-delegation.ts";
 import type { LLMMessage } from "../llm/providers.ts";
 
 const router = Router();
@@ -290,6 +291,45 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       .from("agents")
       .update({ status: "active", updated_at: new Date().toISOString() })
       .eq("id", soulId);
+
+    // 11. Detect @mentions in response → trigger delegations (fire-and-forget)
+    try {
+      const { data: colleagueData } = await supabaseAdmin
+        .from("agents")
+        .select("id, name, display_name, role, department")
+        .eq("org_id", orgId)
+        .neq("id", soulId)
+        .eq("is_active", true);
+
+      if (colleagueData && colleagueData.length > 0) {
+        const colleagues: Colleague[] = colleagueData.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          display_name: c.display_name || c.name,
+          role: c.role || "",
+          department: c.department,
+        }));
+        const mentions = detectMentions(llmResponse.content, colleagues);
+        if (mentions.length > 0) {
+          // Return mentions info in response, delegate async
+          for (const mention of mentions) {
+            // Fire-and-forget: POST to delegate endpoint internally
+            // (실제 위임은 프론트엔드가 delegate API 호출로 트리거)
+          }
+          return res.json({
+            ok: true,
+            response: llmResponse.content,
+            model: llmResponse.model,
+            usage: llmResponse.usage,
+            conversation_id: convId,
+            budget: { usagePct },
+            mentions: mentions.map(m => ({ soul_id: m.soul_id, display_name: m.display_name })),
+          });
+        }
+      }
+    } catch {
+      // mention detection failure is non-critical
+    }
 
     res.json({
       ok: true,

@@ -101,6 +101,21 @@ export function generateSoulPrompt(soul: SoulData): string {
     sections.push("Memory is disabled for this session.");
   }
 
+  // Delegation Protocol
+  sections.push("");
+  sections.push("## Delegation Protocol");
+  sections.push("When you need another team member to perform a task:");
+  sections.push("1. Mention them with @[name] in your response");
+  sections.push("2. Clearly state what you need them to do");
+  sections.push("3. The system will automatically route your request");
+  sections.push("");
+  sections.push('Example: "@CFO Luna 이번달 예산 보고서 작성해줘. 매출 대비 지출 비율 포함."');
+  sections.push("");
+  sections.push("When you receive a delegation from a colleague:");
+  sections.push("1. Perform the requested task to the best of your ability");
+  sections.push("2. Report back with clear results");
+  sections.push("3. If you can't complete it, explain why");
+
   // Working Principles
   sections.push("");
   sections.push("## Working Principles");
