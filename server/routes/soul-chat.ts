@@ -168,7 +168,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
         .eq("agent_id", soulId)
         .eq("org_id", orgId)
         .order("created_at", { ascending: true })
-        .limit(20);
+        .limit(10);
       if (msgs && msgs.length > 0 && msgs[0].role) {
         history = msgs.map((m: any) => ({ role: m.role, content: m.content }));
       }
@@ -183,7 +183,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
         .limit(1);
       const jsonMsgs = convs?.[0]?.messages;
       if (Array.isArray(jsonMsgs)) {
-        history = jsonMsgs.slice(-20).map((m: any) => ({ role: m.role, content: m.content }));
+        history = jsonMsgs.slice(-10).map((m: any) => ({ role: m.role, content: m.content }));
       }
     }
 

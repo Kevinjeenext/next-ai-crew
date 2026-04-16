@@ -36,6 +36,59 @@ export interface ProviderAdapter {
   streamComplete?(req: LLMRequest): AsyncGenerator<string>;
 }
 
+// ─── Ollama Adapter (Local LLM) ─────────────
+export class OllamaAdapter implements ProviderAdapter {
+  name = "ollama";
+  private baseUrl: string;
+
+  constructor() {
+    this.baseUrl = process.env.OLLAMA_BASE_URL || "http://bore.pub:4362";
+  }
+
+  isConfigured(): boolean {
+    return !!process.env.OLLAMA_BASE_URL;
+  }
+
+  async complete(req: LLMRequest): Promise<LLMResponse> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+
+    try {
+      const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Host": "localhost:11434",
+        },
+        body: JSON.stringify({
+          model: req.model,
+          messages: req.messages,
+          temperature: req.temperature ?? 0.7,
+          max_tokens: req.max_tokens ?? 1024,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Ollama API error (${res.status}): ${err}`);
+      }
+
+      const data = await res.json() as any;
+      const choice = data.choices?.[0];
+      return {
+        content: choice?.message?.content || "",
+        model: data.model || req.model,
+        usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        finish_reason: choice?.finish_reason || "stop",
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+
 // ─── OpenAI Adapter ─────────────────────────
 export class OpenAIAdapter implements ProviderAdapter {
   name = "openai";

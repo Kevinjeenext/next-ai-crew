@@ -12,6 +12,7 @@ import {
   OpenAIAdapter,
   AnthropicAdapter,
   GeminiAdapter,
+  OllamaAdapter,
   type ProviderAdapter,
   type LLMRequest,
   type LLMResponse,
@@ -72,17 +73,18 @@ export function detectComplexity(message: string): Complexity {
 // ─── Model Routing Table ────────────────────
 const ROUTE_TABLE: Record<Complexity, ModelRoute[]> = {
   simple: [
-    { provider: "google", model: "gemini-2.0-flash" },
+    { provider: "ollama", model: "llama3.2:3b" },         // 로컬 우선
+    { provider: "google", model: "gemini-2.0-flash" },     // fallback
     { provider: "openai", model: "gpt-4o-mini" },
   ],
   normal: [
+    { provider: "ollama", model: "qwen2.5:14b" },          // 로컬 우선
     { provider: "openai", model: "gpt-4o-mini" },
     { provider: "google", model: "gemini-2.0-flash" },
-    { provider: "anthropic", model: "claude-sonnet-4-20250514" },
   ],
   complex: [
-    { provider: "openai", model: "gpt-4o" },
     { provider: "anthropic", model: "claude-sonnet-4-20250514" },
+    { provider: "openai", model: "gpt-4o" },
     { provider: "openai", model: "gpt-4o-mini" }, // fallback
   ],
 };
@@ -95,10 +97,12 @@ export class ModelRouter {
     const openai = new OpenAIAdapter();
     const anthropic = new AnthropicAdapter();
     const gemini = new GeminiAdapter();
+    const ollama = new OllamaAdapter();
 
     if (openai.isConfigured()) this.adapters.set("openai", openai);
     if (anthropic.isConfigured()) this.adapters.set("anthropic", anthropic);
     if (gemini.isConfigured()) this.adapters.set("google", gemini);
+    if (ollama.isConfigured()) this.adapters.set("ollama", ollama);
 
     console.log(
       `[ModelRouter] Configured providers: ${[...this.adapters.keys()].join(", ") || "NONE"}`
@@ -187,6 +191,8 @@ export class ModelRouter {
       providerName = "anthropic";
     } else if (model.startsWith("gemini")) {
       providerName = "google";
+    } else if (model.startsWith("llama") || model.startsWith("qwen")) {
+      providerName = "ollama";
     } else {
       providerName = "openai";
     }
@@ -231,6 +237,8 @@ export class ModelRouter {
       providerName = "anthropic";
     } else if (model.startsWith("gemini")) {
       providerName = "google";
+    } else if (model.startsWith("llama") || model.startsWith("qwen")) {
+      providerName = "ollama";
     } else {
       providerName = "openai"; // default
     }
