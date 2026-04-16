@@ -15,6 +15,15 @@ import { getUsageTracker } from "../llm/usage-tracker.ts";
 
 const router = Router();
 
+// Helper: update room's last_message_at timestamp
+async function touchRoom(roomId: string): Promise<void> {
+  await supabaseAdmin
+    .from("soul_rooms")
+    .update({ last_message_at: new Date().toISOString() })
+    .eq("id", roomId)
+    .catch(() => {});
+}
+
 // ─── GET /api/a2a/rooms ───
 router.get("/rooms", async (req: Request, res: Response) => {
   try {
@@ -25,7 +34,7 @@ router.get("/rooms", async (req: Request, res: Response) => {
       .from("soul_rooms")
       .select("*")
       .eq("org_id", orgId)
-      .order("created_at", { ascending: false });
+      .order("last_message_at", { ascending: false, nullsFirst: false });
 
     if (error) {
       console.log("[A2A] soul_rooms not available:", error.message);
@@ -59,17 +68,25 @@ router.get("/rooms", async (req: Request, res: Response) => {
       if (agents) agentMap = Object.fromEntries(agents.map((a: any) => [a.id, a]));
     }
 
-    // Last message per room
+    // Last message per room — batch via RPC or DISTINCT ON
+    // Using a single query with ordering to avoid N+1
     let lastMessageMap: Record<string, any> = {};
     if (roomIds.length > 0) {
-      for (const rid of roomIds) {
-        const { data: msgs } = await supabaseAdmin
-          .from("soul_messages")
-          .select("content, sender_soul_id, created_at")
-          .eq("room_id", rid)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        if (msgs?.[0]) lastMessageMap[rid] = msgs[0];
+      const { data: lastMsgs } = await supabaseAdmin
+        .from("soul_messages")
+        .select("room_id, content, sender_soul_id, created_at")
+        .in("room_id", roomIds)
+        .order("created_at", { ascending: false });
+
+      // Take first per room_id (already sorted DESC)
+      if (lastMsgs) {
+        const seen = new Set<string>();
+        for (const m of lastMsgs) {
+          if (!seen.has(m.room_id)) {
+            seen.add(m.room_id);
+            lastMessageMap[m.room_id] = m;
+          }
+        }
       }
     }
 
@@ -233,6 +250,9 @@ router.post("/rooms/:roomId/messages", async (req: Request, res: Response) => {
 
     if (error) throw error;
 
+    // Update room's last_message_at
+    await touchRoom(req.params.roomId);
+
     // Broadcast to WebSocket clients for real-time UI update
     const broadcast = req.app.locals.broadcast;
     if (broadcast) {
@@ -359,6 +379,8 @@ router.post("/trigger", async (req: Request, res: Response) => {
       })
       .select()
       .single();
+
+    await touchRoom(targetRoomId);
 
     // Broadcast trigger response
     const broadcast = req.app.locals.broadcast;
@@ -525,6 +547,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
       org_id: orgId, room_id: room.id, sender_soul_id: leader_soul_id,
       content: summary, message_type: "system",
     });
+
+    await touchRoom(room.id);
 
     res.json({
       room_id: room.id,
