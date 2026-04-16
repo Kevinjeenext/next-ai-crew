@@ -14,6 +14,7 @@ import { Router, type Request, type Response } from "express";
 import { supabaseAdmin } from "../lib/supabase.ts";
 import { getModelRouter } from "../llm/router.ts";
 import { getUsageTracker } from "../llm/usage-tracker.ts";
+import { requireSystemRole } from "../middleware/require-role.ts";
 
 const router = Router();
 const MAX_DELEGATION_DEPTH = 3;
@@ -292,7 +293,7 @@ router.post("/delegate", async (req: Request, res: Response) => {
 });
 
 // ─── GET /api/a2a/rooms/:roomId/delegations ───
-router.get("/rooms/:roomId/delegations", async (req: Request, res: Response) => {
+router.get("/rooms/:roomId/delegations", requireSystemRole("admin"), async (req: Request, res: Response) => {
   try {
     const orgId = (req as any).orgId;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
@@ -358,7 +359,7 @@ router.get("/delegations/:id", async (req: Request, res: Response) => {
 });
 
 // ─── GET /api/a2a/rooms/:roomId/stream ─── (SSE 실시간)
-router.get("/rooms/:roomId/stream", async (req: Request, res: Response) => {
+router.get("/rooms/:roomId/stream", requireSystemRole("admin"), async (req: Request, res: Response) => {
   const orgId = (req as any).orgId;
   if (!orgId) return res.status(401).json({ error: "Unauthorized" });
 

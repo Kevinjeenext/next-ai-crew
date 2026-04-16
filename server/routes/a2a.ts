@@ -12,6 +12,7 @@ import { Router, type Request, type Response } from "express";
 import { supabaseAdmin } from "../lib/supabase.ts";
 import { getModelRouter } from "../llm/router.ts";
 import { getUsageTracker } from "../llm/usage-tracker.ts";
+import { requireSystemRole } from "../middleware/require-role.ts";
 
 const router = Router();
 
@@ -26,7 +27,7 @@ async function touchRoom(roomId: string): Promise<void> {
 }
 
 // ─── GET /api/a2a/rooms ───
-router.get("/rooms", async (req: Request, res: Response) => {
+router.get("/rooms", requireSystemRole("admin"), async (req: Request, res: Response) => {
   try {
     const orgId = (req as any).orgId;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
@@ -147,7 +148,7 @@ router.post("/rooms", async (req: Request, res: Response) => {
 
 // ─── GET /api/a2a/rooms/:roomId/messages ───
 // Supports cursor pagination: ?cursor=<id>&limit=50&direction=before|after
-router.get("/rooms/:roomId/messages", async (req: Request, res: Response) => {
+router.get("/rooms/:roomId/messages", requireSystemRole("admin"), async (req: Request, res: Response) => {
   try {
     const orgId = (req as any).orgId;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
