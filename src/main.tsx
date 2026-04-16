@@ -24,6 +24,7 @@ const GoalsPage = lazy(() => import("./components/goals/GoalsPage"));
 const BudgetPage = lazy(() => import("./components/budget/BudgetPage"));
 const TasksPage = lazy(() => import("./components/tasks/TasksPage"));
 const ConversationsPage = lazy(() => import("./components/conversations/ConversationsPage"));
+const OrgChatPage = lazy(() => import("./components/org-chat/OrgChatPage"));
 const SoulSettingsPage = lazy(() => import("./components/soul-settings/SoulSettingsPage"));
 const SkillStorePage = lazy(() => import("./components/skills/SkillStorePage"));
 const SkillDetailPage = lazy(() => import("./components/skills/SkillDetailPage"));
@@ -100,6 +101,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="budget" element={<AdminSuspense><BudgetPage /></AdminSuspense>} />
               <Route path="tasks" element={<AdminSuspense><TasksPage /></AdminSuspense>} />
               <Route path="conversations" element={<AdminSuspense><ConversationsPage /></AdminSuspense>} />
+              <Route path="org-chat" element={<AdminSuspense><OrgChatPage /></AdminSuspense>} />
+              <Route path="org-chat/:roomId" element={<AdminSuspense><OrgChatPage /></AdminSuspense>} />
               <Route path="souls/:id/settings" element={<AdminSuspense><SoulSettingsPage /></AdminSuspense>} />
               <Route path="skills" element={<AdminSuspense><SkillStorePage /></AdminSuspense>} />
               <Route path="skills/:id" element={<AdminSuspense><SkillDetailPage /></AdminSuspense>} />

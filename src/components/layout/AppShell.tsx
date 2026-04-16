@@ -11,7 +11,7 @@ import SoulAvatar from "../ui/SoulAvatar";
 import { useTheme } from "../../ThemeContext";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { apiFetch } from "../../lib/api-fetch";
-import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck, Building2, Target, Wallet, ClipboardList, MessageSquare, Puzzle } from "lucide-react";
+import { LayoutDashboard, Store, Settings, Plus, ArrowLeft, ChevronRight, Home, PanelLeftOpen, PanelLeftClose, User, CreditCard, Moon, Sun, LogOut, ShieldCheck, Building2, Target, Wallet, ClipboardList, MessageSquare, Puzzle, Radio } from "lucide-react";
 import "./app-shell.css";
 
 interface Soul {
@@ -182,6 +182,10 @@ export default function AppShell() {
           <NavLink to="/conversations" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "대화" : undefined}>
             <MessageSquare size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>대화</span>}
+          </NavLink>
+          <NavLink to="/org-chat" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "조직 대화" : undefined}>
+            <Radio size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
+            {!sidebarCollapsed && <span>조직 대화</span>}
           </NavLink>
           <NavLink to="/skills" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "스킬" : undefined}>
             <Puzzle size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
