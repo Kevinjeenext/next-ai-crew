@@ -136,6 +136,14 @@
 .dashboard-empty p { font: 400 13px var(--font-ui); color: #6b7280; margin: 0 0 18px; }
 
 .dashboard-loading { display: flex; justify-content: center; padding: 40px; }
+.sidebar-loading-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #6b7280;
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* Dismiss modal close (alias) */
+.dismiss-close { composes: dismiss-modal-close; }
 
 /* ─── Responsive ─── */
 @media (max-width: 1024px) {
@@ -202,6 +210,7 @@
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ─── A2A Trigger Modal ─── */
+.dismiss-modal.a2a-trigger-modal { position: relative; }
 .a2a-trigger-modal h3 { display: flex; align-items: center; gap: 8px; }
 .a2a-trigger-modal label { display: block; font: 500 12px var(--font-ui); color: var(--text-secondary); margin: 12px 0 4px; }
 .a2a-trigger-modal select,

@@ -42,6 +42,7 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
   const [triggerTarget, setTriggerTarget] = useState("");
   const [triggerMsg, setTriggerMsg] = useState("");
   const [triggering, setTriggering] = useState(false);
+  const [usage, setUsage] = useState<{ total_tokens: number; message_count: number; plan: string; plan_limit: number; usage_percent: number } | null>(null);
 
   const fetchSouls = useCallback(() => {
     apiFetch("/api/souls")
@@ -49,7 +50,11 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
       .then((d) => { setSouls(d.agents || d.souls || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
-  useEffect(() => { fetchSouls(); }, [fetchSouls]);
+  useEffect(() => { fetchSouls(); fetchUsage(); }, [fetchSouls]);
+
+  function fetchUsage() {
+    apiFetch("/api/usage/summary").then(r => r.ok ? r.json() : null).then(d => d && setUsage(d)).catch(() => {});
+  }
 
   const handleDismiss = async () => {
     if (!dismissTarget || !dismissReason.trim()) return;
@@ -87,21 +92,21 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
         <div className="summary-card">
           <div className="summary-label">Active Souls</div>
           <div className="summary-value">{activeSouls}</div>
-          <div className="summary-sub">/{souls.length > 0 ? "15" : "0"} 정원</div>
+          <div className="summary-sub">/ {souls.length}명 전체</div>
         </div>
         <div className="summary-card">
-          <div className="summary-label">Tasks Today</div>
-          <div className="summary-value">—</div>
-          <div className="summary-sub">기능 준비 중</div>
+          <div className="summary-label">메시지</div>
+          <div className="summary-value">{usage?.message_count?.toLocaleString() ?? "0"}</div>
+          <div className="summary-sub">이번 달</div>
         </div>
         <div className="summary-card">
-          <div className="summary-label">Token Usage</div>
-          <div className="summary-value">—</div>
-          <div className="summary-sub">LLM 연동 후 표시</div>
+          <div className="summary-label">토큰 사용량</div>
+          <div className="summary-value">{usage?.total_tokens?.toLocaleString() ?? "0"}</div>
+          <div className="summary-sub">{usage && usage.plan_limit > 0 ? `${usage.usage_percent}% 사용` : "이번 달"}</div>
         </div>
         <div className="summary-card">
-          <div className="summary-label">Plan</div>
-          <div className="summary-value">Team</div>
+          <div className="summary-label">플랜</div>
+          <div className="summary-value">{usage?.plan ?? "—"}</div>
           <div className="summary-sub">↑ 업그레이드</div>
         </div>
       </div>
