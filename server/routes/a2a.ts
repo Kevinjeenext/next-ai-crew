@@ -17,11 +17,12 @@ const router = Router();
 
 // Helper: update room's last_message_at timestamp
 async function touchRoom(roomId: string): Promise<void> {
-  await supabaseAdmin
-    .from("soul_rooms")
-    .update({ last_message_at: new Date().toISOString() })
-    .eq("id", roomId)
-    .catch(() => {});
+  try {
+    await supabaseAdmin
+      .from("soul_rooms")
+      .update({ last_message_at: new Date().toISOString() })
+      .eq("id", roomId);
+  } catch {}
 }
 
 // ─── GET /api/a2a/rooms ───
@@ -251,7 +252,7 @@ router.post("/rooms/:roomId/messages", async (req: Request, res: Response) => {
     if (error) throw error;
 
     // Update room's last_message_at
-    await touchRoom(req.params.roomId);
+    await touchRoom(String(req.params.roomId));
 
     // Broadcast to WebSocket clients for real-time UI update
     const broadcast = req.app.locals.broadcast;

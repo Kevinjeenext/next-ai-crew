@@ -234,3 +234,52 @@
   z-index: 200;
 }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── Token Usage Section ─── */
+.admin-section { margin-top: 28px; }
+.admin-section-title {
+  font: 600 16px var(--font-ui); color: var(--text-primary);
+  margin: 0 0 14px; display: flex; align-items: center; gap: 6px;
+}
+
+/* Budget Bar */
+.admin-budget-bar { margin-top: 14px; }
+.admin-budget-label {
+  display: flex; justify-content: space-between;
+  font: 400 12px var(--font-ui); color: #6b7280; margin-bottom: 6px;
+}
+.admin-budget-track {
+  height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;
+}
+.admin-budget-fill {
+  height: 100%; background: #3b82f6; border-radius: 4px; transition: width 0.3s;
+}
+.admin-budget-fill.warning { background: #f59e0b; }
+.admin-budget-fill.danger { background: #ef4444; }
+
+/* Soul Usage List */
+.admin-soul-usage-list { display: flex; flex-direction: column; gap: 6px; }
+.admin-soul-usage-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+}
+.admin-soul-usage-info { flex: 1; display: flex; flex-direction: column; }
+.admin-soul-usage-name { font: 600 13px var(--font-ui); color: var(--text-primary); }
+.admin-soul-usage-role { font: 400 11px var(--font-ui); color: #6b7280; }
+.admin-soul-usage-tokens { font: 600 13px var(--font-ui); color: var(--text-primary); min-width: 100px; text-align: right; }
+.admin-soul-usage-msgs { font: 400 11px var(--font-ui); color: #6b7280; min-width: 50px; text-align: right; }
+
+/* Daily History Bars */
+.admin-history-bars {
+  display: flex; gap: 4px; align-items: flex-end; height: 100px;
+  padding: 8px 0;
+}
+.admin-history-bar-col {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.admin-history-bar {
+  width: 100%; min-height: 2px; background: #3b82f6;
+  border-radius: 3px 3px 0 0; transition: height 0.3s;
+}
+.admin-history-bar-col span { font: 400 9px var(--font-ui); color: #6b7280; }
