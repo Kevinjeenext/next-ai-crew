@@ -2,7 +2,7 @@
  * Dashboard — Pro UI (Ivy 01-main-dashboard.md)
  * Summary cards + Soul team cards + Activity timeline
  */
-import { Sparkles, UserMinus, MessageSquare, X, Send, ArrowRight, Settings } from "lucide-react";
+import { Sparkles, UserMinus, MessageSquare, X, Send, ArrowRight, Settings, UserPlus, CheckCircle2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SoulAvatar from "../ui/SoulAvatar";
@@ -130,16 +130,16 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
             </div>
             <div className="onboarding-steps">
               <div className="onboarding-step blue">
-                <span className="step-num">1</span>
-                <div><strong>Soul 채용</strong><br/><span>마켓에서 나에게 맞는 AI 동료 선택</span></div>
+                <span className="step-icon"><UserPlus size={22} strokeWidth={1.5} /></span>
+                <div><strong>Soul 채용</strong><span className="step-label">STEP 1</span><br/><span>마켓에서 나에게 맞는 AI 동료 선택</span></div>
               </div>
               <div className="onboarding-step cyan">
-                <span className="step-num">2</span>
-                <div><strong>대화 시작</strong><br/><span>업무를 설명하고 지시하기</span></div>
+                <span className="step-icon"><MessageSquare size={22} strokeWidth={1.5} /></span>
+                <div><strong>대화 시작</strong><span className="step-label">STEP 2</span><br/><span>업무를 설명하고 지시하기</span></div>
               </div>
               <div className="onboarding-step green">
-                <span className="step-num">3</span>
-                <div><strong>업무 완료</strong><br/><span>AI가 작업을 수행하고 결과 확인</span></div>
+                <span className="step-icon"><CheckCircle2 size={22} strokeWidth={1.5} /></span>
+                <div><strong>업무 완료</strong><span className="step-label">STEP 3</span><br/><span>AI가 작업을 수행하고 결과 확인</span></div>
               </div>
             </div>
             <button className="btn-onboarding-cta" onClick={() => onNavigate?.("/hire")}>
