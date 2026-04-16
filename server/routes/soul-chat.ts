@@ -131,7 +131,30 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       console.log("[SoulChat] Org context skipped:", orgErr.message);
     }
 
-    const fullSystemPrompt = systemPrompt + orgContext;
+    // 3.6 Inject colleague context — Soul knows its teammates
+    let colleagueContext = "";
+    try {
+      const { data: colleagues } = await supabaseAdmin
+        .from("agents")
+        .select("id, name, display_name, role, department")
+        .eq("org_id", orgId)
+        .neq("id", soulId)
+        .eq("is_active", true);
+
+      if (colleagues && colleagues.length > 0) {
+        colleagueContext = `\n\n## Your Team\nYou work with these colleagues in the same organization:`;
+        for (const c of colleagues) {
+          const name = c.display_name || c.name;
+          const dept = c.department ? `, ${c.department}` : "";
+          colleagueContext += `\n- ${name} (${c.role || "Team Member"}${dept})`;
+        }
+        colleagueContext += `\nYou can reference them and collaborate when relevant.`;
+      }
+    } catch {
+      // agents table query failed — skip
+    }
+
+    const fullSystemPrompt = systemPrompt + orgContext + colleagueContext;
 
     // 4. Load conversation history (last 20 messages for context)
     let history: LLMMessage[] = [];
