@@ -189,6 +189,16 @@ router.post("/rooms/:roomId/messages", async (req: Request, res: Response) => {
       .single();
 
     if (error) throw error;
+
+    // Broadcast to WebSocket clients for real-time UI update
+    const broadcast = req.app.locals.broadcast;
+    if (broadcast) {
+      broadcast("a2a_message", {
+        room_id: req.params.roomId,
+        message: data,
+      });
+    }
+
     res.json({ message: data });
   } catch (err: any) {
     console.error("[API] POST message error:", err.message);
@@ -302,6 +312,12 @@ router.post("/trigger", async (req: Request, res: Response) => {
       })
       .select()
       .single();
+
+    // Broadcast trigger response
+    const broadcast = req.app.locals.broadcast;
+    if (broadcast && responseMsg) {
+      broadcast("a2a_message", { room_id: targetRoomId, message: responseMsg });
+    }
 
     res.json({
       room_id: targetRoomId,
@@ -462,6 +478,72 @@ router.post("/delegate", async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("[API] POST /api/a2a/delegate error:", err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/a2a/rooms/:roomId/unread ───
+// Unread message count for a soul in a room
+router.get("/rooms/:roomId/unread", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const soulId = req.query.soul_id as string;
+    if (!soulId) return res.status(400).json({ error: "soul_id query param required" });
+
+    // Get last read timestamp for this soul in this room
+    const { data: member } = await supabaseAdmin
+      .from("soul_room_members")
+      .select("last_read_at")
+      .eq("room_id", req.params.roomId)
+      .eq("soul_id", soulId)
+      .maybeSingle();
+
+    const lastRead = member?.last_read_at || "1970-01-01T00:00:00Z";
+
+    const { count, error } = await supabaseAdmin
+      .from("soul_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("room_id", req.params.roomId)
+      .eq("org_id", orgId)
+      .neq("sender_soul_id", soulId)
+      .gt("created_at", lastRead);
+
+    if (error) {
+      // last_read_at column may not exist yet
+      return res.json({ unread: 0, note: "last_read_at not available" });
+    }
+
+    res.json({ unread: count || 0 });
+  } catch (err: any) {
+    res.json({ unread: 0 });
+  }
+});
+
+// ─── POST /api/a2a/rooms/:roomId/read ───
+// Mark messages as read for a soul
+router.post("/rooms/:roomId/read", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { soul_id } = req.body;
+    if (!soul_id) return res.status(400).json({ error: "soul_id required" });
+
+    const { error } = await supabaseAdmin
+      .from("soul_room_members")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("room_id", req.params.roomId)
+      .eq("soul_id", soul_id);
+
+    if (error) {
+      // last_read_at column may not exist
+      return res.json({ ok: true, note: "last_read_at not available" });
+    }
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.json({ ok: true });
   }
 });
 

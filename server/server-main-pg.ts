@@ -55,6 +55,9 @@ const isProduction = IS_PRODUCTION;
 // Initialize WebSocket hub (preserved from original — handles agent status, task updates, etc.)
 const { wsClients, broadcast } = createWsHub(() => Date.now());
 
+// Expose broadcast to route handlers via app.locals
+app.locals.broadcast = broadcast;
+
 // ---------------------------------------------------------------------------
 // Health check endpoint (for Railway)
 // ---------------------------------------------------------------------------
