@@ -86,7 +86,7 @@ router.put("/api/admin/users/:id/role", requireSystemRole("super_admin"), async 
     await logAdminAction(
       profile!.id, profile!.email, "change_user_role",
       "user", id, { new_role: system_role },
-      req.ip
+      req.get("x-forwarded-for") || req.ip
     );
 
     res.json({ ok: true, user: data });
@@ -142,7 +142,7 @@ router.put("/api/admin/tenants/:id", async (req, res) => {
 
     await logAdminAction(
       profile!.id, profile!.email, "update_tenant",
-      "organization", id, updates, req.ip
+      "organization", id, updates, req.get("x-forwarded-for") || req.ip
     );
 
     res.json({ ok: true, tenant: data });
@@ -206,7 +206,7 @@ router.put("/api/admin/settings/:key", requireSystemRole("super_admin"), async (
 
     await logAdminAction(
       profile!.id, profile!.email, "update_setting",
-      "system_settings", key, { value }, req.ip
+      "system_settings", key, { value }, req.get("x-forwarded-for") || req.ip
     );
 
     res.json({ ok: true, setting: data });
