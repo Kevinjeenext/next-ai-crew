@@ -13,6 +13,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   orgId: string | null;
+  systemRole: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthState>({
   user: null,
   loading: true,
   orgId: null,
+  systemRole: null,
   signOut: async () => {},
 });
 
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [systemRole, setSystemRole] = useState<string | null>(null);
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -92,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         setOrgId(data.org_id);
+        setSystemRole(data.system_role || null);
         console.log("[AuthProvider] Org ID:", data.org_id, "system_role:", data.system_role);
       } else {
         console.log("[AuthProvider] /api/auth/me failed:", res.status);
@@ -115,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: session?.user ?? null,
         loading,
         orgId,
+        systemRole,
         signOut,
       }}
     >

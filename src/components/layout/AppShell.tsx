@@ -57,6 +57,8 @@ export default function AppShell() {
   const [selectedSoulId, setSelectedSoulId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { theme } = useTheme();
+  const { systemRole } = useAuth();
+  const isAdmin = systemRole === "admin" || systemRole === "super_admin";
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -183,10 +185,12 @@ export default function AppShell() {
             <MessageSquare size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>대화</span>}
           </NavLink>
-          <NavLink to="/org-chat" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "조직 대화" : undefined}>
-            <Radio size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
-            {!sidebarCollapsed && <span>조직 대화</span>}
-          </NavLink>
+          {isAdmin && (
+            <NavLink to="/org-chat" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "조직 대화" : undefined}>
+              <Radio size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
+              {!sidebarCollapsed && <span>조직 대화</span>}
+            </NavLink>
+          )}
           <NavLink to="/skills" className={({ isActive }) => `sidebar-nav-item ${isActive ? "active" : ""}`} title={sidebarCollapsed ? "스킬" : undefined}>
             <Puzzle size={18} strokeWidth={1.5} className="sidebar-nav-icon" />
             {!sidebarCollapsed && <span>스킬</span>}

@@ -73,6 +73,21 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { systemRole } = useAuth();
+  const isAdmin = systemRole === "admin" || systemRole === "super_admin";
+  if (!isAdmin) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 8, color: "#6b7280" }}>
+        <div style={{ fontSize: 48 }}>🔒</div>
+        <h3 style={{ margin: 0, fontSize: 16, color: "var(--text-primary)" }}>관리자 권한이 필요합니다</h3>
+        <p style={{ margin: 0, fontSize: 13 }}>admin 또는 super_admin 만 접근 가능합니다</p>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
 const AdminSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#888' }}>Loading...</div>}>
     {children}
@@ -101,8 +116,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="budget" element={<AdminSuspense><BudgetPage /></AdminSuspense>} />
               <Route path="tasks" element={<AdminSuspense><TasksPage /></AdminSuspense>} />
               <Route path="conversations" element={<AdminSuspense><ConversationsPage /></AdminSuspense>} />
-              <Route path="org-chat" element={<AdminSuspense><OrgChatPage /></AdminSuspense>} />
-              <Route path="org-chat/:roomId" element={<AdminSuspense><OrgChatPage /></AdminSuspense>} />
+              <Route path="org-chat" element={<AdminSuspense><AdminGuard><OrgChatPage /></AdminGuard></AdminSuspense>} />
+              <Route path="org-chat/:roomId" element={<AdminSuspense><AdminGuard><OrgChatPage /></AdminGuard></AdminSuspense>} />
               <Route path="souls/:id/settings" element={<AdminSuspense><SoulSettingsPage /></AdminSuspense>} />
               <Route path="skills" element={<AdminSuspense><SkillStorePage /></AdminSuspense>} />
               <Route path="skills/:id" element={<AdminSuspense><SkillDetailPage /></AdminSuspense>} />
