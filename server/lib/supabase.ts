@@ -23,9 +23,11 @@ if (!SUPABASE_CONFIGURED) {
 export const supabaseAdmin: SupabaseClient = SUPABASE_CONFIGURED
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
+      db: { schema: "public" },
     })
   : createClient("https://placeholder.supabase.co", "placeholder-key", {
       auth: { autoRefreshToken: false, persistSession: false },
+      db: { schema: "public" },
     });
 
 /**
@@ -44,6 +46,7 @@ export function createSupabaseClient(accessToken?: string): SupabaseClient {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       },
       auth: { autoRefreshToken: false, persistSession: false },
+      db: { schema: "public" },
     },
   );
 }
