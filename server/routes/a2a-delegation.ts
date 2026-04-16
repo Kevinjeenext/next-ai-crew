@@ -200,10 +200,11 @@ router.post("/delegate", async (req: Request, res: Response) => {
 
     // Update delegation status to in_progress
     if (delegationId) {
-      await supabaseAdmin.from("soul_delegations")
-        .update({ status: "in_progress", original_message_id: triggerMsg?.id })
-        .eq("id", delegationId)
-        .catch(() => {});
+      try {
+        await supabaseAdmin.from("soul_delegations")
+          .update({ status: "in_progress", original_message_id: triggerMsg?.id })
+          .eq("id", delegationId);
+      } catch {}
     }
 
     // Generate LLM response as toSoul
@@ -240,16 +241,17 @@ router.post("/delegate", async (req: Request, res: Response) => {
 
     // Update delegation to completed
     if (delegationId) {
-      await supabaseAdmin.from("soul_delegations")
-        .update({
-          status: "completed",
-          result_message: responseText,
-          result_message_id: resultMsg?.id,
-          tokens_used: tokensUsed,
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", delegationId)
-        .catch(() => {});
+      try {
+        await supabaseAdmin.from("soul_delegations")
+          .update({
+            status: "completed",
+            result_message: responseText,
+            result_message_id: resultMsg?.id,
+            tokens_used: tokensUsed,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", delegationId);
+      } catch {}
     }
 
     // Update room last_message_at

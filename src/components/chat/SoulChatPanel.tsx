@@ -53,7 +53,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
 
 interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   model?: string;
@@ -152,6 +152,28 @@ export default function SoulChatPanel({
     inputRef.current?.focus();
   }, []);
 
+  // Auto-delegate on @mention detection
+  const handleMentions = useCallback(async (mentions: { soul_id: string; display_name: string }[], _context: string) => {
+    for (const m of mentions) {
+      try {
+        await apiFetch("/api/a2a/delegate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from_soul_id: soulId,
+            to_soul_id: m.soul_id,
+            message: _context,
+          }),
+        });
+        setMessages(prev => [...prev, {
+          id: `sys-${Date.now()}`, role: "system",
+          content: `📨 ${m.display_name}에게 업무 위임 완료. 조직 대화에서 확인하세요.`,
+          timestamp: new Date(),
+        }]);
+      } catch {}
+    }
+  }, [soulId]);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -210,8 +232,11 @@ export default function SoulChatPanel({
             try {
               const payload = JSON.parse(line.slice(6));
               if (payload.done) {
-                // Stream complete
+                // Stream complete — check for mentions → auto-delegate
                 if (payload.conversation_id) setConversationId(payload.conversation_id);
+                if (payload.mentions && payload.mentions.length > 0) {
+                  handleMentions(payload.mentions, fullContent);
+                }
               } else if (payload.content) {
                 fullContent += payload.content;
                 setStreamingContent(fullContent);
