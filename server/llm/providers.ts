@@ -51,7 +51,7 @@ export class OllamaAdapter implements ProviderAdapter {
 
   async complete(req: LLMRequest): Promise<LLMResponse> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+    const timeout = setTimeout(() => controller.abort(), 3_000); // 3s — 초과 시 router fallback
 
     try {
       const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
