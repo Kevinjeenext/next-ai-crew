@@ -5,6 +5,7 @@
  * Architecture: Soojin CTO admin-backoffice-architecture.md
  */
 import { Router } from "express";
+import pg from "pg";
 import { supabaseAdmin } from "../lib/supabase";
 import { requireSystemRole, getProfile, logAdminAction } from "../middleware/require-role";
 
@@ -213,6 +214,57 @@ router.put("/api/admin/settings/:key", requireSystemRole("super_admin"), async (
   } catch (err: any) {
     console.error("[API] PUT /api/admin/settings/:key error:", err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/admin/ddl ─── (super_admin only)
+// Execute DDL statements directly via pg Pool (for schema migrations)
+router.post("/api/admin/ddl", requireSystemRole("super_admin"), async (req, res) => {
+  try {
+    const profile = getProfile(req);
+    const { sql } = req.body;
+
+    if (!sql || typeof sql !== "string") {
+      return res.status(400).json({ error: "sql field required (string)" });
+    }
+
+    // Safety: block destructive operations on critical tables
+    const sqlLower = sql.toLowerCase().trim();
+    const blocked = ["drop database", "drop schema public", "truncate auth."];
+    for (const b of blocked) {
+      if (sqlLower.includes(b)) {
+        return res.status(403).json({ error: `Blocked operation: ${b}` });
+      }
+    }
+
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      return res.status(500).json({ error: "DATABASE_URL not configured" });
+    }
+
+    // Execute via pg Pool
+    const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+    try {
+      const result = await pool.query(sql);
+      await logAdminAction(
+        profile!.id, profile!.email, "execute_ddl",
+        "database", undefined,
+        { sql_preview: sql.slice(0, 500), rows_affected: result.rowCount },
+        req.get("x-forwarded-for") || req.ip
+      );
+
+      res.json({
+        ok: true,
+        command: result.command,
+        rows_affected: result.rowCount,
+        message: "DDL 실행 완료",
+      });
+    } finally {
+      await pool.end();
+    }
+  } catch (err: any) {
+    console.error("[API] POST /api/admin/ddl error:", err.message);
+    res.status(500).json({ error: err.message, detail: err.detail || null });
   }
 });
 
