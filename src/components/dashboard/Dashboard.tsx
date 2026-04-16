@@ -119,17 +119,33 @@ export default function Dashboard({ onChatWithSoul, onNavigate, onRefresh }: Pro
       ) : souls.length === 0 ? (
         <div className="dashboard-empty">
           <div className="onboarding-guide-card">
-            <Sparkles size={36} strokeWidth={1.5} className="dashboard-empty-icon" />
-            <h3>아직 Soul이 없어요</h3>
-            <p>지금 첫 Soul을 채용해서 AI 팀을 만들어보세요</p>
-            <div className="onboarding-steps">
-              <div className="onboarding-step"><span className="step-num">1</span> 마켓에서 Soul 선택</div>
-              <div className="onboarding-step"><span className="step-num">2</span> 역할과 업무 배정</div>
-              <div className="onboarding-step"><span className="step-num">3</span> 대화로 업무 지시</div>
+            <h2 className="onboarding-title">첫 번째 <span className="text-cyan">AI 동료</span>를 채용해보세요 🎉</h2>
+            <div className="onboarding-avatars">
+              <div className="avatar-stack">
+                {["/avatars/souls/soul_01_alex.webp", "/avatars/souls/soul_02_sophia.webp", "/avatars/souls/soul_03_marcus.webp"].map((src, i) => (
+                  <img key={i} src={src} alt="" className="avatar-preview" style={{ zIndex: 3 - i }} />
+                ))}
+              </div>
+              <span className="avatar-badge">+70</span>
             </div>
-            <button className="btn-primary" onClick={() => onNavigate?.("/hire")}>
-              지금 첫 Soul 채용하기 →
+            <div className="onboarding-steps">
+              <div className="onboarding-step blue">
+                <span className="step-num">1</span>
+                <div><strong>Soul 채용</strong><br/><span>마켓에서 나에게 맞는 AI 동료 선택</span></div>
+              </div>
+              <div className="onboarding-step cyan">
+                <span className="step-num">2</span>
+                <div><strong>대화 시작</strong><br/><span>업무를 설명하고 지시하기</span></div>
+              </div>
+              <div className="onboarding-step green">
+                <span className="step-num">3</span>
+                <div><strong>업무 완료</strong><br/><span>AI가 작업을 수행하고 결과 확인</span></div>
+              </div>
+            </div>
+            <button className="btn-onboarding-cta" onClick={() => onNavigate?.("/hire")}>
+              첫 Soul 채용하기 →
             </button>
+            <p className="onboarding-reassurance">무료로 시작 · 언제든 해고 가능</p>
           </div>
         </div>
       ) : (
