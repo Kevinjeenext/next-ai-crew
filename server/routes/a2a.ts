@@ -11,6 +11,7 @@ export { a2aRoutes };
 import { Router, type Request, type Response } from "express";
 import { supabaseAdmin } from "../lib/supabase.ts";
 import { getModelRouter } from "../llm/router.ts";
+import { getUsageTracker } from "../llm/usage-tracker.ts";
 
 const router = Router();
 
@@ -127,21 +128,51 @@ router.post("/rooms", async (req: Request, res: Response) => {
 });
 
 // ─── GET /api/a2a/rooms/:roomId/messages ───
+// Supports cursor pagination: ?cursor=<id>&limit=50&direction=before|after
 router.get("/rooms/:roomId/messages", async (req: Request, res: Response) => {
   try {
     const orgId = (req as any).orgId;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
 
-    const limit = Number(req.query.limit) || 100;
-    const { data, error } = await supabaseAdmin
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+    const cursor = req.query.cursor as string; // message id
+    const direction = (req.query.direction as string) || "before"; // before = older, after = newer
+
+    let query = supabaseAdmin
       .from("soul_messages")
       .select("*")
       .eq("room_id", req.params.roomId)
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: true })
-      .limit(limit);
+      .eq("org_id", orgId);
 
+    if (cursor) {
+      // Get the cursor message's created_at for comparison
+      const { data: cursorMsg } = await supabaseAdmin
+        .from("soul_messages")
+        .select("created_at")
+        .eq("id", cursor)
+        .single();
+
+      if (cursorMsg) {
+        if (direction === "before") {
+          query = query.lt("created_at", cursorMsg.created_at)
+            .order("created_at", { ascending: false });
+        } else {
+          query = query.gt("created_at", cursorMsg.created_at)
+            .order("created_at", { ascending: true });
+        }
+      }
+    } else {
+      // No cursor: get latest messages (descending, then reverse for display)
+      query = query.order("created_at", { ascending: false });
+    }
+
+    const { data: rawData, error } = await query.limit(limit);
     if (error) throw error;
+
+    // Reverse if we fetched in descending order (for chronological display)
+    const data = (!cursor || direction === "before")
+      ? (rawData || []).reverse()
+      : (rawData || []);
 
     // Enrich with sender info
     const senderIds = [...new Set((data || []).map((m: any) => m.sender_soul_id))];
@@ -159,7 +190,19 @@ router.get("/rooms/:roomId/messages", async (req: Request, res: Response) => {
       sender: agentMap[m.sender_soul_id] || { id: m.sender_soul_id, name: "Unknown" },
     }));
 
-    res.json({ messages });
+    // Cursor info for pagination
+    const hasMore = messages.length === limit;
+    const nextCursor = hasMore && messages.length > 0 ? messages[0].id : null; // oldest msg id for "before" pagination
+    const prevCursor = messages.length > 0 ? messages[messages.length - 1].id : null; // newest msg id
+
+    res.json({
+      messages,
+      cursor: {
+        next: nextCursor, // pass as ?cursor=X&direction=before for older
+        prev: prevCursor, // pass as ?cursor=X&direction=after for newer
+        has_more: hasMore,
+      },
+    });
   } catch (err: any) {
     console.error("[API] GET messages error:", err.message);
     res.status(500).json({ error: err.message });
@@ -296,6 +339,10 @@ router.post("/trigger", async (req: Request, res: Response) => {
         { complexity: "normal" }
       );
       responseText = llmResult.content;
+
+      // Track token usage for the responding Soul
+      const tracker = getUsageTracker();
+      await tracker.recordUsage(to_soul_id, orgId, llmResult).catch(() => {});
     } catch (llmErr: any) {
       responseText = `[시스템] 응답 생성 실패: ${llmErr.message}`;
     }
@@ -382,6 +429,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
     // Leader gives initial instruction
     const leaderPrompt = leader.persona_prompt || `You are ${leader.name}, a ${leader.role}. Speak in Korean.`;
     const router = getModelRouter();
+    const tracker = getUsageTracker();
+    let totalDelegateTokens = 0;
 
     let leaderInstruction = "";
     try {
@@ -390,6 +439,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
         { role: "user", content: `다음 업무를 팀원들에게 위임하세요. 각 팀원의 역할에 맞게 구체적 지시를 내리세요:\n\n업무: ${task}\n\n팀원: ${worker_soul_ids.map((id: string) => soulMap[id]?.name + " (" + soulMap[id]?.role + ")").join(", ")}` },
       ], { complexity: "normal" });
       leaderInstruction = r.content;
+      totalDelegateTokens += r.usage.total_tokens;
+      await tracker.recordUsage(leader_soul_id, orgId, r).catch(() => {});
     } catch {
       leaderInstruction = `팀원 여러분, 다음 업무를 진행해주세요: ${task}`;
     }
@@ -417,6 +468,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
             { role: "user", content: `팀 회의 대화:\n\n${history}\n\n당신의 역할(${worker.role})에 맞게 응답하세요. 간결하게 (3-4문장).` },
           ], { complexity: "normal" });
           response = r.content;
+          totalDelegateTokens += r.usage.total_tokens;
+          await tracker.recordUsage(workerId, orgId, r).catch(() => {});
         } catch {
           response = `[시스템] ${worker.name} 응답 생성 실패`;
         }
@@ -439,6 +492,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
             { role: "user", content: `팀 회의 대화:\n\n${followUpHistory}\n\n리더로서 후속 지시나 피드백을 주세요. 간결하게 (2-3문장).` },
           ], { complexity: "normal" });
           followUp = r.content;
+          totalDelegateTokens += r.usage.total_tokens;
+          await tracker.recordUsage(leader_soul_id, orgId, r).catch(() => {});
         } catch {
           followUp = "각자 역할에 맞게 계속 진행해주세요.";
         }
@@ -460,6 +515,8 @@ router.post("/delegate", async (req: Request, res: Response) => {
         { role: "user", content: `팀 회의 대화:\n\n${finalHistory}\n\n회의를 마무리하고 핵심 결론과 다음 단계를 정리해주세요.` },
       ], { complexity: "normal" });
       summary = r.content;
+      totalDelegateTokens += r.usage.total_tokens;
+      await tracker.recordUsage(leader_soul_id, orgId, r).catch(() => {});
     } catch {
       summary = "회의를 마무리합니다. 각자 역할에 맞게 진행해주세요.";
     }
@@ -473,6 +530,7 @@ router.post("/delegate", async (req: Request, res: Response) => {
       room_id: room.id,
       room_name: roomName,
       total_messages: messages.length + 2,
+      total_tokens: totalDelegateTokens,
       summary,
     });
   } catch (err: any) {
