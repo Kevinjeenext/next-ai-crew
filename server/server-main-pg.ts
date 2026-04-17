@@ -579,6 +579,10 @@ app.get("/api/org-budget", async (req, res) => {
   }
 });
 
+// ========== Global JSON body parser (large payloads for attachments) ==========
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+
 // ========== SOUL CHAT (LLM Proxy) ==========
 // Mount soul chat routes with org middleware
 app.use("/api/souls", async (req: any, _res, next) => {

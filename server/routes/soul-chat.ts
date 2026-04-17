@@ -159,10 +159,10 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
 
     const fullSystemPrompt = systemPrompt + orgContext + colleagueContext;
 
-    // 4. Load conversation history (last 20 messages for context)
+    // 4. Load conversation history (last 10 turns for context)
     let history: LLMMessage[] = [];
     if (conversation_id) {
-      // Try per-row schema first
+      // Try per-row schema first — specific conversation
       const { data: msgs } = await supabaseAdmin
         .from("soul_conversations")
         .select("role, content")
@@ -173,6 +173,21 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
         .limit(10);
       if (msgs && msgs.length > 0 && msgs[0].role) {
         history = msgs.map((m: any) => ({ role: m.role, content: m.content }));
+      }
+    }
+    // No conversation_id or no per-row results → load latest messages (any conversation)
+    if (history.length === 0) {
+      const { data: msgs } = await supabaseAdmin
+        .from("soul_conversations")
+        .select("role, content")
+        .eq("agent_id", soulId)
+        .eq("org_id", orgId)
+        .not("role", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (msgs && msgs.length > 0) {
+        // Reverse to chronological order
+        history = msgs.reverse().map((m: any) => ({ role: m.role, content: m.content }));
       }
     }
     // Fallback: JSONB messages from latest conversation
