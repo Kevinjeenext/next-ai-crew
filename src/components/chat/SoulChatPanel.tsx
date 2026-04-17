@@ -4,7 +4,7 @@
  * Supports streaming (SSE) + standard responses
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { X, Copy, Check, Send } from "lucide-react";
+import { X, Copy, Check, Send, Paperclip, File, FileText, Image as ImageIcon, Table, Trash2 } from "lucide-react";
 import { apiFetch } from "../../lib/api-fetch";
 import "./soul-chat.css";
 
@@ -51,12 +51,49 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   );
 }
 
+interface Attachment {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   model?: string;
+  attachments?: Attachment[];
+}
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = [
+  "image/jpeg", "image/png", "image/gif", "image/webp",
+  "application/pdf", "text/plain", "text/markdown",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+];
+const ALLOWED_EXTS = [".jpg",".jpeg",".png",".gif",".webp",".pdf",".txt",".md",".docx",".xlsx",".csv"];
+
+function isAllowedFile(file: File): boolean {
+  if (ALLOWED_TYPES.includes(file.type)) return true;
+  const ext = "." + file.name.split(".").pop()?.toLowerCase();
+  return ALLOWED_EXTS.includes(ext);
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + "B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + "KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + "MB";
+}
+
+function getFileIcon(type: string) {
+  if (type.startsWith("image/")) return <ImageIcon size={16} />;
+  if (type === "application/pdf" || type.includes("word")) return <FileText size={16} />;
+  if (type.includes("sheet") || type === "text/csv") return <Table size={16} />;
+  return <File size={16} />;
 }
 
 interface Props {
@@ -103,6 +140,10 @@ export default function SoulChatPanel({
 
   const [streamingContent, setStreamingContent] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check LLM status on mount
   useEffect(() => {
@@ -135,6 +176,7 @@ export default function SoulChatPanel({
               content: m.content,
               timestamp: new Date(m.created_at),
               model: m.model_used,
+              attachments: m.attachments || undefined,
             }))
           );
         }
@@ -174,19 +216,64 @@ export default function SoulChatPanel({
     }
   }, [soulId]);
 
+  // File handling
+  const addFiles = useCallback((files: FileList | File[]) => {
+    const arr = Array.from(files);
+    const valid: File[] = [];
+    for (const f of arr) {
+      if (f.size > MAX_FILE_SIZE) { alert(`${f.name}: 10MB 초과`); continue; }
+      if (!isAllowedFile(f)) { alert(`${f.name}: 지원하지 않는 형식`); continue; }
+      valid.push(f);
+    }
+    setPendingFiles(prev => [...prev, ...valid]);
+  }, []);
+
+  const removeFile = useCallback((idx: number) => {
+    setPendingFiles(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const uploadFiles = useCallback(async (files: File[]): Promise<Attachment[]> => {
+    if (files.length === 0) return [];
+    setUploading(true);
+    const results: Attachment[] = [];
+    for (const file of files) {
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const res = await apiFetch(`/api/souls/${soulId}/upload`, { method: "POST", body: form });
+        if (res.ok) {
+          const data = await res.json();
+          results.push({ name: file.name, url: data.url, type: file.type, size: file.size });
+        }
+      } catch {}
+    }
+    setUploading(false);
+    return results;
+  }, [soulId]);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    if ((!text && pendingFiles.length === 0) || loading) return;
+
+    // Upload pending files first
+    const filesToUpload = [...pendingFiles];
+    setPendingFiles([]);
+    setInput("");
+    setLoading(true);
+
+    let attachments: Attachment[] = [];
+    if (filesToUpload.length > 0) {
+      attachments = await uploadFiles(filesToUpload);
+    }
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: text,
+      content: text || (attachments.length > 0 ? `📎 ${attachments.map(a => a.name).join(", ")}` : ""),
       timestamp: new Date(),
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
 
     try {
       // Use SSE streaming
@@ -197,9 +284,10 @@ export default function SoulChatPanel({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: text,
+          message: text || `[첨부 파일: ${attachments.map(a => a.name).join(", ")}]`,
           conversation_id: conversationId,
           stream: true,
+          attachments: attachments.length > 0 ? attachments : undefined,
         }),
       });
 
@@ -269,7 +357,7 @@ export default function SoulChatPanel({
       setLoading(false);
       inputRef.current?.focus();
     }
-  }, [input, loading, soulId, conversationId]);
+  }, [input, loading, soulId, conversationId, pendingFiles, uploadFiles]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -278,8 +366,28 @@ export default function SoulChatPanel({
     }
   };
 
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragOver(true); }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragOver(false); }, []);
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setDragOver(false);
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
   return (
-    <div className="soul-chat-panel">
+    <div
+      className={`soul-chat-panel ${dragOver ? "drag-over" : ""}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {dragOver && (
+        <div className="soul-chat-drop-overlay">
+          <Paperclip size={48} />
+          <p>파일을 드롭하세요</p>
+        </div>
+      )}
       {/* Header */}
       <div className="soul-chat-header" style={{ borderColor: deptColor }}>
         {soulAvatar ? (
@@ -367,6 +475,23 @@ export default function SoulChatPanel({
                   <span className="msg-timestamp">{msg.timestamp.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
                 </div>
                 <div className="msg-text"><MessageContent content={msg.content} /></div>
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="msg-attachments">
+                    {msg.attachments.map((att, ai) => (
+                      att.type.startsWith("image/") ? (
+                        <a key={ai} href={att.url} target="_blank" rel="noopener" className="msg-att-image">
+                          <img src={att.url} alt={att.name} />
+                        </a>
+                      ) : (
+                        <a key={ai} href={att.url} target="_blank" rel="noopener" className="msg-att-file">
+                          {getFileIcon(att.type)}
+                          <span className="msg-att-name">{att.name}</span>
+                          <span className="msg-att-size">{formatFileSize(att.size)}</span>
+                        </a>
+                      )
+                    ))}
+                  </div>
+                )}
                 {msg.model && <span className="msg-model-tag">{msg.model}</span>}
               </div>
             </div>
@@ -407,7 +532,39 @@ export default function SoulChatPanel({
 
       {/* Input */}
       <div className="soul-chat-input-area">
+        {/* Pending file previews */}
+        {pendingFiles.length > 0 && (
+          <div className="soul-chat-pending-files">
+            {pendingFiles.map((f, i) => (
+              <div key={i} className="pending-file-item">
+                {f.type.startsWith("image/") ? (
+                  <img src={URL.createObjectURL(f)} alt={f.name} className="pending-file-thumb" />
+                ) : (
+                  <div className="pending-file-icon">{getFileIcon(f.type)}</div>
+                )}
+                <div className="pending-file-info">
+                  <span className="pending-file-name">{f.name}</span>
+                  <span className="pending-file-size">{formatFileSize(f.size)}</span>
+                </div>
+                <button className="pending-file-remove" onClick={() => removeFile(i)}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="soul-chat-input-box">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="soul-chat-file-input"
+            multiple
+            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.docx,.xlsx,.csv"
+            onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
+          />
+          <button className="soul-chat-attach-btn" onClick={() => fileInputRef.current?.click()} title="파일 첨부">
+            <Paperclip size={18} />
+          </button>
           <textarea
             ref={inputRef}
             className="soul-chat-input"
@@ -415,7 +572,6 @@ export default function SoulChatPanel({
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
-              // Auto-resize
               const el = e.target;
               el.style.height = "auto";
               el.style.height = Math.min(el.scrollHeight, 200) + "px";
@@ -427,12 +583,12 @@ export default function SoulChatPanel({
           <button
             className="soul-chat-send"
             onClick={sendMessage}
-            disabled={!input.trim() || loading}
+            disabled={(!input.trim() && pendingFiles.length === 0) || loading || uploading}
           >
-            <Send size={16} strokeWidth={2} />
+            {uploading ? <div className="soul-chat-upload-spinner" /> : <Send size={16} strokeWidth={2} />}
           </button>
         </div>
-        <div className="soul-chat-input-hint">Enter 전송 · Shift+Enter 줄바꿈</div>
+        <div className="soul-chat-input-hint">Enter 전송 · Shift+Enter 줄바꿈 · 파일 드래그앱드롭 지원</div>
       </div>
     </div>
   );

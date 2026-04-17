@@ -498,4 +498,50 @@ router.get("/:soulId/conversations", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/souls/:id/upload — file upload to Supabase Storage
+import multer from "multer";
+const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 }, storage: multer.memoryStorage() });
+
+router.post("/:id/upload", upload.single("file"), async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    const soulId = req.params.id;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const file = (req as any).file;
+    if (!file) return res.status(400).json({ error: "No file" });
+
+    const ext = file.originalname.split(".").pop() || "bin";
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const path = `${orgId}/${soulId}/${filename}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("soul-attachments")
+      .upload(path, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("[Upload] Supabase Storage error:", uploadError.message);
+      return res.status(500).json({ error: "Upload failed: " + uploadError.message });
+    }
+
+    const { data: urlData } = supabaseAdmin.storage
+      .from("soul-attachments")
+      .getPublicUrl(path);
+
+    res.json({
+      url: urlData.publicUrl,
+      name: file.originalname,
+      type: file.mimetype,
+      size: file.size,
+      path,
+    });
+  } catch (err: any) {
+    console.error("[Upload] Error:", err.message);
+    res.status(500).json({ error: "Upload failed" });
+  }
+});
+
 const soulChatRoutes = router;
