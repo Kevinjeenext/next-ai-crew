@@ -245,9 +245,11 @@ export default function SoulChatPanel({
 
   const uploadSingleFile = useCallback((file: File, soulId: string): Promise<Attachment | null> => {
     const key = `${file.name}-${Date.now()}`;
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    const method = file.size < RESUMABLE_THRESHOLD ? "standard" : "resumable";
+    console.log(`[upload] ${file.name} (${sizeMB}MB) → ${method}`);
     setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "uploading" } }));
 
-    // Small files → standard upload, large files → tus resumable
     if (file.size < RESUMABLE_THRESHOLD) {
       return fallbackUpload(file, soulId, key);
     }
@@ -257,6 +259,8 @@ export default function SoulChatPanel({
   const resumableUpload = useCallback((file: File, soulId: string, key: string): Promise<Attachment | null> => {
     return new Promise(async (resolve) => {
       try {
+        console.log(`[upload] Resumable start: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+
         // 1. Get upload metadata from server
         const metaRes = await apiFetch(`/api/souls/${soulId}/upload/resumable`, {
           method: "POST",
@@ -264,12 +268,17 @@ export default function SoulChatPanel({
           body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
         });
         if (!metaRes.ok) {
-          console.warn("[tus] Metadata API failed, falling back");
-          resolve(await fallbackUpload(file, soulId, key));
+          const errText = await metaRes.text().catch(() => "unknown");
+          console.error(`[upload] Resumable metadata API failed: ${metaRes.status} ${errText}`);
+          setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+          resolve(null);
           return;
         }
         const meta = await metaRes.json();
+        console.log("[upload] Resumable metadata:", { tusEndpoint: meta.tusEndpoint, storagePath: meta.storagePath, hasAnonKey: !!meta.supabaseAnonKey });
+
         const token = getAuthToken();
+        console.log("[upload] Auth token present:", !!token);
 
         // 2. Create tus upload
         const tusUpload = new tus.Upload(file, {
@@ -290,15 +299,18 @@ export default function SoulChatPanel({
           },
           chunkSize: 6 * 1024 * 1024,
           onError: (error) => {
-            console.warn("[tus] Upload failed, falling back:", error.message);
-            setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "uploading" } }));
-            fallbackUpload(file, soulId, key).then(resolve);
+            console.error("[upload] tus onError:", error.message, error);
+            // For large files, don't fallback to standard (it can't handle >50MB)
+            setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+            resolve(null);
           },
           onProgress: (bytesUploaded, bytesTotal) => {
             const percent = Math.round((bytesUploaded / bytesTotal) * 100);
+            console.log(`[upload] tus progress: ${percent}% (${(bytesUploaded/1024/1024).toFixed(1)}/${(bytesTotal/1024/1024).toFixed(1)}MB)`);
             setUploadProgress(prev => ({ ...prev, [key]: { percent, status: "uploading" } }));
           },
           onSuccess: () => {
+            console.log("[upload] tus success:", meta.publicUrl);
             setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
             resolve({ name: file.name, url: meta.publicUrl, type: file.type, size: file.size });
           },
@@ -306,27 +318,38 @@ export default function SoulChatPanel({
 
         // Resume previous if available
         const prevUploads = await tusUpload.findPreviousUploads();
-        if (prevUploads.length > 0) tusUpload.resumeFromPreviousUpload(prevUploads[0]);
+        if (prevUploads.length > 0) {
+          console.log("[upload] Resuming previous upload");
+          tusUpload.resumeFromPreviousUpload(prevUploads[0]);
+        }
         tusUpload.start();
-      } catch (err) {
-        console.warn("[tus] Init failed, falling back:", err);
-        resolve(await fallbackUpload(file, soulId, key));
+        console.log("[upload] tus upload started");
+      } catch (err: any) {
+        console.error("[upload] Resumable init failed:", err?.message || err);
+        setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+        resolve(null);
       }
     });
   }, [getAuthToken]);
 
-  // Fallback: standard upload via server API (for when tus fails)
+  // Standard upload via server API (<50MB)
   const fallbackUpload = useCallback(async (file: File, soulId: string, key: string): Promise<Attachment | null> => {
     try {
+      console.log(`[upload] Standard upload: ${file.name}`);
       const form = new FormData();
       form.append("file", file);
       const res = await apiFetch(`/api/souls/${soulId}/upload`, { method: "POST", body: form });
       if (res.ok) {
         const data = await res.json();
+        console.log(`[upload] Standard success:`, data.url);
         setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
         return { name: file.name, url: data.url, type: file.type, size: file.size };
       }
-    } catch {}
+      const errText = await res.text().catch(() => "unknown");
+      console.error(`[upload] Standard failed: ${res.status} ${errText}`);
+    } catch (err: any) {
+      console.error(`[upload] Standard error:`, err?.message || err);
+    }
     setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
     return null;
   }, []);
