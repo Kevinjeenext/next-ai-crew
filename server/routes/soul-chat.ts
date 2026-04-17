@@ -500,7 +500,7 @@ router.get("/:soulId/conversations", async (req: Request, res: Response) => {
 
 // POST /api/souls/:id/upload — file upload to Supabase Storage
 import multer from "multer";
-const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 }, storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage() }); // no size limit (Kevin directive)
 
 router.post("/:id/upload", upload.single("file"), async (req: Request, res: Response) => {
   try {
@@ -527,12 +527,18 @@ router.post("/:id/upload", upload.single("file"), async (req: Request, res: Resp
       return res.status(500).json({ error: "Upload failed: " + uploadError.message });
     }
 
-    const { data: urlData } = supabaseAdmin.storage
+    // Signed URL (bucket is private)
+    const { data: urlData, error: urlError } = await supabaseAdmin.storage
       .from("soul-attachments")
-      .getPublicUrl(path);
+      .createSignedUrl(path, 60 * 60 * 24); // 24h expiry
+
+    if (urlError) {
+      console.error("[Upload] Signed URL error:", urlError.message);
+      return res.status(500).json({ error: "URL generation failed" });
+    }
 
     res.json({
-      url: urlData.publicUrl,
+      url: urlData.signedUrl,
       name: file.originalname,
       type: file.mimetype,
       size: file.size,

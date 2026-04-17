@@ -8,10 +8,9 @@ ALTER TABLE soul_messages ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]
 
 -- 2. Supabase Storage 버킷은 대시보드에서 생성 필요:
 -- 버킷명: soul-attachments
--- Public: true (getPublicUrl 사용)
--- File size limit: 10MB
--- Allowed MIME types: image/*, application/pdf, text/*, application/msword,
---   application/vnd.openxmlformats-officedocument.*
+-- Public: false (signed URL 사용, 24h expiry)
+-- File size limit: 없음 (Kevin directive)
+-- Allowed MIME types: 제한 없음
 
 -- 3. Storage RLS (버킷 생성 후 적용)
 -- INSERT: 인증된 사용자만 업로드
