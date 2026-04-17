@@ -72,8 +72,9 @@ export async function parseAttachment(attachment: {
   // 4. PDF
   if (mimeType === "application/pdf" || name.endsWith(".pdf")) {
     try {
-      const pdfParse = (await import("pdf-parse")).default;
-      const result = await pdfParse(buffer);
+      const { PDFParse } = await import("pdf-parse");
+      const parser = new PDFParse({ data: new Uint8Array(buffer) });
+      const result = await parser.getText();
       const text = result.text?.trim();
       if (!text) return { type: "text", filename: name, text: `[PDF 파일이지만 텍스트를 추출할 수 없습니다: ${name}]`, mimeType };
       return { type: "text", filename: name, text: truncate(text), mimeType };

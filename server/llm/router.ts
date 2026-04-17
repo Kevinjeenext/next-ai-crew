@@ -141,7 +141,8 @@ export class ModelRouter {
 
     // Auto-route based on complexity
     const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    const complexity = options?.complexity || detectComplexity(lastUserMsg?.content || "");
+    const lastContent = typeof lastUserMsg?.content === "string" ? lastUserMsg.content : "";
+    const complexity = options?.complexity || detectComplexity(lastContent);
     const routes = ROUTE_TABLE[complexity];
 
     // Try each route in priority order
