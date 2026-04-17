@@ -67,7 +67,7 @@ interface ChatMessage {
   attachments?: Attachment[];
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+// No file size limit per Kevin directive
 const ALLOWED_TYPES = [
   "image/jpeg", "image/png", "image/gif", "image/webp",
   "application/pdf", "text/plain", "text/markdown",
@@ -221,7 +221,6 @@ export default function SoulChatPanel({
     const arr = Array.from(files);
     const valid: File[] = [];
     for (const f of arr) {
-      if (f.size > MAX_FILE_SIZE) { alert(`${f.name}: 10MB 초과`); continue; }
       if (!isAllowedFile(f)) { alert(`${f.name}: 지원하지 않는 형식`); continue; }
       valid.push(f);
     }

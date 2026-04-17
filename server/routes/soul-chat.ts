@@ -500,7 +500,7 @@ router.get("/:soulId/conversations", async (req: Request, res: Response) => {
 
 // POST /api/souls/:id/upload — file upload to Supabase Storage
 import multer from "multer";
-const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 }, storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/:id/upload", upload.single("file"), async (req: Request, res: Response) => {
   try {
