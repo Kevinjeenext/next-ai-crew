@@ -6,7 +6,7 @@
 
 export interface LLMMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | any[]; // string for text, array for multimodal (vision)
 }
 
 export interface LLMRequest {

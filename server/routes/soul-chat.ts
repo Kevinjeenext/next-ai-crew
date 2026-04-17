@@ -11,6 +11,7 @@ import { generateSoulPrompt } from "../services/soul-generator.ts";
 import { getModelRouter } from "../llm/router.ts";
 import { getUsageTracker } from "../llm/usage-tracker.ts";
 import { detectMentions, type Colleague } from "./a2a-delegation.ts";
+import { parseAttachments, buildFileContext, type ParsedFile } from "../lib/file-parser.ts";
 import type { LLMMessage } from "../llm/providers.ts";
 
 const router = Router();
@@ -25,6 +26,7 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     const message = String(req.body.message || "");
     const conversation_id: string | undefined = typeof req.body.conversation_id === "string" ? req.body.conversation_id : undefined;
     const wantStream = !!req.body.stream;
+    const attachments: any[] = Array.isArray(req.body.attachments) ? req.body.attachments : [];
 
     if (!message?.trim()) {
       return res.status(400).json({ error: "Message is required" });
@@ -199,10 +201,45 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       truncatedHistory.unshift(history[i]);
     }
 
+    // 5.5 Parse attachments → file context or vision messages
+    let parsedFiles: ParsedFile[] = [];
+    let fileContext = "";
+    let imageAttachments: ParsedFile[] = [];
+    if (attachments.length > 0) {
+      try {
+        parsedFiles = await parseAttachments(attachments);
+        fileContext = buildFileContext(parsedFiles);
+        imageAttachments = parsedFiles.filter(f => f.type === "image" && f.imageUrl);
+      } catch (err: any) {
+        console.error("[SoulChat] attachment parse error:", err.message);
+      }
+    }
+
+    // Build user message with file context
+    const userContent = fileContext
+      ? message + fileContext
+      : message;
+
+    // Build LLM messages — add images as multimodal content if present
+    let userMessage: LLMMessage;
+    if (imageAttachments.length > 0) {
+      // Multimodal: text + images (OpenAI/Claude vision format)
+      const contentParts: any[] = [
+        { type: "text", text: userContent },
+        ...imageAttachments.map(img => ({
+          type: "image_url",
+          image_url: { url: img.imageUrl! },
+        })),
+      ];
+      userMessage = { role: "user", content: contentParts };
+    } else {
+      userMessage = { role: "user", content: userContent };
+    }
+
     const llmMessages: LLMMessage[] = [
       { role: "system", content: fullSystemPrompt },
       ...truncatedHistory,
-      { role: "user", content: message },
+      userMessage,
     ];
 
     // 6. Get router
