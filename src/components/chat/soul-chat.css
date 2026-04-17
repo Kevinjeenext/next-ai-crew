@@ -356,3 +356,81 @@
   border-radius: 4px; transition: all 0.15s;
 }
 .soul-delegation-link:hover { background: rgba(6,182,212,0.15); }
+
+/* ─── Drag & Drop Overlay ─── */
+.soul-chat-panel.drag-over { outline: 2px dashed #3b82f6; outline-offset: -4px; }
+.soul-chat-drop-overlay {
+  position: absolute; inset: 0; z-index: 200;
+  background: rgba(15,23,42,0.85); backdrop-filter: blur(6px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; color: #60a5fa; font: 500 16px var(--font-ui);
+}
+
+/* ─── Hidden File Input ─── */
+.soul-chat-file-input { display: none; }
+
+/* ─── Pending Files Preview ─── */
+.soul-chat-pending-files {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  padding: 8px 32px 0;
+}
+.pending-file-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 10px;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  max-width: 200px;
+}
+.pending-file-thumb {
+  width: 40px; height: 40px; border-radius: 6px;
+  object-fit: cover; flex-shrink: 0;
+}
+.pending-file-icon {
+  width: 40px; height: 40px; border-radius: 6px;
+  background: var(--bg-overlay); display: flex; align-items: center; justify-content: center;
+  color: var(--text-tertiary); flex-shrink: 0;
+}
+.pending-file-info { flex: 1; min-width: 0; }
+.pending-file-name {
+  font: 500 12px var(--font-ui); color: var(--text-primary);
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pending-file-size { font: 400 10px var(--font-ui); color: var(--text-tertiary); }
+.pending-file-remove {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: transparent; border: none; color: var(--text-tertiary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.pending-file-remove:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+/* ─── Message Attachments ─── */
+.msg-attachments {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.msg-att-image {
+  display: block; max-width: 280px; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border-subtle); transition: opacity 0.12s;
+}
+.msg-att-image:hover { opacity: 0.9; }
+.msg-att-image img {
+  display: block; width: 100%; max-height: 240px;
+  object-fit: cover;
+}
+.msg-att-file {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 10px;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  color: var(--text-secondary); text-decoration: none;
+  transition: background 0.12s;
+}
+.msg-att-file:hover { background: var(--bg-overlay); }
+.msg-att-name { font: 500 12px var(--font-ui); color: var(--text-primary); }
+.msg-att-size { font: 400 10px var(--font-ui); color: var(--text-tertiary); }
+
+/* ─── Upload Spinner ─── */
+.soul-chat-upload-spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
