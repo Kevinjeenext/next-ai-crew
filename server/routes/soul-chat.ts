@@ -527,18 +527,13 @@ router.post("/:id/upload", upload.single("file"), async (req: Request, res: Resp
       return res.status(500).json({ error: "Upload failed: " + uploadError.message });
     }
 
-    // Private bucket (final) — signed URL 24h
-    const { data: urlData, error: urlError } = await supabaseAdmin.storage
+    // Public bucket (FINAL — do not change)
+    const { data: urlData } = supabaseAdmin.storage
       .from("soul-attachments")
-      .createSignedUrl(path, 60 * 60 * 24);
-
-    if (urlError) {
-      console.error("[Upload] Signed URL error:", urlError.message);
-      return res.status(500).json({ error: "URL generation failed" });
-    }
+      .getPublicUrl(path);
 
     res.json({
-      url: urlData.signedUrl,
+      url: urlData.publicUrl,
       name: file.originalname,
       type: file.mimetype,
       size: file.size,
