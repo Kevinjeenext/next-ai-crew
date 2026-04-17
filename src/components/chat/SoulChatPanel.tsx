@@ -5,6 +5,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X, Copy, Check, Send, Paperclip, File, FileText, Image as ImageIcon, Table, Trash2, AlertCircle } from "lucide-react";
+import * as tus from "tus-js-client";
 import { apiFetch } from "../../lib/api-fetch";
 import "./soul-chat.css";
 
@@ -232,61 +233,85 @@ export default function SoulChatPanel({
     setPendingFiles(prev => prev.filter((_, i) => i !== idx));
   }, []);
 
+  const getAuthToken = useCallback((): string | null => {
+    try {
+      const raw = localStorage.getItem("sb-auth-token") || sessionStorage.getItem("sb-auth-token");
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed?.access_token || parsed || null;
+    } catch { return null; }
+  }, []);
+
   const uploadSingleFile = useCallback((file: File, soulId: string): Promise<Attachment | null> => {
     return new Promise((resolve) => {
       const key = `${file.name}-${Date.now()}`;
       setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "uploading" } }));
 
-      const xhr = new XMLHttpRequest();
-      const API = import.meta.env.VITE_API_URL || "";
-      xhr.open("POST", `${API}/api/souls/${soulId}/upload`);
+      const TUS_ENDPOINT = import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/upload/resumable`
+        : "https://dckjdghxlleypdfwnfgu.supabase.co/storage/v1/upload/resumable";
 
-      // Auth token
-      try {
-        const raw = localStorage.getItem("sb-auth-token") || sessionStorage.getItem("sb-auth-token");
-        const parsed = raw ? JSON.parse(raw) : null;
-        const token = parsed?.access_token || parsed;
-        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      } catch {}
+      const token = getAuthToken();
+      const orgId = "default"; // Will be overridden by server token when available
+      const filePath = `${orgId}/${soulId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.name}`;
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percent = Math.round((e.loaded / e.total) * 100);
+      // Try tus resumable upload first, fallback to standard upload
+      const tusUpload = new tus.Upload(file, {
+        endpoint: TUS_ENDPOINT,
+        retryDelays: [0, 1000, 3000, 5000],
+        headers: {
+          authorization: `Bearer ${token || ""}`,
+          "x-upsert": "true",
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        metadata: {
+          bucketName: "soul-attachments",
+          objectName: filePath,
+          contentType: file.type,
+          cacheControl: "3600",
+        },
+        chunkSize: 6 * 1024 * 1024, // 6MB chunks
+        onError: (error) => {
+          console.warn("[tus] Upload failed, falling back to standard:", error.message);
+          setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "uploading" } }));
+          // Fallback to standard upload via server API
+          fallbackUpload(file, soulId, key).then(resolve);
+        },
+        onProgress: (bytesUploaded, bytesTotal) => {
+          const percent = Math.round((bytesUploaded / bytesTotal) * 100);
           setUploadProgress(prev => ({ ...prev, [key]: { percent, status: "uploading" } }));
-        }
-      };
+        },
+        onSuccess: () => {
+          // Build public URL
+          const baseUrl = import.meta.env.VITE_SUPABASE_URL || "https://dckjdghxlleypdfwnfgu.supabase.co";
+          const publicUrl = `${baseUrl}/storage/v1/object/public/soul-attachments/${filePath}`;
+          setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
+          resolve({ name: file.name, url: publicUrl, type: file.type, size: file.size });
+        },
+      });
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
-            resolve({ name: file.name, url: data.url, type: file.type, size: file.size });
-          } catch {
-            setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
-            resolve(null);
-          }
-        } else {
-          setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
-          resolve(null);
-        }
-      };
+      // Check for previous uploads to resume
+      tusUpload.findPreviousUploads().then((prev) => {
+        if (prev.length > 0) tusUpload.resumeFromPreviousUpload(prev[0]);
+        tusUpload.start();
+      });
+    });
+  }, [getAuthToken]);
 
-      xhr.onerror = () => {
-        setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
-        resolve(null);
-      };
-
-      xhr.timeout = 10 * 60 * 1000; // 10 min for large files
-      xhr.ontimeout = () => {
-        setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
-        resolve(null);
-      };
-
+  // Fallback: standard upload via server API (for when tus fails)
+  const fallbackUpload = useCallback(async (file: File, soulId: string, key: string): Promise<Attachment | null> => {
+    try {
       const form = new FormData();
       form.append("file", file);
-      xhr.send(form);
-    });
+      const res = await apiFetch(`/api/souls/${soulId}/upload`, { method: "POST", body: form });
+      if (res.ok) {
+        const data = await res.json();
+        setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
+        return { name: file.name, url: data.url, type: file.type, size: file.size };
+      }
+    } catch {}
+    setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+    return null;
   }, []);
 
   const uploadFiles = useCallback(async (files: File[]): Promise<Attachment[]> => {
