@@ -74,8 +74,9 @@ const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "text/csv",
+  "application/x-hwp", "application/haansofthwp", "application/vnd.hancom.hwpx",
 ];
-const ALLOWED_EXTS = [".jpg",".jpeg",".png",".gif",".webp",".pdf",".txt",".md",".docx",".xlsx",".csv"];
+const ALLOWED_EXTS = [".jpg",".jpeg",".png",".gif",".webp",".pdf",".txt",".md",".docx",".xlsx",".csv",".hwp",".hwpx"];
 
 function isAllowedFile(file: File): boolean {
   if (ALLOWED_TYPES.includes(file.type)) return true;
@@ -559,7 +560,7 @@ export default function SoulChatPanel({
             ref={fileInputRef}
             className="soul-chat-file-input"
             multiple
-            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.docx,.xlsx,.csv"
+            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.docx,.xlsx,.csv,.hwp,.hwpx"
             onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
           />
           <button className="soul-chat-attach-btn" onClick={() => fileInputRef.current?.click()} title="파일 첨부">
