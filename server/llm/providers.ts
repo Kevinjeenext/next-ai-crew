@@ -58,7 +58,7 @@ export class OllamaAdapter implements ProviderAdapter {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Host": "localhost:11434",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           model: req.model,
