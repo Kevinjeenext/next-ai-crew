@@ -427,7 +427,26 @@
 .msg-att-name { font: 500 12px var(--font-ui); color: var(--text-primary); }
 .msg-att-size { font: 400 10px var(--font-ui); color: var(--text-tertiary); }
 
-/* ─── Upload Spinner ─── */
+/* ─── Upload Progress ─── */
+.upload-progress-bar {
+  width: 100%; height: 4px; border-radius: 2px;
+  background: var(--bg-overlay); margin-top: 4px; overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%; border-radius: 2px;
+  background: #3b82f6; transition: width 0.2s ease;
+}
+.upload-spinner-mini {
+  width: 16px; height: 16px; border: 2px solid rgba(59,130,246,0.2);
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+.upload-done-icon { color: #10b981; }
+.upload-error-icon { color: #ef4444; }
+.pending-file-item.done { border-color: rgba(16,185,129,0.3); }
+.pending-file-item.error { border-color: rgba(239,68,68,0.3); }
+
+/* ─── Upload Spinner (send btn) ─── */
 .soul-chat-upload-spinner {
   width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff; border-radius: 50%;

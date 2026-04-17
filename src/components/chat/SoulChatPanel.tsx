@@ -4,7 +4,7 @@
  * Supports streaming (SSE) + standard responses
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { X, Copy, Check, Send, Paperclip, File, FileText, Image as ImageIcon, Table, Trash2 } from "lucide-react";
+import { X, Copy, Check, Send, Paperclip, File, FileText, Image as ImageIcon, Table, Trash2, AlertCircle } from "lucide-react";
 import { apiFetch } from "../../lib/api-fetch";
 import "./soul-chat.css";
 
@@ -142,6 +142,7 @@ export default function SoulChatPanel({
   const [isStreaming, setIsStreaming] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, { percent: number; status: "uploading" | "done" | "error" }>>({});
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -231,24 +232,77 @@ export default function SoulChatPanel({
     setPendingFiles(prev => prev.filter((_, i) => i !== idx));
   }, []);
 
+  const uploadSingleFile = useCallback((file: File, soulId: string): Promise<Attachment | null> => {
+    return new Promise((resolve) => {
+      const key = `${file.name}-${Date.now()}`;
+      setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "uploading" } }));
+
+      const xhr = new XMLHttpRequest();
+      const API = import.meta.env.VITE_API_URL || "";
+      xhr.open("POST", `${API}/api/souls/${soulId}/upload`);
+
+      // Auth token
+      try {
+        const raw = localStorage.getItem("sb-auth-token") || sessionStorage.getItem("sb-auth-token");
+        const parsed = raw ? JSON.parse(raw) : null;
+        const token = parsed?.access_token || parsed;
+        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      } catch {}
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          setUploadProgress(prev => ({ ...prev, [key]: { percent, status: "uploading" } }));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            setUploadProgress(prev => ({ ...prev, [key]: { percent: 100, status: "done" } }));
+            resolve({ name: file.name, url: data.url, type: file.type, size: file.size });
+          } catch {
+            setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+            resolve(null);
+          }
+        } else {
+          setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => {
+        setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+        resolve(null);
+      };
+
+      xhr.timeout = 10 * 60 * 1000; // 10 min for large files
+      xhr.ontimeout = () => {
+        setUploadProgress(prev => ({ ...prev, [key]: { percent: 0, status: "error" } }));
+        resolve(null);
+      };
+
+      const form = new FormData();
+      form.append("file", file);
+      xhr.send(form);
+    });
+  }, []);
+
   const uploadFiles = useCallback(async (files: File[]): Promise<Attachment[]> => {
     if (files.length === 0) return [];
     setUploading(true);
+    setUploadProgress({});
     const results: Attachment[] = [];
     for (const file of files) {
-      try {
-        const form = new FormData();
-        form.append("file", file);
-        const res = await apiFetch(`/api/souls/${soulId}/upload`, { method: "POST", body: form });
-        if (res.ok) {
-          const data = await res.json();
-          results.push({ name: file.name, url: data.url, type: file.type, size: file.size });
-        }
-      } catch {}
+      const att = await uploadSingleFile(file, soulId);
+      if (att) results.push(att);
     }
     setUploading(false);
+    // Clear progress after brief delay
+    setTimeout(() => setUploadProgress({}), 2000);
     return results;
-  }, [soulId]);
+  }, [soulId, uploadSingleFile]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
@@ -532,8 +586,28 @@ export default function SoulChatPanel({
       {/* Input */}
       <div className="soul-chat-input-area">
         {/* Pending file previews */}
-        {pendingFiles.length > 0 && (
+        {(pendingFiles.length > 0 || Object.keys(uploadProgress).length > 0) && (
           <div className="soul-chat-pending-files">
+            {/* Upload progress items */}
+            {Object.entries(uploadProgress).map(([key, prog]) => (
+              <div key={key} className={`pending-file-item ${prog.status}`}>
+                <div className="pending-file-icon">
+                  {prog.status === "done" ? <Check size={16} className="upload-done-icon" /> : prog.status === "error" ? <AlertCircle size={16} className="upload-error-icon" /> : <div className="upload-spinner-mini" />}
+                </div>
+                <div className="pending-file-info">
+                  <span className="pending-file-name">{key.replace(/-\d+$/, "")}</span>
+                  {prog.status === "uploading" && (
+                    <div className="upload-progress-bar">
+                      <div className="upload-progress-fill" style={{ width: `${prog.percent}%` }} />
+                    </div>
+                  )}
+                  <span className="pending-file-size">
+                    {prog.status === "uploading" ? `${prog.percent}%` : prog.status === "done" ? "✅ 완료" : "❌ 실패"}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {/* Pending (not yet uploading) */}
             {pendingFiles.map((f, i) => (
               <div key={i} className="pending-file-item">
                 {f.type.startsWith("image/") ? (
