@@ -597,4 +597,57 @@ router.post("/:id/upload", upload.single("file"), async (req: Request, res: Resp
   }
 });
 
+// POST /api/souls/:id/upload/resumable — get signed URL for tus resumable upload
+router.post("/:id/upload/resumable", async (req: Request, res: Response) => {
+  try {
+    const orgId = (req as any).orgId;
+    const soulId = req.params.id;
+    if (!orgId) return res.status(401).json({ error: "Unauthorized" });
+
+    const { filename, contentType } = req.body;
+    if (!filename) return res.status(400).json({ error: "filename required" });
+
+    const ext = filename.split(".").pop() || "bin";
+    const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const storagePath = `${orgId}/${soulId}/${safeName}`;
+    const bucketId = "soul-attachments";
+
+    // Supabase Storage resumable upload uses tus protocol
+    // Client needs: bucket, path, and auth token
+    // The ANON key + user JWT is used by the client directly
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: "SUPABASE_URL not configured" });
+    }
+
+    // tus endpoint: {SUPABASE_URL}/storage/v1/upload/resumable
+    const tusEndpoint = `${supabaseUrl}/storage/v1/upload/resumable`;
+
+    // Public URL for after upload completes
+    const { data: urlData } = supabaseAdmin.storage
+      .from(bucketId)
+      .getPublicUrl(storagePath);
+
+    res.json({
+      tusEndpoint,
+      bucketId,
+      storagePath,
+      publicUrl: urlData.publicUrl,
+      filename: safeName,
+      originalName: filename,
+      contentType: contentType || "application/octet-stream",
+      // Client should set these tus headers:
+      // x-upsert: false
+      // authorization: Bearer <user JWT>
+      // apikey: <anon key>
+      supabaseAnonKey: supabaseAnonKey || "",
+    });
+  } catch (err: any) {
+    console.error("[Upload] Resumable setup error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const soulChatRoutes = router;
