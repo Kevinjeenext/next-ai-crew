@@ -604,7 +604,8 @@ router.post("/:id/upload/resumable", async (req: Request, res: Response) => {
     const soulId = req.params.id;
     if (!orgId) return res.status(401).json({ error: "Unauthorized" });
 
-    const { filename, contentType } = req.body;
+    const filename = req.body.fileName || req.body.filename;
+    const contentType = req.body.contentType || req.body.fileType;
     if (!filename) return res.status(400).json({ error: "filename required" });
 
     const ext = filename.split(".").pop() || "bin";
