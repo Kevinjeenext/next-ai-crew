@@ -286,6 +286,150 @@ export default function SoulChatPanel({
     }
   }, []);
 
+  // Auto-chain keywords detection
+  const AUTO_CHAIN_KEYWORDS = ["회의해", "회의 해", "팀원끼리", "같이 논의", "다같이", "팀 회의", "토론해", "브레인스토밍", "회의 시작"];
+
+  const isAutoChainRequest = useCallback((text: string): boolean => {
+    return AUTO_CHAIN_KEYWORDS.some(kw => text.includes(kw));
+  }, []);
+
+  // Start auto-chain SSE stream
+  const startAutoChain = useCallback(async (task: string) => {
+    setLoading(true);
+
+    // Fetch all org souls to use as participants
+    let allSouls: any[] = [];
+    try {
+      const soulsRes = await apiFetch("/api/souls");
+      const soulsData = await soulsRes.json();
+      allSouls = soulsData.agents || [];
+    } catch {
+      setMessages(prev => [...prev, {
+        id: `sys-chain-err-${Date.now()}`, role: "system",
+        content: "⚠️ Soul 목록을 가져올 수 없습니다.",
+        timestamp: new Date(),
+      }]);
+      setLoading(false);
+      return;
+    }
+
+    // Current soul is initiator, others are participants
+    const participants = allSouls
+      .filter((s: any) => s.id !== soulId)
+      .map((s: any) => s.id)
+      .slice(0, 5); // max 5 participants
+
+    if (participants.length === 0) {
+      setMessages(prev => [...prev, {
+        id: `sys-chain-err-${Date.now()}`, role: "system",
+        content: "⚠️ 회의에 참여할 다른 Soul이 없습니다.",
+        timestamp: new Date(),
+      }]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await apiFetch("/api/a2a/auto-chain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          initiator_soul_id: soulId,
+          task,
+          participant_soul_ids: participants,
+          max_rounds: 3,
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        setMessages(prev => [...prev, {
+          id: `sys-chain-err-${Date.now()}`, role: "system",
+          content: "⚠️ 자율 대화를 시작할 수 없습니다.",
+          timestamp: new Date(),
+        }]);
+        setLoading(false);
+        return;
+      }
+
+      // Read SSE stream
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        let currentEvent = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+          } else if (line.startsWith("data: ") && currentEvent) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              handleChainEvent(currentEvent, data);
+            } catch {}
+            currentEvent = "";
+          }
+        }
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        id: `sys-chain-err-${Date.now()}`, role: "system",
+        content: "⚠️ 자율 대화 중 연결이 끊어졌습니다.",
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  }, [soulId]);
+
+  // Handle individual SSE events from auto-chain
+  const handleChainEvent = useCallback((event: string, data: any) => {
+    const ts = new Date();
+    switch (event) {
+      case "chain_start":
+        setMessages(prev => [...prev, {
+          id: `chain-start-${Date.now()}`, role: "system",
+          content: `🔗 팀 회의가 시작되었습니다\n\n**주제:** ${data.task}\n**참여자:** ${data.participants?.map((p: any) => `${p.soul_name} (${p.role})`).join(", ")}\n**라운드:** ${data.max_rounds}`,
+          timestamp: ts,
+        }]);
+        break;
+
+      case "message": {
+        const icon = data.is_final ? "📋" : "💬";
+        const label = data.is_final ? `[${data.soul_name}] 📋 최종 정리` : `[${data.soul_name}]`;
+        setMessages(prev => [...prev, {
+          id: `chain-msg-${Date.now()}-${data.soul_id}-${data.round}`,
+          role: "system",
+          content: `${icon} ${label} ${data.content}`,
+          timestamp: ts,
+        }]);
+        break;
+      }
+
+      case "done":
+        setMessages(prev => [...prev, {
+          id: `chain-done-${Date.now()}`, role: "system",
+          content: `✅ 회의 완료 — ${data.total_messages}개 메시지, ${data.total_rounds}라운드`,
+          timestamp: ts,
+        }]);
+        break;
+
+      case "error":
+        setMessages(prev => [...prev, {
+          id: `chain-error-${Date.now()}`, role: "system",
+          content: `⚠️ ${data.message || "자율 대화 오류"}`,
+          timestamp: ts,
+        }]);
+        break;
+    }
+  }, []);
+
   // File handling
   const addFiles = useCallback((files: FileList | File[]) => {
     const arr = Array.from(files);
@@ -470,6 +614,13 @@ export default function SoulChatPanel({
         inputRef.current?.focus();
         return; // Skip LLM call — delegated directly
       }
+    }
+
+    // Check for auto-chain request (team meeting / multi-soul discussion)
+    if (text && isAutoChainRequest(text)) {
+      await startAutoChain(text);
+      inputRef.current?.focus();
+      return; // Handled by auto-chain SSE
     }
 
     try {
