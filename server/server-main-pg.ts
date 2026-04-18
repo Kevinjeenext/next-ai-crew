@@ -36,6 +36,7 @@ import { budgetRoutes } from "./routes/budgets.ts";
 import { taskRoutes } from "./routes/tasks.ts";
 import { a2aRoutes } from "./routes/a2a.ts";
 import { a2aDelegationRoutes } from "./routes/a2a-delegation.ts";
+import { a2aAutoChainRoutes } from "./routes/a2a-auto-chain.ts";
 import { requireOrgMiddleware } from "./middleware/require-org.ts";
 import adminRoutes from "./routes/admin.ts";
 import { getModelRouter } from "./llm/router.ts";
@@ -600,6 +601,7 @@ app.use("/api/budgets", orgAuth, budgetRoutes);
 app.use("/api/tasks", orgAuth, taskRoutes);
 app.use("/api/a2a", orgAuth, a2aRoutes);
 app.use("/api/a2a", orgAuth, a2aDelegationRoutes);
+app.use("/api/a2a", orgAuth, a2aAutoChainRoutes);
 app.use("/api/usage", orgAuth, tokenUsageRoutes);
 
 // --- LLM Health ---

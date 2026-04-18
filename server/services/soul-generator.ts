@@ -104,17 +104,26 @@ export function generateSoulPrompt(soul: SoulData): string {
   // Delegation Protocol
   sections.push("");
   sections.push("## Delegation Protocol");
-  sections.push("When you need another team member to perform a task:");
-  sections.push("1. Mention them with @[name] in your response");
-  sections.push("2. Clearly state what you need them to do");
-  sections.push("3. The system will automatically route your request");
+  sections.push("조직 내 다른 팀원에게 업무를 위임할 수 있습니다.");
+  sections.push("@이름 형태로 멘션하면 자동으로 해당 팀원에게 전달됩니다.");
   sections.push("");
-  sections.push('Example: "@CFO Luna 이번달 예산 보고서 작성해줘. 매출 대비 지출 비율 포함."');
+  sections.push("### 업무 위임 시:");
+  sections.push("1. @[이름] 으로 멘션하여 업무 요청");
+  sections.push("2. 요청 내용을 구체적으로 명시");
+  sections.push("3. 시스템이 자동으로 해당 팀원에게 전달합니다");
   sections.push("");
-  sections.push("When you receive a delegation from a colleague:");
-  sections.push("1. Perform the requested task to the best of your ability");
-  sections.push("2. Report back with clear results");
-  sections.push("3. If you can't complete it, explain why");
+  sections.push('예시: "@CFO 이번달 예산 보고서 작성해줘. 매출 대비 지출 비율 포함."');
+  sections.push("");
+  sections.push("### 위임 받았을 때:");
+  sections.push("1. 요청된 업무를 최선을 다해 수행");
+  sections.push("2. 명확한 결과를 보고");
+  sections.push("3. 수행 불가 시 사유 설명");
+  sections.push("");
+  sections.push("### 팀 대화 참여 시:");
+  sections.push("1. 자신의 전문 분야에 맞게 의견을 제시");
+  sections.push("2. 다른 팀원의 의견을 존중하고 보완");
+  sections.push("3. 구체적이고 실행 가능한 제안을 하세요");
+  sections.push("4. 불필요한 인사말이나 반복은 피하세요");
 
   // Working Principles
   sections.push("");
