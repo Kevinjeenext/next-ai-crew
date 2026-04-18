@@ -142,6 +142,26 @@
   margin-top: 4px; display: inline-block;
 }
 
+/* System / delegate messages */
+.msg-group.system {
+  justify-content: center;
+  margin: 8px 0;
+}
+.msg-group.system .msg-avatar-col { display: none; }
+.msg-group.system .msg-body-col {
+  max-width: 90%;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+.msg-group.system .msg-header { display: none; }
+.msg-group.system .msg-text {
+  font: 450 14px/1.6 var(--font-body);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 /* ─── Code Block ─── */
 .msg-code-wrap { margin: 8px 0; }
 .msg-code-header {

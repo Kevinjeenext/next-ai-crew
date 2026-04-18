@@ -196,11 +196,18 @@ export default function SoulChatPanel({
     inputRef.current?.focus();
   }, []);
 
-  // Auto-delegate on @mention detection
+  // Auto-delegate on @mention detection (LLM response or user input)
   const handleMentions = useCallback(async (mentions: { soul_id: string; display_name: string }[], _context: string) => {
     for (const m of mentions) {
       try {
-        await apiFetch("/api/a2a/delegate", {
+        // Show delegation-in-progress
+        setMessages(prev => [...prev, {
+          id: `sys-del-${Date.now()}`, role: "system",
+          content: `📨 ${m.display_name}에게 업무를 위임하는 중...`,
+          timestamp: new Date(),
+        }]);
+
+        const res = await apiFetch("/api/a2a/delegate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -209,14 +216,75 @@ export default function SoulChatPanel({
             message: _context,
           }),
         });
-        setMessages(prev => [...prev, {
-          id: `sys-${Date.now()}`, role: "system",
-          content: `📨 ${m.display_name}에게 업무 위임 완료. 조직 대화에서 확인하세요.`,
-          timestamp: new Date(),
-        }]);
-      } catch {}
+        const delData = await res.json().catch(() => ({}));
+
+        // Replace in-progress with completion + show actual response
+        setMessages(prev => {
+          // Remove the "위임하는 중" message
+          const filtered = prev.filter(msg => !msg.id.startsWith(`sys-del-`));
+          const result: ChatMessage[] = [...filtered, {
+            id: `sys-del-done-${Date.now()}`, role: "system",
+            content: `📨 ${m.display_name}에게 업무 위임 완료`,
+            timestamp: new Date(),
+          }];
+          // Show delegate response as a system message with Soul identity
+          if (delData.response) {
+            result.push({
+              id: `del-resp-${Date.now()}-${m.soul_id}`, role: "system",
+              content: `💬 [${m.display_name}] ${delData.response}`,
+              timestamp: new Date(),
+            });
+          }
+          return result;
+        });
+      } catch (err) {
+        setMessages(prev => {
+          const filtered = prev.filter(msg => !msg.id.startsWith(`sys-del-`));
+          return [...filtered, {
+            id: `sys-del-err-${Date.now()}`, role: "system",
+            content: `⚠️ ${m.display_name}에게 위임 실패. 다시 시도해주세요.`,
+            timestamp: new Date(),
+          }];
+        });
+      }
     }
   }, [soulId]);
+
+  // Parse @mentions from user input text
+  // Returns array of { soul_id, display_name } and cleaned text
+  const parseUserMentions = useCallback(async (text: string): Promise<{ mentions: { soul_id: string; display_name: string }[]; cleanText: string }> => {
+    const mentionRegex = /@(\S+)/g;
+    const matches = [...text.matchAll(mentionRegex)];
+    if (matches.length === 0) return { mentions: [], cleanText: text };
+
+    // Fetch soul list to resolve @mentions
+    try {
+      const res = await apiFetch("/api/souls");
+      const data = await res.json();
+      const agents: any[] = data.agents || [];
+      const found: { soul_id: string; display_name: string }[] = [];
+
+      for (const match of matches) {
+        const tag = match[1].toLowerCase();
+        // Match against display_name, name_ko, role keywords
+        const soul = agents.find((a: any) =>
+          a.display_name?.toLowerCase() === tag ||
+          a.name_ko?.toLowerCase() === tag ||
+          a.display_name?.toLowerCase().includes(tag) ||
+          a.role?.toLowerCase() === tag ||
+          a.id?.toLowerCase() === tag
+        );
+        if (soul) {
+          found.push({ soul_id: soul.id, display_name: soul.display_name || soul.name_ko || soul.id });
+        }
+      }
+      // Remove @mention tokens from text for delegate message
+      const cleanText = text.replace(mentionRegex, "").trim();
+      return { mentions: found, cleanText: cleanText || text };
+    } catch {
+      return { mentions: [], cleanText: text };
+    }
+  }, []);
 
   // File handling
   const addFiles = useCallback((files: FileList | File[]) => {
@@ -393,6 +461,17 @@ export default function SoulChatPanel({
     };
     setMessages((prev) => [...prev, userMsg]);
 
+    // Check for user @mentions → direct delegate (bypass current Soul's LLM)
+    if (text && /@\S+/.test(text)) {
+      const { mentions: userMentions, cleanText } = await parseUserMentions(text);
+      if (userMentions.length > 0) {
+        await handleMentions(userMentions, cleanText);
+        setLoading(false);
+        inputRef.current?.focus();
+        return; // Skip LLM call — delegated directly
+      }
+    }
+
     try {
       // Use SSE streaming
       setIsStreaming(true);
@@ -566,7 +645,7 @@ export default function SoulChatPanel({
           const isFirst = !isContinued;
           const groupCls = [
             "msg-group",
-            msg.role === "user" ? "user" : "",
+            msg.role === "user" ? "user" : msg.role === "system" ? "system" : "",
             isFirst ? "first-in-group" : "continued",
           ].filter(Boolean).join(" ");
 
