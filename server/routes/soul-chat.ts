@@ -13,6 +13,7 @@ import { getUsageTracker } from "../llm/usage-tracker.ts";
 import { detectMentions, type Colleague } from "./a2a-delegation.ts";
 import { parseAttachments, buildFileContext, type ParsedFile } from "../lib/file-parser.ts";
 import type { LLMMessage } from "../llm/providers.ts";
+import { deductCredits, checkCredits } from "../services/credit-service.ts";
 
 const router = Router();
 
@@ -338,6 +339,20 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
     // 9. Track token usage
     await tracker.recordUsage(soulId, orgId, llmResponse, { conversation_id: convId });
 
+    // 9.5. Deduct credits (fire-and-forget)
+    let creditInfo: { creditsUsed: number; balanceAfter: number; isLocal: boolean } | null = null;
+    try {
+      creditInfo = await deductCredits(
+        orgId,
+        soulId,
+        llmResponse.model || "unknown",
+        llmResponse.usage?.total_tokens || 0,
+        `Chat: ${message.slice(0, 50)}`
+      );
+    } catch (creditErr: any) {
+      console.warn("[SoulChat] Credit deduction failed (non-blocking):", creditErr.message);
+    }
+
     // 10. Update Soul's last_active
     await supabaseAdmin
       .from("agents")
@@ -390,6 +405,11 @@ router.post("/:id/chat", async (req: Request, res: Response) => {
       usage: llmResponse.usage,
       conversation_id: convId,
       budget: { usagePct },
+      credits: creditInfo ? {
+        used: creditInfo.creditsUsed,
+        remaining: creditInfo.balanceAfter,
+        isLocal: creditInfo.isLocal,
+      } : undefined,
     });
   } catch (err: any) {
     console.error("[API] POST /api/souls/:id/chat error:", err.message);

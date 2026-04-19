@@ -39,10 +39,13 @@ import { a2aDelegationRoutes } from "./routes/a2a-delegation.ts";
 import { a2aAutoChainRoutes } from "./routes/a2a-auto-chain.ts";
 import { requireOrgMiddleware } from "./middleware/require-org.ts";
 import adminRoutes from "./routes/admin.ts";
+import { adminDdlRoutes } from "./routes/admin-ddl.ts";
 import { getModelRouter } from "./llm/router.ts";
 import billingRoutes, { webhookRouter } from "./modules/routes/billing.ts";
 import { checkAgentLimit } from "./middleware/plan-limit.ts";
 import { tokenUsageRoutes } from "./routes/token-usage.ts";
+import { presetRoutes } from "./routes/presets.ts";
+import { creditRoutes } from "./routes/credits.ts";
 
 // ---------------------------------------------------------------------------
 // Initialize
@@ -95,6 +98,7 @@ app.get("/health", (_req, res) => {
 // --- Auth routes ---
 app.use(authRoutes);
 app.use(adminRoutes);
+app.use(adminDdlRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/webhooks", webhookRouter);
 
@@ -603,6 +607,8 @@ app.use("/api/a2a", orgAuth, a2aRoutes);
 app.use("/api/a2a", orgAuth, a2aDelegationRoutes);
 app.use("/api/a2a", orgAuth, a2aAutoChainRoutes);
 app.use("/api/usage", orgAuth, tokenUsageRoutes);
+app.use("/api/industry-presets", presetRoutes); // Public (no auth needed for browsing)
+app.use("/api/credits", orgAuth, creditRoutes);
 
 // --- LLM Health ---
 app.get("/api/llm/status", (_req, res) => {
